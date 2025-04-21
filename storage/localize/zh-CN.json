@@ -1,0 +1,15 @@
+{
+  "Success": "✅ 成功",
+  "Failure": "❌ 失败",
+  "JSONSerializationFailed": "❌ Json 序列化失败，错误: {{.err}}",
+  "RedisError": "❌ redis 出现错误: {{.err}}",
+  "GameBetNotAllowed": "❌ 不允许投注",
+  "BetSuccess": "✅ 投注成功",
+  "BetFailure": "❌ 投注失败",
+  "BetCancelSuccess": "✅ 取消投注成功",
+  "BetCancelFailure": "❌ 取消投注失败",
+  "BetSettlementSuccess": "✅ 手动结算提交成功",
+  "BetSettlementFailure": "❌ 手动结算失败",
+  "BetSettlementWaitNextRound": "❌ 下一局才可以结算",
+  "BetRecordNotFound": "❌ 投注记录不存在"
+}

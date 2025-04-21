@@ -1,0 +1,15 @@
+{
+  "Success":"✅ Success",
+  "Failure":"❌ Failure",
+  "JSONSerializationFailed": "❌ JSON Serialization Failed: {{.err}}",
+  "RedisError": "❌ Redis error: {{.err}}",
+  "GameBetNotAllowed":"❌ Game Bet Not Allowed",
+  "BetSuccess":"✅ Bet Success",
+  "BetFailure": "❌ Bet Failure",
+  "BetCancelSuccess":"✅ Bet Cancel Success",
+  "BetCancelFailure": "❌ Bet Cancel Failure",
+  "BetSettlementSuccess": "✅ Hand Settlement Submitted Successfully",
+  "BetSettlementFailure": "❌ Hand Settlement Failed.",
+  "BetSettlementWaitNextRound": "❌ Next Round Can Be Settlement.",
+  "BetRecordNotFound": "❌ Bet Record Not Found"
+}
