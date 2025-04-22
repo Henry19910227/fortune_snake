@@ -2,8 +2,11 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/model"
+	"game_server_slots_fortune_snake/pkg"
 	pb "game_server_slots_fortune_snake/proto"
 	"google.golang.org/grpc"
 	"log"
@@ -16,6 +19,7 @@ type Server struct {
 	grpcServer *grpc.Server
 	listener   net.Listener
 	config     model.ServerConfig
+	engine     *Engine
 }
 
 func NewServer(config model.ServerConfig) *Server {
@@ -31,7 +35,45 @@ func NewServer(config model.ServerConfig) *Server {
 		grpcServer: grpcServer,
 		listener:   lis,
 		config:     config,
+		engine:     New(),
 	}
+}
+
+func (s *Server) SendMessage(ctx context.Context, req *pb.MessageRequest) (*pb.MessageResponse, error) {
+	res := &pb.MessageResponse{}
+	// 路由解析
+	path := s.engine.resolver([]byte(req.Action))
+	// 路由選擇
+	handlers, ok := s.engine.route.Get(path)
+	if !ok {
+		res.Code = constants.CodeBadRequest
+		res.Message = pkg.LocalizeInstance().LocalizeMessage("Failure")
+		return res, nil
+	}
+	// 創建 context
+	engineCtx := Context{
+		ctx:      ctx,
+		engine:   s.engine,
+		handlers: handlers,
+		keys:     make(map[string]interface{}),
+		index:    -1,
+		data:     []byte(res.Data),
+		output:   []byte{},
+	}
+	// 執行路由
+	engineCtx.Next()
+	// 將 output 轉換為 model
+	resModel := &model.MessageResponse{}
+	if err := json.Unmarshal(engineCtx.output, resModel); err != nil {
+		res.Code = constants.CodeBadRequest
+		res.Message = pkg.LocalizeInstance().LocalizeMessage("Failure")
+		res.Data = err.Error()
+		return res, nil
+	}
+	res.Code = resModel.Code
+	res.Message = resModel.Message
+	res.Data = resModel.Data
+	return res, nil
 }
 
 func (s *Server) RunWithRetry(ctx context.Context) {
