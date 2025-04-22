@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "./proto";
+
+// 消息传输服务
+service MessageService {
+  rpc SendMessage(MessageRequest) returns (MessageResponse);
+}
+
+// 请求消息，包含 action 和 data 字段
+message MessageRequest {
+  string action = 1;
+  uint64 playerId = 2;
+  string data = 3;
+}
+
+// 响应消息，包含 code、message 和 data 字段
+message MessageResponse {
+  int32 code = 1;
+  string message = 2;
+  optional string data = 3;
+}
