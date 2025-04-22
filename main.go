@@ -25,7 +25,7 @@ func main() {
 	appConfig := config.New(configFile)
 
 	// 2. 初始化语言包
-	_ = pkg.InitLocalize(appConfig.Config().Language.Default)
+	pkg.InitLocalizeInstance(appConfig.Config().Language.Default)
 
 	// 3. 初始化分布式雪花 ID
 	_, err := utils.NewSnowFlake(appConfig.Config().Server.ServerNode)

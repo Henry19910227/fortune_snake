@@ -6,13 +6,19 @@ import (
 	"golang.org/x/text/language"
 	"log"
 	"path/filepath"
+	"sync"
+)
+
+var (
+	instance Localize
+	once     sync.Once
 )
 
 type localize struct {
 	globalLocalizer *i18n.Localizer
 }
 
-func InitLocalize(lang string) Localize {
+func NewLocalize(lang string) Localize {
 	bundle := initBundle()
 	globalLocalizer := i18n.NewLocalizer(bundle, lang)
 	log.Printf("✅ 全局语言初始化为：%s", lang)
@@ -47,4 +53,14 @@ func initBundle() *i18n.Bundle {
 	bundle.MustLoadMessageFile(zhPath)
 	log.Println("✅ 语言包已加载：", enPath, zhPath)
 	return bundle
+}
+
+func InitLocalizeInstance(lang string) {
+	once.Do(func() {
+		instance = NewLocalize(lang)
+	})
+}
+
+func LocalizeInstance() Localize {
+	return instance
 }
