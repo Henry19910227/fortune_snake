@@ -70,10 +70,10 @@ func main() {
 
 	// 9. 启动 gRPC 服务
 	wg.Add(1)
-	grpcServer := server.NewServer(appConfig.Config().Server)
+	engine := server.New(appConfig.Config().Server)
 	go func() {
 		defer wg.Done()
-		grpcServer.RunWithRetry(ctx)
+		engine.Run(ctx)
 	}()
 
 	// 10. 捕获系统退出信号

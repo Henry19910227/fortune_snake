@@ -22,7 +22,7 @@ type Server struct {
 	engine     *Engine
 }
 
-func NewServer(config model.ServerConfig) *Server {
+func newServer(config model.ServerConfig, engine *Engine) *Server {
 	address := fmt.Sprintf("%s:%d", config.Ip, config.Port)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
@@ -35,7 +35,7 @@ func NewServer(config model.ServerConfig) *Server {
 		grpcServer: grpcServer,
 		listener:   lis,
 		config:     config,
-		engine:     New(),
+		engine:     engine,
 	}
 }
 
