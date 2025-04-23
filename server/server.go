@@ -52,7 +52,6 @@ func (s *Server) SendMessage(ctx context.Context, req *pb.MessageRequest) (*pb.M
 	}
 	// 創建 context
 	engineCtx := Context{
-		ctx:      ctx,
 		engine:   s.engine,
 		handlers: handlers,
 		keys:     make(map[string]interface{}),
@@ -60,6 +59,8 @@ func (s *Server) SendMessage(ctx context.Context, req *pb.MessageRequest) (*pb.M
 		data:     []byte(res.Data),
 		output:   []byte{},
 	}
+	// 儲存 grcp ctx
+	engineCtx.Set("ctx", ctx)
 	// 執行路由
 	engineCtx.Next()
 	// 將 output 轉換為 model

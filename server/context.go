@@ -1,12 +1,10 @@
 package server
 
 import (
-	"context"
 	"sync"
 )
 
 type Context struct {
-	ctx      context.Context
 	engine   *Engine
 	handlers []HandlerFunc
 	mu       sync.RWMutex
