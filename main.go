@@ -6,7 +6,11 @@ import (
 	"game_server_slots_fortune_snake/config"
 	"game_server_slots_fortune_snake/db"
 	"game_server_slots_fortune_snake/etcd"
+	controllerFactory "game_server_slots_fortune_snake/factory/controller"
+	repoFactory "game_server_slots_fortune_snake/factory/repository"
+	serviceFactory "game_server_slots_fortune_snake/factory/service"
 	"game_server_slots_fortune_snake/pkg"
+	"game_server_slots_fortune_snake/router/game"
 	"game_server_slots_fortune_snake/server"
 	"game_server_slots_fortune_snake/utils"
 	"log"
@@ -68,9 +72,27 @@ func main() {
 		defer etcd.UnregisterService(appConfig.Config().Etcd)
 	}
 
-	// 9. 启动 gRPC 服务
+	// 初始化工廠
+	repoFact := repoFactory.New(mysqlDB.DB(), redisDB.RDB())
+	serviceFact := serviceFactory.New(repoFact)
+	factory := controllerFactory.New(serviceFact)
+
+	// 9. 創建 gRPC Engine
 	wg.Add(1)
 	engine := server.New(appConfig.Config().Server)
+
+	// 添加路由解析器邏輯
+	engine.PathResolver(func(b []byte) string {
+		return "/" + string(b)
+	})
+
+	// 設定Base路由組
+	baseGroup := engine.Group("/")
+	baseGroup.Use(factory.MiddleController().UnMarshalData)
+	// 添加路由
+	game.SetRoute(baseGroup, factory)
+
+	// 9. 启动 gRPC Engine
 	go func() {
 		defer wg.Done()
 		engine.Run(ctx)
