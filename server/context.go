@@ -14,7 +14,7 @@ type Context struct {
 	output   []byte
 }
 
-func (c *Context) RawData() []byte {
+func (c *Context) Data() []byte {
 	return c.data
 }
 
