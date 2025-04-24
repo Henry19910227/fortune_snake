@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"game_server_slots_fortune_snake/model"
+	"game_server_slots_fortune_snake/internal/model"
 	"github.com/redis/go-redis/v9"
 	"log"
 )

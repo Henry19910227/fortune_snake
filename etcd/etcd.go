@@ -3,7 +3,7 @@ package etcd
 import (
 	"context"
 	"fmt"
-	"game_server_slots_fortune_snake/model"
+	"game_server_slots_fortune_snake/internal/model"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"log"
 	"time"

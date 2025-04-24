@@ -1,7 +1,7 @@
 package config
 
 import (
-	"game_server_slots_fortune_snake/model"
+	"game_server_slots_fortune_snake/internal/model"
 )
 
 type Config interface {

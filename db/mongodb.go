@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
-	"game_server_slots_fortune_snake/model"
+	"game_server_slots_fortune_snake/internal/model"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"

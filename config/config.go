@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"game_server_slots_fortune_snake/model"
+	"game_server_slots_fortune_snake/internal/model"
 	"gopkg.in/yaml.v2"
 	"log"
 	"os"
