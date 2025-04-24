@@ -18,6 +18,7 @@ func New(playerService playerService.Service) Controller {
 	return &controller{playerService: playerService}
 }
 
+// UnMarshalData 第一層 將整包 json 字串轉為 MessageRequest model
 func (c *controller) UnMarshalData(ctx *server.Context) {
 	var req *model.MessageRequest
 	if err := json.Unmarshal(ctx.Data(), &req); err != nil {
@@ -28,19 +29,21 @@ func (c *controller) UnMarshalData(ctx *server.Context) {
 	ctx.Set("req", req)
 }
 
+// UnMarshalReq 第二層 將 MessageRequest model 的 data json 字段轉換為對應 model
 func (c *controller) UnMarshalReq(ctx *server.Context) {
-	//req := ctx.MustGet("req").(*model.MessageRequest)
-	//switch {
-	//case req.Action == "bet":
-	//default:
-	//	ctx.Abort()
-	//	return
-	//}
-	//TODO implement me
-	panic("implement me")
+	req := ctx.MustGet("req").(*model.MessageRequest)
+	switch {
+	case req.Action == "player":
+		req.Data = ""
+	default:
+		ctx.SendError(constants.CodeBadRequest, "action is not valid")
+		ctx.Abort()
+		return
+	}
+	ctx.Set("req", req)
 }
 
-// Verify 獲取 Player Session 資訊
+// Verify 第三層 驗證 PlayerID 並獲取 Player Session 資訊
 func (c *controller) Verify(ctx *server.Context) {
 	req := ctx.MustGet("req").(*model.MessageRequest)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)

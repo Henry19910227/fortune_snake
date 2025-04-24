@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"game_server_slots_fortune_snake/constants"
-	model2 "game_server_slots_fortune_snake/internal/model"
+	"game_server_slots_fortune_snake/internal/model"
 	"game_server_slots_fortune_snake/pkg"
 	pb "game_server_slots_fortune_snake/proto"
 	"google.golang.org/grpc"
@@ -18,25 +18,25 @@ type Server struct {
 	pb.UnimplementedMessageServiceServer
 	grpcServer *grpc.Server
 	listener   net.Listener
-	config     model2.ServerConfig
+	config     model.ServerConfig
 	engine     *Engine
 }
 
-func newServer(config model2.ServerConfig, engine *Engine) *Server {
+func newServer(config model.ServerConfig, engine *Engine) *Server {
 	address := fmt.Sprintf("%s:%d", config.Ip, config.Port)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		return nil
 	}
 	grpcServer := grpc.NewServer()
-	pb.RegisterMessageServiceServer(grpcServer, &Server{})
-
-	return &Server{
+	serv := &Server{
 		grpcServer: grpcServer,
 		listener:   lis,
 		config:     config,
 		engine:     engine,
 	}
+	pb.RegisterMessageServiceServer(grpcServer, serv)
+	return serv
 }
 
 func (s *Server) SendMessage(ctx context.Context, req *pb.MessageRequest) (*pb.MessageResponse, error) {
@@ -50,22 +50,29 @@ func (s *Server) SendMessage(ctx context.Context, req *pb.MessageRequest) (*pb.M
 		res.Message = pkg.LocalizeInstance().LocalizeMessage("Failure")
 		return res, nil
 	}
+	// 將 req 轉換為 json string
+	data, err := json.Marshal(req)
+	if err != nil {
+		res.Code = constants.CodeBadRequest
+		res.Message = err.Error()
+		return res, nil
+	}
 	// 創建 context
 	engineCtx := Context{
 		engine:   s.engine,
 		handlers: handlers,
 		keys:     make(map[string]interface{}),
 		index:    -1,
-		data:     []byte(res.Data),
-		output:   []byte{},
+		data:     data,
+		result:   []byte{},
 	}
 	// 儲存 grcp ctx
 	engineCtx.Set("ctx", ctx)
 	// 執行路由
 	engineCtx.Next()
 	// 將 output 轉換為 model
-	resModel := &model2.MessageResponse{}
-	if err := json.Unmarshal(engineCtx.output, resModel); err != nil {
+	resModel := &model.MessageResponse{}
+	if err := json.Unmarshal(engineCtx.result, resModel); err != nil {
 		res.Code = constants.CodeBadRequest
 		res.Message = pkg.LocalizeInstance().LocalizeMessage("Failure")
 		res.Data = err.Error()

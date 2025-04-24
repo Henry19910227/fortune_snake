@@ -6,5 +6,6 @@ import (
 )
 
 func SetRoute(group *server.RouterGroup, factory controller.Factory) {
-	group.EndPoint("bet", nil)
+	playerController := factory.PlayerController()
+	group.EndPoint("player", playerController.GetPlayerSession)
 }

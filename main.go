@@ -86,9 +86,10 @@ func main() {
 		return "/" + string(b)
 	})
 
-	// 設定Base路由組
+	// 設定Base路由
 	baseGroup := engine.Group("/")
 	baseGroup.Use(factory.MiddleController().UnMarshalData)
+	baseGroup.Use(factory.MiddleController().UnMarshalReq)
 	// 添加路由
 	game.SetRoute(baseGroup, factory)
 

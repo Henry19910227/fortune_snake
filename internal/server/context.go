@@ -13,14 +13,15 @@ type Context struct {
 	keys     map[string]interface{}
 	index    int
 	data     []byte
-	output   []byte
+	result   []byte
 }
 
 func (c *Context) SendError(code int32, msg string) {
-	c.Set("resp", &model.MessageResponse{
+	resp := &model.MessageResponse{
 		Code:    code,
 		Message: msg,
-	})
+	}
+	c.result, _ = json.Marshal(resp)
 }
 
 func (c *Context) Send(code int32, msg string, data interface{}) {
@@ -30,7 +31,7 @@ func (c *Context) Send(code int32, msg string, data interface{}) {
 		Message: msg,
 		Data:    string(jsonData),
 	}
-	c.Set("resp", resp)
+	c.result, _ = json.Marshal(resp)
 }
 
 func (c *Context) Data() []byte {

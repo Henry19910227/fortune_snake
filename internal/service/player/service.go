@@ -18,6 +18,7 @@ func NewService(playerRepo playerRepo.Repository) Service {
 }
 
 func (s *service) GetPlayerSession(input *get_player_session.Input) (output *get_player_session.Output) {
+	output = &get_player_session.Output{}
 	data, err := s.playerRepo.FindPlayerSessionById(input.Ctx, input.PlayerId)
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -27,10 +28,10 @@ func (s *service) GetPlayerSession(input *get_player_session.Input) (output *get
 		}
 		output.Code = constants.CodeBadRequest
 		output.Message = pkg.LocalizeInstance().LocalizeMessage("RedisError", map[string]interface{}{"err": err})
+		return output
 	}
-	output = &get_player_session.Output{}
 	output.Code = constants.CodeSuccess
-	output.Message = ""
+	output.Message = "success"
 	output.Data = data
 	return output
 }
