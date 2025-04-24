@@ -21,6 +21,7 @@ func New(playerService playerService.Service) Controller {
 func (c *controller) UnMarshalData(ctx *server.Context) {
 	var req *model.MessageRequest
 	if err := json.Unmarshal(ctx.Data(), &req); err != nil {
+		ctx.SendError(constants.CodeBadRequest, err.Error())
 		ctx.Abort()
 		return
 	}
@@ -39,6 +40,7 @@ func (c *controller) UnMarshalReq(ctx *server.Context) {
 	panic("implement me")
 }
 
+// Verify 獲取 Player Session 資訊
 func (c *controller) Verify(ctx *server.Context) {
 	req := ctx.MustGet("req").(*model.MessageRequest)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
@@ -48,6 +50,7 @@ func (c *controller) Verify(ctx *server.Context) {
 	input.PlayerId = req.PlayerId
 	output := c.playerService.GetPlayerSession(&input)
 	if output.Code != constants.CodeSuccess {
+		ctx.SendError(constants.CodeBadRequest, output.Message)
 		ctx.Abort()
 		return
 	}

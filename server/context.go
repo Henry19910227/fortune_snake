@@ -1,6 +1,8 @@
 package server
 
 import (
+	"encoding/json"
+	"game_server_slots_fortune_snake/model"
 	"sync"
 )
 
@@ -12,6 +14,23 @@ type Context struct {
 	index    int
 	data     []byte
 	output   []byte
+}
+
+func (c *Context) SendError(code int32, msg string) {
+	c.Set("resp", &model.MessageResponse{
+		Code:    code,
+		Message: msg,
+	})
+}
+
+func (c *Context) Send(code int32, msg string, data interface{}) {
+	jsonData, _ := json.Marshal(data)
+	resp := &model.MessageResponse{
+		Code:    code,
+		Message: msg,
+		Data:    string(jsonData),
+	}
+	c.Set("resp", resp)
 }
 
 func (c *Context) Data() []byte {
