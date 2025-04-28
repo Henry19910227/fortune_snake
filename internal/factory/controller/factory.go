@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"game_server_slots_fortune_snake/internal/controller/game"
+	gameController "game_server_slots_fortune_snake/internal/controller/game"
 	"game_server_slots_fortune_snake/internal/controller/middleware"
 	"game_server_slots_fortune_snake/internal/controller/player"
 	serviceFactory "game_server_slots_fortune_snake/internal/factory/service"
@@ -12,6 +14,10 @@ type factory struct {
 
 func New(serviceFactory serviceFactory.Factory) Factory {
 	return &factory{serviceFactory: serviceFactory}
+}
+
+func (f *factory) GameController() gameController.Controller {
+	return game.New(f.serviceFactory.GameService())
 }
 
 func (f *factory) PlayerController() player.Controller {
