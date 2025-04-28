@@ -1,7 +1,8 @@
 package repository
 
 import (
-	"game_server_slots_fortune_snake/internal/repository/player"
+	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
+	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -16,6 +17,10 @@ func New(db *gorm.DB, rdb *redis.Client) Factory {
 	return repoFactory
 }
 
-func (f *factory) PlayerRepository() player.Repository {
-	return player.New(f.rdb)
+func (f *factory) GameRepository() gameRepo.Repository {
+	return gameRepo.New()
+}
+
+func (f *factory) PlayerRepository() playerRepo.Repository {
+	return playerRepo.New(f.rdb)
 }
