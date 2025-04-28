@@ -2,7 +2,8 @@ package service
 
 import (
 	"game_server_slots_fortune_snake/internal/factory/repository"
-	"game_server_slots_fortune_snake/internal/service/player"
+	gameService "game_server_slots_fortune_snake/internal/service/game"
+	playerService "game_server_slots_fortune_snake/internal/service/player"
 )
 
 type factory struct {
@@ -14,7 +15,12 @@ func New(repoFactory repository.Factory) Factory {
 	return serviceFactory
 }
 
-func (f *factory) PlayerService() player.Service {
+func (f *factory) GameService() gameService.Service {
+	gameRepo := f.repoFactory.GameRepository()
+	return gameService.NewService(gameRepo)
+}
+
+func (f *factory) PlayerService() playerService.Service {
 	playerRepo := f.repoFactory.PlayerRepository()
-	return player.NewService(playerRepo)
+	return playerService.NewService(playerRepo)
 }
