@@ -24,3 +24,20 @@ type Session struct {
 	GameteBetType    string `json:"game_bet_type"`      // 游戏投注额验证类型；match 一致 range 区间
 	GameDatetime     int64  `json:"game_datetime"`      // 游戏启动时间
 }
+
+// User 用戶數據
+type User struct {
+	Id       int
+	NickName string
+	Sex      int
+	Currency string
+	RTP      int
+}
+
+// GameData 用戶遊戲中緩存數據
+type GameData struct {
+	UserId   int // 用戶 id
+	Bet      int
+	Value    int
+	GameMode int // 游戏模式(試玩:demo/真玩:real)
+}

@@ -29,3 +29,11 @@ func (r *repository) FindPlayerSessionById(ctx context.Context, playerId uint64)
 	}
 	return &session, nil
 }
+
+func (r *repository) Balance() (balance int, err error) {
+	return 0, err
+}
+
+func (r *repository) GameData() (*playerModel.GameData, error) {
+	return &playerModel.GameData{}, nil
+}
