@@ -2,6 +2,7 @@ package game
 
 import (
 	"game_server_slots_fortune_snake/constants"
+	"game_server_slots_fortune_snake/internal/model/game/bet"
 	"game_server_slots_fortune_snake/internal/model/game/enter_game"
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
@@ -44,5 +45,13 @@ func (s *serviceDemo) EnterGame(input *enter_game.Input) (output *enter_game.Out
 		MultipleScoreLimit: gameInfo.MultipleScoreLimit,
 		ScoreTry:           20000 * 10000, // 試玩金額
 	}
+	return output
+}
+
+func (s *serviceDemo) Bet(input *bet.Input) (output *bet.Output) {
+	output = &bet.Output{}
+	output.Code = constants.CodeSuccess
+	output.Message = "success"
+	output.Data = &bet.Data{}
 	return output
 }

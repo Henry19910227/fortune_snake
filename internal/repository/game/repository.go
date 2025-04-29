@@ -17,3 +17,7 @@ func (r *repository) Info() (output *gameModel.Info, err error) {
 		MultipleScoreLimit: 2000,
 	}, nil
 }
+
+func (r *repository) IsSpecialMode() bool {
+	return false
+}

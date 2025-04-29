@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"google.golang.org/grpc"
 	"grpc_client/proto"
@@ -15,9 +16,18 @@ func main() {
 	}
 	defer conn.Close()
 	client := proto.NewMessageServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 300*time.Second)
 	defer cancel()
-	resp, err := client.SendMessage(ctx, &proto.MessageRequest{Action: "player", PlayerId: 10376293541461622785, Data: ""})
+	m := Param{
+		Bet:   1,
+		Value: 1000,
+	}
+	b, err := json.Marshal(m)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	resp, err := client.SendMessage(ctx, &proto.MessageRequest{Action: "bet", PlayerId: 6917529027641081862, Data: string(b)})
 	if err != nil {
 		fmt.Println(err)
 		return

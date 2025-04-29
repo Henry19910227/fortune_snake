@@ -50,22 +50,19 @@ func (s *Server) SendMessage(ctx context.Context, req *pb.MessageRequest) (*pb.M
 		res.Message = pkg.LocalizeInstance().LocalizeMessage("Failure")
 		return res, nil
 	}
-	// 將 req 轉換為 json string
-	data, err := json.Marshal(req)
-	if err != nil {
-		res.Code = constants.CodeBadRequest
-		res.Message = err.Error()
-		return res, nil
-	}
 	// 創建 context
 	engineCtx := Context{
 		engine:   s.engine,
 		handlers: handlers,
 		keys:     make(map[string]interface{}),
 		index:    -1,
-		data:     data,
+		data:     []byte(req.Data),
 		result:   []byte{},
 	}
+	// 儲存 action
+	engineCtx.Set("action", req.Action)
+	// 儲存 playerId
+	engineCtx.Set("playerId", req.PlayerId)
 	// 儲存 grcp ctx
 	engineCtx.Set("ctx", ctx)
 	// 執行路由
@@ -75,7 +72,6 @@ func (s *Server) SendMessage(ctx context.Context, req *pb.MessageRequest) (*pb.M
 	if err := json.Unmarshal(engineCtx.result, resModel); err != nil {
 		res.Code = constants.CodeBadRequest
 		res.Message = pkg.LocalizeInstance().LocalizeMessage("Failure")
-		res.Data = err.Error()
 		return res, nil
 	}
 	res.Code = resModel.Code

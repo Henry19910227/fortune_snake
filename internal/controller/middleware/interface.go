@@ -5,7 +5,5 @@ import (
 )
 
 type Controller interface {
-	UnMarshalData(ctx *server.Context)
-	UnMarshalReq(ctx *server.Context)
 	Verify(ctx *server.Context)
 }

@@ -62,6 +62,10 @@ func (c *Context) MustGet(key string) interface{} {
 	panic("Key \"" + key + "\" does not exist")
 }
 
+func (c *Context) Bind(obj interface{}) error {
+	return json.Unmarshal(c.data, obj)
+}
+
 func (c *Context) Next() {
 	c.index++
 	for c.index < len(c.handlers) {

@@ -5,6 +5,7 @@ import (
 	playerModel "game_server_slots_fortune_snake/internal/model/player"
 )
 
+// Input Service 層的 Input
 type Input struct {
 	model.BaseInput
 	Session *playerModel.Session
