@@ -17,7 +17,14 @@ func New(repoFactory repository.Factory) Factory {
 
 func (f *factory) GameService() gameService.Service {
 	gameRepo := f.repoFactory.GameRepository()
-	return gameService.NewService(gameRepo)
+	playerRepo := f.repoFactory.PlayerRepository()
+	return gameService.NewService(gameRepo, playerRepo)
+}
+
+func (f *factory) GameDemoService() gameService.Service {
+	gameRepo := f.repoFactory.GameRepository()
+	playerRepo := f.repoFactory.PlayerRepository()
+	return gameService.NewServiceDemo(gameRepo, playerRepo)
 }
 
 func (f *factory) PlayerService() playerService.Service {

@@ -7,17 +7,17 @@ import (
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
 )
 
-// 真錢模式的 game service
-type service struct {
+// 試玩模式的 game service
+type serviceDemo struct {
 	gameRepo   gameRepo.Repository
 	playerRepo playerRepo.Repository
 }
 
-func NewService(gameRepo gameRepo.Repository, playerRepo playerRepo.Repository) Service {
-	return &service{gameRepo: gameRepo, playerRepo: playerRepo}
+func NewServiceDemo(gameRepo gameRepo.Repository, playerRepo playerRepo.Repository) Service {
+	return &serviceDemo{gameRepo: gameRepo, playerRepo: playerRepo}
 }
 
-func (s *service) EnterGame(input *enter_game.Input) (output *enter_game.Output) {
+func (s *serviceDemo) EnterGame(input *enter_game.Input) (output *enter_game.Output) {
 	// 獲取遊戲配置
 	gameInfo, err := s.gameRepo.Info()
 	if err != nil {

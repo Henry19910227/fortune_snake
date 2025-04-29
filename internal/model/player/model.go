@@ -38,6 +38,6 @@ type User struct {
 type GameData struct {
 	UserId   int // 用戶 id
 	Bet      int
-	Value    int
+	Value    float64
 	GameMode int // 游戏模式(試玩:demo/真玩:real)
 }

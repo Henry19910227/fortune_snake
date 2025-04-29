@@ -35,6 +35,8 @@ func (c *controller) UnMarshalReq(ctx *server.Context) {
 	switch {
 	case req.Action == "player":
 		req.Data = ""
+	case req.Action == "enter_game":
+		req.Data = ""
 	default:
 		ctx.SendError(constants.CodeBadRequest, "action is not valid")
 		ctx.Abort()
@@ -57,5 +59,5 @@ func (c *controller) Verify(ctx *server.Context) {
 		ctx.Abort()
 		return
 	}
-	ctx.Set("player", output.Data)
+	ctx.Set("session", output.Data)
 }

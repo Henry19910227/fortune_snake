@@ -7,5 +7,6 @@ import (
 
 type Factory interface {
 	GameService() gameService.Service
+	GameDemoService() gameService.Service
 	PlayerService() playerService.Service
 }

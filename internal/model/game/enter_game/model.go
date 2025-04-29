@@ -2,11 +2,12 @@ package enter_game
 
 import (
 	"game_server_slots_fortune_snake/internal/model"
+	playerModel "game_server_slots_fortune_snake/internal/model/player"
 )
 
 type Input struct {
 	model.BaseInput
-	PlayerId uint64
+	Session *playerModel.Session
 }
 
 type Output struct {
