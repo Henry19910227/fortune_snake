@@ -35,5 +35,5 @@ func (r *repository) Balance() (balance int, err error) {
 }
 
 func (r *repository) GameData() (*playerModel.GameData, error) {
-	return &playerModel.GameData{}, nil
+	return &playerModel.GameData{Bet: 1, Value: 100}, nil
 }

@@ -8,6 +8,7 @@ import (
 func SetRoute(group *server.RouterGroup, factory controller.Factory) {
 	playerController := factory.PlayerController()
 	gameController := factory.GameController()
-	group.EndPoint("enter_game", gameController.EnterGame)
+	middController := factory.MiddleController()
+	group.EndPoint("enter_game", middController.Verify, gameController.EnterGame)
 	group.EndPoint("player", playerController.GetPlayerSession)
 }

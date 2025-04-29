@@ -35,10 +35,14 @@ func (s *service) EnterGame(input *enter_game.Input) (output *enter_game.Output)
 	// 處理回傳
 	output = &enter_game.Output{}
 	output.Data = &enter_game.Data{
-		Bets:   gameInfo.Bets,
-		Values: gameInfo.Values,
-		Bet:    playerGameData.Bet,
-		Value:  playerGameData.Value,
+		Bets:               gameInfo.Bets,
+		Values:             gameInfo.Values,
+		Bet:                playerGameData.Bet,
+		Value:              playerGameData.Value,
+		GameMode:           input.Session.Mode,
+		Multipler:          gameInfo.Multipler,
+		MultipleScoreLimit: gameInfo.MultipleScoreLimit,
+		ScoreTry:           0, // 真實遊玩回傳 0
 	}
 	return output
 }

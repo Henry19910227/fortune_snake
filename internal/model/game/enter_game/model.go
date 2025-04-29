@@ -16,11 +16,11 @@ type Output struct {
 }
 
 type Data struct {
-	Bets               []int     //可投注金额选项
-	Values             []float64 //可投注价值选项
-	Multipler          int       //投注线
-	IsNumeric          bool      //是否数值模式
-	GameMode           int       // 游戏模式 试玩 demo, 真实用户 real
+	Bets               []int     // 可投注金额选项
+	Values             []float64 // 可投注价值选项
+	Multipler          int       // 投注线
+	IsNumeric          bool      // 是否数值模式
+	GameMode           string    // 游戏模式 试玩 demo, 真实用户 real
 	ScoreTry           int       // 玩家的试玩余额
 	MultipleScoreLimit int       // 奖金上限倍数
 	Bet                int       // 当前下注值
