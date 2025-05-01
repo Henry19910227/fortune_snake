@@ -9,5 +9,11 @@ import (
 func TestService_Generate(*testing.T) {
 	repo := symbolRepo.New()
 	svc := NewService(repo)
-	fmt.Println(svc.Generate([]int{3, 4, 3}))
+	reelSet := svc.Generate([]int{3, 4, 3})
+	for row := 0; row < len(reelSet); row++ {
+		for col := 0; col < len(reelSet[row]); col++ {
+			fmt.Println(reelSet[row][col])
+		}
+		fmt.Println("-------")
+	}
 }

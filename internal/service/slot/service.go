@@ -1,7 +1,7 @@
 package slot
 
 import (
-	"game_server_slots_fortune_snake/internal/model/slot"
+	"game_server_slots_fortune_snake/internal/model/symbol"
 	symbolRepo "game_server_slots_fortune_snake/internal/repository/symbol"
 )
 
@@ -13,15 +13,14 @@ func NewService(symbolRepo symbolRepo.Repository) Service {
 	return &service{symbolRepo: symbolRepo}
 }
 
-func (s *service) Generate(layout []int) *slot.Result {
-	result := &slot.Result{}
-	result.Symbols = make([][]int, 0)
+func (s *service) Generate(layout []int) [][]*symbol.Item {
+	reelSet := make([][]*symbol.Item, 0)
 	for col := 0; col < len(layout); col++ {
-		reel := make([]int, 0)
+		reel := make([]*symbol.Item, 0)
 		for row := 0; row < layout[col]; row++ {
-			reel = append(reel, s.symbolRepo.GetRandomSymbol().ID)
+			reel = append(reel, s.symbolRepo.GetRandomSymbol())
 		}
-		result.Symbols = append(result.Symbols, reel)
+		reelSet = append(reelSet, reel)
 	}
-	return result
+	return reelSet
 }
