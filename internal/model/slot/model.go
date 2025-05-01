@@ -1,4 +1,4 @@
-package slot_result
+package slot
 
 type Result struct {
 	Symbols [][]int
