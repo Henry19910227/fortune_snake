@@ -23,6 +23,13 @@ func (r *repository) GetSymbols() []*symbolModel.Item {
 	return r.symbols
 }
 
+func (r *repository) GetSymbol(id int) *symbolModel.Item {
+	if id < 0 || id >= len(r.symbols) {
+		return nil
+	}
+	return r.symbols[id]
+}
+
 func (r *repository) GetRandomSymbol() *symbolModel.Item {
 	rest := rand.Intn(r.totalWeight)
 	for _, symbol := range r.symbols {

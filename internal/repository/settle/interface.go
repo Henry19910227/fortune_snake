@@ -10,6 +10,4 @@ type Repository interface {
 	GetWinLines(bet int, value int, reelSet [][]*symbol.Item) ([]*settle.Line, error)
 	// CheckWinLine 判斷否是中獎線
 	CheckWinLine(line *settle.Line) (bool, *symbol.Item)
-	// GetLineScore 取得中獎金額
-	GetLineScore(line *settle.Line) int
 }

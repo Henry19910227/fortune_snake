@@ -3,9 +3,52 @@ package settle
 import (
 	"game_server_slots_fortune_snake/internal/model/settle"
 	"game_server_slots_fortune_snake/internal/model/symbol"
+	symbolRepo "game_server_slots_fortune_snake/internal/repository/symbol"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
+
+// TestSettleRepo_GetWinLines_1 測試十條百搭的盤面數據
+func TestSettleRepo_GetWinLines_1(t *testing.T) {
+	symRepo := symbolRepo.New()
+	reelSet := [][]*symbol.Item{
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+	}
+	repo := New()
+	winLines, _ := repo.GetWinLines(1, 100, reelSet)
+	assert.Equal(t, 10, len(winLines))
+	assert.Equal(t, 0, winLines[0].Symbol.ID)
+	assert.Equal(t, 20000, winLines[0].Score)
+}
+
+// TestSettleRepo_GetWinLines_2 測試一條中獎線的盤面數據
+func TestSettleRepo_GetWinLines_2(t *testing.T) {
+	symRepo := symbolRepo.New()
+	repo := New()
+	reelSet := [][]*symbol.Item{
+		{symRepo.GetSymbol(1), symRepo.GetSymbol(2), symRepo.GetSymbol(3)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(4), symRepo.GetSymbol(5), symRepo.GetSymbol(6)},
+		{symRepo.GetSymbol(1), symRepo.GetSymbol(2), symRepo.GetSymbol(2)},
+	}
+	winLines, _ := repo.GetWinLines(1, 100, reelSet)
+	assert.Equal(t, 1, len(winLines))
+	assert.Equal(t, 1, winLines[0].Symbol.ID)
+	assert.Equal(t, 0, winLines[0].Index)
+	assert.Equal(t, 10000, winLines[0].Score)
+
+	reelSet = [][]*symbol.Item{
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(5), symRepo.GetSymbol(3)},
+		{symRepo.GetSymbol(4), symRepo.GetSymbol(2), symRepo.GetSymbol(5), symRepo.GetSymbol(6)},
+		{symRepo.GetSymbol(3), symRepo.GetSymbol(2), symRepo.GetSymbol(4)},
+	}
+	winLines, _ = repo.GetWinLines(1, 100, reelSet)
+	assert.Equal(t, 1, len(winLines))
+	assert.Equal(t, 2, winLines[0].Symbol.ID)
+	assert.Equal(t, 2, winLines[0].Index)
+	assert.Equal(t, 5000, winLines[0].Score)
+}
 
 // TestSettleRepo_CheckLine_1 測試三個百搭的情境
 func TestSettleRepo_CheckLine_1(t *testing.T) {

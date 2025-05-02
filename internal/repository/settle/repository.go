@@ -78,16 +78,3 @@ func (r *repository) CheckWinLine(line *settle.Line) (bool, *symbol.Item) {
 	}
 	return true, checkSymbol
 }
-
-func (r *repository) GetLineScore(line *settle.Line) int {
-	// 判斷軸數樣式是否相符
-	if len(line.Symbols) != len(r.hitLines[0]) {
-		return 0
-	}
-	// 判斷是否是中獎線
-	//if r.CheckWinLine(line) == nil {
-	//	return 0
-	//}
-
-	return 0
-}
