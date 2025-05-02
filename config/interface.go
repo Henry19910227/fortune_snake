@@ -6,4 +6,5 @@ import (
 
 type Config interface {
 	Config() *model.Config
+	BaseResultConfig() []*model.ResultConfig
 }

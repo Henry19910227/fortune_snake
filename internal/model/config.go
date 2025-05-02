@@ -154,3 +154,9 @@ type RateLimitConfig struct {
 	FillInterval int `yaml:"fill_interval"` // 令牌桶填充时间间隔（秒）
 	Capacity     int `yaml:"capacity"`      // 令牌桶容量
 }
+
+type ResultConfig struct {
+	LowerLimit  float64 //赔率下限(不包含)
+	UpperLimit  float64 //赔率上限(包含)
+	MaxCapacity int     //最大容量（存储上限）
+}
