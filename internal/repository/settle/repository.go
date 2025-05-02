@@ -1,6 +1,7 @@
 package settle
 
 import (
+	"errors"
 	"game_server_slots_fortune_snake/internal/model/settle"
 	"game_server_slots_fortune_snake/internal/model/symbol"
 )
@@ -25,7 +26,68 @@ func New() Repository {
 	return &repository{hitLines: hitLines}
 }
 
-func (r *repository) PayLines(reelSet [][]*symbol.Item) []*settle.PayLine {
-	//TODO implement me
-	panic("implement me")
+func (r *repository) GetWinLines(bet int, value int, reelSet [][]*symbol.Item) ([]*settle.Line, error) {
+	// 判斷軸數是否相同
+	if len(reelSet) != len(r.hitLines[0]) {
+		return []*settle.Line{}, errors.New("盤面格式不符")
+	}
+	// 依照 hitLines 中的點位組成 Line
+	winLines := make([]*settle.Line, 0)
+	for i := 0; i < len(r.hitLines); i++ {
+		line := &settle.Line{}
+		line.Positions = make([]settle.Position, 0)
+		line.Symbols = make([]*symbol.Item, 0)
+		line.Index = i
+		for j := 0; j < len(r.hitLines[i]); j++ {
+			checkPoint := r.hitLines[i][j]
+			symbolItem := reelSet[j][checkPoint]
+			line.Positions = append(line.Positions, settle.Position{Col: j, Row: checkPoint})
+			line.Symbols = append(line.Symbols, symbolItem)
+		}
+		// 計算這條是否是中獎線
+		isWin, winSymbol := r.CheckWinLine(line)
+		if !isWin {
+			continue
+		}
+		line.Symbol = winSymbol
+		line.Score = bet * value * winSymbol.Pow
+		winLines = append(winLines, line)
+	}
+	return winLines, nil
+}
+
+func (r *repository) CheckWinLine(line *settle.Line) (bool, *symbol.Item) {
+	// 判斷軸數樣式是否相符
+	if len(line.Symbols) != len(r.hitLines[0]) {
+		return false, nil
+	}
+	var checkSymbol *symbol.Item
+	for _, symbolItem := range line.Symbols {
+		if checkSymbol == nil {
+			checkSymbol = symbolItem
+			continue
+		}
+		if checkSymbol.IsWild {
+			checkSymbol = symbolItem
+			continue
+		}
+		if symbolItem.ID == checkSymbol.ID || symbolItem.IsWild {
+			continue
+		}
+		return false, nil
+	}
+	return true, checkSymbol
+}
+
+func (r *repository) GetLineScore(line *settle.Line) int {
+	// 判斷軸數樣式是否相符
+	if len(line.Symbols) != len(r.hitLines[0]) {
+		return 0
+	}
+	// 判斷是否是中獎線
+	//if r.CheckWinLine(line) == nil {
+	//	return 0
+	//}
+
+	return 0
 }

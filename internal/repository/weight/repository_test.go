@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestService_LoadBaseWeight(*testing.T) {
+func TestRepository_LoadBaseWeight(*testing.T) {
 	repo := New()
 	repo.LoadBaseWeight()
 	for _, stat := range repo.BaseWeight() {
