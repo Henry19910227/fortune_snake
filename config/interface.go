@@ -6,5 +6,6 @@ import (
 
 type Config interface {
 	Config() *model.Config
-	BaseResultConfig() []*model.ResultConfig
+	BaseBucketConfig() []*model.BucketConfig
+	FreeBucketConfig() []*model.BucketConfig
 }

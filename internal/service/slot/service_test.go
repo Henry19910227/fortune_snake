@@ -8,7 +8,7 @@ import (
 
 func TestService_Generate(*testing.T) {
 	repo := symbolRepo.New()
-	svc := NewService(repo)
+	svc := New(repo)
 	reelSet := svc.Generate([]int{3, 4, 3})
 	for row := 0; row < len(reelSet); row++ {
 		for col := 0; col < len(reelSet[row]); col++ {

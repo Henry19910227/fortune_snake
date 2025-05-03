@@ -9,7 +9,7 @@ type service struct {
 	symbolRepo symbolRepo.Repository
 }
 
-func NewService(symbolRepo symbolRepo.Repository) Service {
+func New(symbolRepo symbolRepo.Repository) Service {
 	return &service{symbolRepo: symbolRepo}
 }
 
