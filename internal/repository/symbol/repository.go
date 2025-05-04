@@ -1,7 +1,7 @@
 package symbol
 
 import (
-	symbolModel "game_server_slots_fortune_snake/internal/model/symbol"
+	symbolModel "game_server_slots_fortune_snake/internal/model/entity/symbol"
 	"math/rand"
 )
 
@@ -49,8 +49,8 @@ func (r *repository) GetTotalWeight() int {
 func loadSymbols() []*symbolModel.Item {
 	symbols := make([]*symbolModel.Item, 0)
 	names := []string{"百搭", "元宝", "福箱", "福袋", "红包", "橘子", "鞭炮"} // 圖案名稱
-	weights := []int{32, 45, 60, 70, 70, 75, 75}                              // 圖案權重
-	pows := []int{200, 100, 50, 20, 10, 5, 3}                                 // 倍率
+	weights := []int{32, 45, 60, 70, 70, 75, 75}                // 圖案權重
+	pows := []int{200, 100, 50, 20, 10, 5, 3}                   // 倍率
 	for i := 0; i < len(names); i++ {
 		symbol := &symbolModel.Item{
 			ID:     i,

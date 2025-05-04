@@ -1,7 +1,7 @@
 package result
 
 import (
-	resultModel "game_server_slots_fortune_snake/internal/model/result"
+	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
 )
 
 type Repository interface {

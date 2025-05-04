@@ -3,7 +3,7 @@ package result
 import (
 	"flag"
 	"game_server_slots_fortune_snake/config"
-	"game_server_slots_fortune_snake/internal/model/result"
+	"game_server_slots_fortune_snake/internal/model/entity/result"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"testing"

@@ -1,6 +1,8 @@
 package line
 
-import "game_server_slots_fortune_snake/internal/model/symbol"
+import (
+	"game_server_slots_fortune_snake/internal/model/entity/symbol"
+)
 
 type Item struct {
 	Index     int            // 賠付線的位置

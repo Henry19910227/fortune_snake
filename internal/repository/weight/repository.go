@@ -1,7 +1,7 @@
 package weight
 
 import (
-	weightModel "game_server_slots_fortune_snake/internal/model/weight"
+	weightModel "game_server_slots_fortune_snake/internal/model/entity/weight"
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"strconv"
 )

@@ -1,6 +1,8 @@
 package slot
 
-import "game_server_slots_fortune_snake/internal/model/symbol"
+import (
+	"game_server_slots_fortune_snake/internal/model/entity/symbol"
+)
 
 type Controller interface {
 	// Generate 生成一個盤面

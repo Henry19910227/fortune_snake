@@ -2,7 +2,7 @@ package result
 
 import (
 	"game_server_slots_fortune_snake/internal/model"
-	resultModel "game_server_slots_fortune_snake/internal/model/result"
+	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
 	"sync"
 )
 

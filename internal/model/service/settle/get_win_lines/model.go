@@ -2,7 +2,7 @@ package get_win_lines
 
 import (
 	"game_server_slots_fortune_snake/internal/model"
-	"game_server_slots_fortune_snake/internal/model/symbol"
+	"game_server_slots_fortune_snake/internal/model/entity/symbol"
 )
 
 type Input struct {

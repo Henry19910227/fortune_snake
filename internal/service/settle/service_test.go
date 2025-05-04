@@ -2,10 +2,10 @@ package settle
 
 import (
 	"context"
-	lineModel "game_server_slots_fortune_snake/internal/model/line"
-	"game_server_slots_fortune_snake/internal/model/settle/check_win_line"
-	"game_server_slots_fortune_snake/internal/model/settle/get_win_lines"
-	"game_server_slots_fortune_snake/internal/model/symbol"
+	lineModel "game_server_slots_fortune_snake/internal/model/entity/line"
+	"game_server_slots_fortune_snake/internal/model/entity/symbol"
+	"game_server_slots_fortune_snake/internal/model/service/settle/check_win_line"
+	"game_server_slots_fortune_snake/internal/model/service/settle/get_win_lines"
 	settleRepo "game_server_slots_fortune_snake/internal/repository/settle"
 	symbolRepo "game_server_slots_fortune_snake/internal/repository/symbol"
 	"github.com/stretchr/testify/assert"

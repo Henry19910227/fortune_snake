@@ -1,7 +1,7 @@
 package slot
 
 import (
-	"game_server_slots_fortune_snake/internal/model/symbol"
+	"game_server_slots_fortune_snake/internal/model/entity/symbol"
 )
 
 type Service interface {

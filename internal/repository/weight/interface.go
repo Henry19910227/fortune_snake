@@ -1,6 +1,8 @@
 package weight
 
-import weightModel "game_server_slots_fortune_snake/internal/model/weight"
+import (
+	weightModel "game_server_slots_fortune_snake/internal/model/entity/weight"
+)
 
 type Repository interface {
 	LoadBaseWeight()
