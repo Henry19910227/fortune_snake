@@ -5,12 +5,34 @@ import (
 	lineModel "game_server_slots_fortune_snake/internal/model/entity/line"
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
 	"game_server_slots_fortune_snake/internal/model/service/settle/check_win_line"
+	"game_server_slots_fortune_snake/internal/model/service/settle/get_total_score"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_win_lines"
 	settleRepo "game_server_slots_fortune_snake/internal/repository/settle"
 	symbolRepo "game_server_slots_fortune_snake/internal/repository/symbol"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
+
+func TestSettleService_GetTotalScore_1(t *testing.T) {
+	symRepo := symbolRepo.New()
+	stlRepo := settleRepo.New()
+	reels := [][]*symbol.Item{
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+	}
+
+	svc := New(stlRepo)
+	input := &get_total_score.Input{}
+	input.Ctx = context.Background()
+	input.Param = get_total_score.Param{
+		Bet:   1,
+		Value: 100,
+		Reels: reels,
+	}
+	totalScore, _ := svc.GetTotalScore(input)
+	assert.Equal(t, 20000, totalScore)
+}
 
 func TestSettleService_GetWinLines_1(t *testing.T) {
 	symRepo := symbolRepo.New()
