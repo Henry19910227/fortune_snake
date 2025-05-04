@@ -1,7 +1,7 @@
 package settle
 
 import (
-	"errors"
+	"game_server_slots_fortune_snake/internal/model/err"
 	lineModel "game_server_slots_fortune_snake/internal/model/line"
 	"game_server_slots_fortune_snake/internal/model/settle/check_win_line"
 	"game_server_slots_fortune_snake/internal/model/settle/get_win_lines"
@@ -26,7 +26,7 @@ func (s *service) GetWinLines(input *get_win_lines.Input) ([]*lineModel.Item, er
 	hitLines := s.settleRepo.HitLines()
 	// 判斷軸數是否相同
 	if len(reels) != len(hitLines[0]) {
-		return []*lineModel.Item{}, errors.New("盤面格式不符")
+		return []*lineModel.Item{}, err.New(400, "盤面格式不符", nil)
 	}
 	// 依照 hitLines 中的點位組成 Line
 	winLines := make([]*lineModel.Item, 0)
@@ -42,10 +42,7 @@ func (s *service) GetWinLines(input *get_win_lines.Input) ([]*lineModel.Item, er
 			winLine.Symbols = append(winLine.Symbols, symbolItem)
 		}
 		// 計算這條是否是中獎線
-		in := &check_win_line.Input{}
-		in.Ctx = input.Ctx
-		in.Param = check_win_line.Param{Line: winLine}
-		winSymbol := s.CheckWinLine(in)
+		winSymbol := s.checkWinLine(winLine)
 		if winSymbol == nil {
 			continue
 		}
@@ -59,6 +56,10 @@ func (s *service) GetWinLines(input *get_win_lines.Input) ([]*lineModel.Item, er
 func (s *service) CheckWinLine(input *check_win_line.Input) *symbol.Item {
 	// 獲取參數
 	line := input.Param.Line
+	return s.checkWinLine(line)
+}
+
+func (s *service) checkWinLine(line *lineModel.Item) *symbol.Item {
 	// 讀取中獎線資源
 	hitLines := s.settleRepo.HitLines()
 	// 判斷軸數樣式是否相符
