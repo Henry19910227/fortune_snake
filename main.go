@@ -34,35 +34,35 @@ func main() {
 	// 2.初始化日志系统，后续绑定 ELK
 	tool.InitLoggerInstance(appConfig.Config())
 
-	// 2. 初始化语言包
+	// 3. 初始化语言包
 	pkg.InitLocalizeInstance(appConfig.Config().Language.Default)
 
-	// 3. 初始化分布式雪花 ID
+	// 4. 初始化分布式雪花 ID
 	_, err := utils.NewSnowFlake(appConfig.Config().Server.ServerNode)
 	if err != nil {
 		log.Fatalf("❌ 分布式雪花 ID 初始化失败: %v", err)
 	}
 
-	// 4. 创建全局 context，用于控制所有服务的退出，并传递给需要优雅关闭的服务
+	// 5. 创建全局 context，用于控制所有服务的退出，并传递给需要优雅关闭的服务
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	var wg sync.WaitGroup
 
-	// 5. 初始化 MySQL DB
+	// 6. 初始化 MySQL DB
 	mysqlDB, err := db.NewMysqlDB(appConfig.Config().Database)
 	if err != nil {
 		log.Fatalf("❌ MySQL 初始化失败: %v", err)
 	}
 	defer mysqlDB.Close()
 
-	// 6. 初始化 Redis
+	// 7. 初始化 Redis
 	redisDB, err := db.NewRedisDB(appConfig.Config().Redis)
 	if err != nil {
 		log.Fatalf("❌ Redis 初始化失败: %v", err)
 	}
 	defer redisDB.Close()
 
-	// 7. 初始化 MongoDB
+	// 8. 初始化 MongoDB
 	mongoDB, err := db.NewMongoDB(appConfig.Config().Mongodb)
 	if err != nil {
 		log.Fatalf("❌ MongoDB 初始化失败: %v", err)
@@ -75,10 +75,9 @@ func main() {
 		tool.LoggerInstance().Logs("error", true, "❌ ⚠️ ELK 初始化失败: Elasticsearch 连接不可用", zap.String("Component", "Elasticsearch"), zap.Error(errors.New("connection unavailable")))
 		return
 	}
-	// 綁定 ELK
 	tool.LoggerInstance().SetELK(elkDB.Client())
 
-	// 8. 初始化 etcd 客户端
+	// 10. 初始化 etcd 客户端
 	if err := etcd.InitEtcd(appConfig.Config().Etcd); err != nil {
 		log.Printf("⚠️ Etcd 连接失败: %v（服务器仍会继续运行）", err)
 	} else if err := etcd.RegisterService(*appConfig.Config()); err != nil {
