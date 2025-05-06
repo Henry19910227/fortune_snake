@@ -157,3 +157,16 @@ func (s *service) checkWinLine(param check_win_line.Param) *symbol.Item {
 	}
 	return checkSymbol
 }
+
+func (s *service) Transform(items [][]*symbol.Item) [][]int {
+	symbols := make([][]int, 0)
+	for i := 0; i < len(items); i++ {
+		symbols = append(symbols, make([]int, 0))
+	}
+	for row := 0; row < len(items); row++ {
+		for col := 0; col < len(items[row]); col++ {
+			symbols[row] = append(symbols[row], items[row][col].ID)
+		}
+	}
+	return symbols
+}

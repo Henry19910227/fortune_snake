@@ -18,4 +18,6 @@ type Service interface {
 	GetWinLines(input *get_win_lines.Input) ([]*line.Item, error)
 	// CheckWinLine 判斷否是中獎線
 	CheckWinLine(input *check_win_line.Input) *symbol.Item
+	// Transform 將 symbol 物件轉換成陣列
+	Transform(items [][]*symbol.Item) [][]int
 }

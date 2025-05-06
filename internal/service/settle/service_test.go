@@ -2,9 +2,11 @@ package settle
 
 import (
 	"context"
+	"fmt"
 	lineModel "game_server_slots_fortune_snake/internal/model/entity/line"
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
 	"game_server_slots_fortune_snake/internal/model/service/settle/check_win_line"
+	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_total_score"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_win_lines"
 	settleRepo "game_server_slots_fortune_snake/internal/repository/settle"
@@ -13,13 +15,38 @@ import (
 	"testing"
 )
 
+// [[6 3 5] [4 0 5 3] [4 5 6]]
+// [[3 5 6] [4 4 6 6] [6 4 6]]
+func TestSettleService_GetRate(t *testing.T) {
+	symRepo := symbolRepo.New()
+	stlRepo := settleRepo.New()
+	reels := [][]*symbol.Item{
+		{symRepo.GetSymbol(3), symRepo.GetSymbol(5), symRepo.GetSymbol(6)},
+		{symRepo.GetSymbol(4), symRepo.GetSymbol(4), symRepo.GetSymbol(6), symRepo.GetSymbol(6)},
+		{symRepo.GetSymbol(6), symRepo.GetSymbol(4), symRepo.GetSymbol(6)},
+	}
+
+	svc := New(stlRepo)
+	input := &get_rate.Input{}
+	input.Ctx = context.Background()
+	input.Param = get_rate.Param{
+		Bet:   1,
+		Value: 100,
+		Reels: reels,
+	}
+	totalScore, _ := svc.GetRate(input)
+	assert.Equal(t, 20000, totalScore)
+}
+
+// [[6 3 5] [4 0 5 3] [4 5 6]]
+// [[3 5 6] [4 4 6 6] [6 4 6]]
 func TestSettleService_GetTotalScore_1(t *testing.T) {
 	symRepo := symbolRepo.New()
 	stlRepo := settleRepo.New()
 	reels := [][]*symbol.Item{
-		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
-		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
-		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(3), symRepo.GetSymbol(5), symRepo.GetSymbol(6)},
+		{symRepo.GetSymbol(4), symRepo.GetSymbol(4), symRepo.GetSymbol(6), symRepo.GetSymbol(6)},
+		{symRepo.GetSymbol(6), symRepo.GetSymbol(4), symRepo.GetSymbol(6)},
 	}
 
 	svc := New(stlRepo)
@@ -89,4 +116,17 @@ func TestSettleRepo_CheckLine_1_1(t *testing.T) {
 	}
 	winSymbol = svc.CheckWinLine(input)
 	assert.Nil(t, winSymbol)
+}
+
+func TestSettleRepo_Transform(t *testing.T) {
+	symRepo := symbolRepo.New()
+	stlRepo := settleRepo.New()
+	reels := [][]*symbol.Item{
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+	}
+
+	svc := New(stlRepo)
+	fmt.Println(svc.Transform(reels))
 }

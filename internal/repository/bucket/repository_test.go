@@ -14,13 +14,12 @@ func TestResultRepo_Save(t *testing.T) {
 	configFile := flag.String("config", "config.yaml", "YAML configuration file name")
 	flag.Parse()
 	cfg := config.New(configFile)
-	resultRepo := New(cfg.BaseResultConfig())
+	resultRepo := New(cfg.BaseBucketConfig())
 
 	item := &result.Item{
-		ID:        1,
-		Rate:      1,
-		RateIndex: 1,
-		Symbols:   "",
+		ID:      1,
+		Rate:    1,
+		Symbols: "",
 	}
 
 	// 將盤面賠率儲存至桶內
@@ -37,15 +36,14 @@ func TestResultRepo_Save_2(t *testing.T) {
 	flag.Parse()
 	cfg := config.New(configFile)
 
-	resultRepo := New(cfg.FreeResultConfig())
+	resultRepo := New(cfg.FreeBucketConfig())
 
 	for resultRepo.Quota() > 0 {
 		randomRate := GetFreeRandomRate()
 		item := &result.Item{
-			ID:        1,
-			Rate:      randomRate,
-			RateIndex: 1,
-			Symbols:   "",
+			ID:      1,
+			Rate:    randomRate,
+			Symbols: "",
 		}
 		resultRepo.Save(item)
 	}
