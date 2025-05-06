@@ -1,4 +1,4 @@
-package slot
+package reels
 
 import (
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"

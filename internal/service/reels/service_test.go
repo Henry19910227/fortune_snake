@@ -1,4 +1,4 @@
-package slot
+package reels
 
 import (
 	"fmt"
