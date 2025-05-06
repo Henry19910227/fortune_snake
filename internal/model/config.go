@@ -1,16 +1,19 @@
 package model
 
+import "time"
+
 type Config struct {
-	Server   ServerConfig   `yaml:"app"`
-	Language LanguageConfig `yaml:"language"`
-	Pprof    PprofConfig    `yaml:"pprof"`
-	Etcd     EtcdConfig     `yaml:"etcd"`
-	Grpc     GrpcConfig     `yaml:"grpc_server"`
-	Log      LogConfig      `yaml:"log"`
-	Database DatabaseConfig `yaml:"database"`
-	Redis    RedisConfig    `yaml:"redis"`
-	Mongodb  MongodbConfig  `yaml:"mongodb"`
-	Kafka    KafkaConfig    `yaml:"kafka"`
+	Server        ServerConfig   `yaml:"app"`
+	Language      LanguageConfig `yaml:"language"`
+	Pprof         PprofConfig    `yaml:"pprof"`
+	Etcd          EtcdConfig     `yaml:"etcd"`
+	Grpc          GrpcConfig     `yaml:"grpc_server"`
+	Log           LogConfig      `yaml:"log"`
+	Database      DatabaseConfig `yaml:"database"`
+	Redis         RedisConfig    `yaml:"redis"`
+	Mongodb       MongodbConfig  `yaml:"mongodb"`
+	Kafka         KafkaConfig    `yaml:"kafka"`
+	Elasticsearch Elasticsearch  `yaml:"elasticsearch"`
 }
 
 // ServerConfig 对应 server 部分
@@ -64,15 +67,14 @@ type JwtConfig struct {
 
 // LogConfig 对应 log 部分
 type LogConfig struct {
-	Level      string `yaml:"level"`       // 日志等级
-	RootDir    string `yaml:"root_dir"`    // 日志目录
-	Filename   string `yaml:"filename"`    // 日志文件名称
-	Format     string `yaml:"format"`      // 日志格式（如 json）
-	ShowLine   bool   `yaml:"show_line"`   // 是否显示调用行
-	MaxBackups int    `yaml:"max_backups"` // 旧文件的最大个数
-	MaxSize    int    `yaml:"max_size"`    // 单个日志文件最大大小（MB）
-	MaxAge     int    `yaml:"max_age"`     // 旧日志最大保留天数
-	Compress   bool   `yaml:"compress"`    // 是否压缩日志
+	Enabled    bool   `yaml:"enabled"`
+	LogDir     string `yaml:"log_dir"`
+	Format     string `yaml:"format"`
+	ShowLine   bool   `yaml:"show_line"`
+	MaxBackups int    `yaml:"max_backups"`
+	MaxSize    int    `yaml:"max_size"`
+	MaxAge     int    `yaml:"max_age"`
+	Compress   bool   `yaml:"compress"`
 }
 
 // DatabaseConfig 对应 database 部分
@@ -147,6 +149,27 @@ type KafkaConfig struct {
 		RobotBet   string `yaml:"robot_bet"`   // 下注事件 Kafka 主题
 		GameResult string `yaml:"game_result"` // 游戏结果 Kafka 主题
 	} `yaml:"games"`
+}
+
+// Elasticsearch 配置结构体
+type Elasticsearch struct {
+	Enabled             bool          `yaml:"enabled"`
+	Host                string        `yaml:"host"`                    // Elasticsearch 主机地址（支持 HTTP/HTTPS）
+	Port                int           `yaml:"port"`                    // 端口号（默认为 9200）
+	Username            string        `yaml:"username"`                // 认证用户名
+	Password            string        `yaml:"password"`                // 认证密码
+	IndexPrefix         string        `yaml:"index_prefix"`            // 索引前缀（日志索引命名）
+	Timeout             time.Duration `yaml:"timeout"`                 // 连接超时时间
+	TLSSkipVerify       bool          `yaml:"tls_skip_verify"`         // 是否跳过 TLS 证书验证（适用于 HTTPS）
+	MaxRetries          int           `yaml:"max_retries"`             // 最大重试次数
+	RetryWaitTime       time.Duration `yaml:"retry_wait_time"`         // 每次重试之间的等待时间
+	RequestTimeout      time.Duration `yaml:"request_timeout"`         // 单个请求的超时时间
+	KeepAlive           time.Duration `yaml:"keep_alive"`              // Keep-Alive 连接保持时间
+	MaxIdleConns        int           `yaml:"max_idle_conns"`          // 全局最大空闲连接数
+	MaxConnsPerHost     int           `yaml:"max_conns_per_host"`      // 每个主机的最大连接数
+	MaxIdleConnsPerHost int           `yaml:"max_idle_conns_per_host"` // 每个主机的最大空闲连接数
+	BatchSize           int           `yaml:"batch_size"`              // 批量提交日志数量
+	BatchInterval       time.Duration `yaml:"batch_interval"`          // 日志批量提交时间间隔
 }
 
 // RateLimitConfig 对应 rate-limit 部分
