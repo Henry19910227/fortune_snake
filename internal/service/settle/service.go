@@ -1,9 +1,11 @@
 package settle
 
 import (
+	"encoding/json"
+	"game_server_slots_fortune_snake/constants"
 	lineModel "game_server_slots_fortune_snake/internal/model/entity/line"
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
-	"game_server_slots_fortune_snake/internal/model/err"
+	appError "game_server_slots_fortune_snake/internal/model/err"
 	"game_server_slots_fortune_snake/internal/model/service/settle/check_win_line"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_total_score"
@@ -84,7 +86,7 @@ func (s *service) getWinLines(param get_win_lines.Param) ([]*lineModel.Item, err
 	hitLines := s.settleRepo.HitLines()
 	// 判斷軸數是否相同
 	if len(reels) != len(hitLines[0]) {
-		return []*lineModel.Item{}, err.New(400, "盤面格式不符", nil)
+		return []*lineModel.Item{}, appError.New(constants.CodeBadRequest, "盤面格式不符", nil)
 	}
 	// 依照 hitLines 中的點位組成 Line
 	winLines := make([]*lineModel.Item, 0)
@@ -136,7 +138,7 @@ func (s *service) checkWinLine(param check_win_line.Param) *symbol.Item {
 	return checkSymbol
 }
 
-func (s *service) Transform(items [][]*symbol.Item) [][]int {
+func (s *service) ToJson(items [][]*symbol.Item) (string, error) {
 	symbols := make([][]int, 0)
 	for i := 0; i < len(items); i++ {
 		symbols = append(symbols, make([]int, 0))
@@ -146,5 +148,9 @@ func (s *service) Transform(items [][]*symbol.Item) [][]int {
 			symbols[row] = append(symbols[row], items[row][col].ID)
 		}
 	}
-	return symbols
+	jsonString, err := json.Marshal(symbols)
+	if err != nil {
+		return "", appError.New(constants.CodeBadRequest, err.Error(), err)
+	}
+	return string(jsonString), nil
 }

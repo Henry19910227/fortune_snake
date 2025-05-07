@@ -30,7 +30,12 @@ func (c *controller) Generate() {
 			Reels: reels,
 		}
 		rate, _ := c.settleSvc.GetRate(getRateInput)
-		item := &resultModel.Item{Rate: rate}
+		symbolString, err := c.settleSvc.ToJson(reels)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		item := &resultModel.Item{Rate: rate, Symbols: symbolString}
 		input := &save_to_bucket.Input{}
 		input.Param = save_to_bucket.Param{
 			Result: item,
@@ -42,4 +47,9 @@ func (c *controller) Generate() {
 		}
 		return
 	}
+}
+
+func (c *controller) SaveToDatabase() {
+	//TODO implement me
+	panic("implement me")
 }
