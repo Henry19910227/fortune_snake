@@ -20,7 +20,7 @@ func New(settleRepo settleRepo.Repository) Service {
 }
 
 func (s *service) GetRate(input *get_rate.Input) (float64, error) {
-	lines, err := s.getWinLines(get_win_lines.Param{
+	totalScore, err := s.getTotalScore(get_total_score.Param{
 		Bet:   input.Param.Bet,
 		Value: input.Param.Value,
 		Reels: input.Param.Reels,
@@ -28,20 +28,9 @@ func (s *service) GetRate(input *get_rate.Input) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	// 沒有任何符合的獎金線
-	if len(lines) == 0 {
-		return 0, nil
-	}
-	// 將百搭符號過濾
-	symbolIdList := make([]int, 0)
-	for _, line := range lines {
-		if line.Symbol.IsWild {
-			continue
-		}
-		symbolIdList = append(symbolIdList, line.Symbol.ID)
-	}
-
-	return 0, nil
+	realBet := input.Param.Bet * input.Param.Value * 10
+	rate := float64(totalScore) / float64(realBet)
+	return rate, nil
 }
 
 func (s *service) GetTotalScore(input *get_total_score.Input) (int, error) {
@@ -70,30 +59,19 @@ func (s *service) getTotalScore(param get_total_score.Param) (int, error) {
 	for _, line := range lines {
 		totalScore += line.Score
 	}
-	// 未達十條線
-	if len(lines) < 10 {
-		return totalScore, nil
-	}
-	// 將百搭符號中獎線過濾
-	symbolIdList := make([]int, 0)
-	for _, line := range lines {
-		if line.Symbol.IsWild {
+	// 計算第二軸百搭個數
+	var wildCount int
+	for _, symbolItem := range param.Reels[1] {
+		if !symbolItem.IsWild {
 			continue
 		}
-		symbolIdList = append(symbolIdList, line.Symbol.ID)
+		wildCount++
 	}
-	if len(symbolIdList) == 0 {
-		return totalScore * 10, nil
-	}
-	// 計算剩餘中獎線是否相同符號
-	first := symbolIdList[0]
-	for _, v := range symbolIdList[1:] {
-		if v == first {
-			continue
-		}
+	// 第二軸百搭個數小於四 則分數 * 1
+	if wildCount < 4 {
 		return totalScore, nil
 	}
-	// 所有中獎線相同符號獎金 * 10
+	// 第二軸百搭個數為四 則分數 * 10
 	return totalScore * 10, nil
 }
 

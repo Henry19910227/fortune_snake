@@ -21,9 +21,9 @@ func TestSettleService_GetRate(t *testing.T) {
 	symRepo := symbolRepo.New()
 	stlRepo := settleRepo.New()
 	reels := [][]*symbol.Item{
-		{symRepo.GetSymbol(3), symRepo.GetSymbol(5), symRepo.GetSymbol(6)},
-		{symRepo.GetSymbol(4), symRepo.GetSymbol(4), symRepo.GetSymbol(6), symRepo.GetSymbol(6)},
-		{symRepo.GetSymbol(6), symRepo.GetSymbol(4), symRepo.GetSymbol(6)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
 	}
 
 	svc := New(stlRepo)
@@ -31,11 +31,11 @@ func TestSettleService_GetRate(t *testing.T) {
 	input.Ctx = context.Background()
 	input.Param = get_rate.Param{
 		Bet:   1,
-		Value: 100,
+		Value: 1000,
 		Reels: reels,
 	}
-	totalScore, _ := svc.GetRate(input)
-	assert.Equal(t, 20000, totalScore)
+	rate, _ := svc.GetRate(input)
+	assert.Equal(t, float64(5000), rate)
 }
 
 // [[6 3 5] [4 0 5 3] [4 5 6]]
@@ -44,9 +44,9 @@ func TestSettleService_GetTotalScore_1(t *testing.T) {
 	symRepo := symbolRepo.New()
 	stlRepo := settleRepo.New()
 	reels := [][]*symbol.Item{
-		{symRepo.GetSymbol(3), symRepo.GetSymbol(5), symRepo.GetSymbol(6)},
-		{symRepo.GetSymbol(4), symRepo.GetSymbol(4), symRepo.GetSymbol(6), symRepo.GetSymbol(6)},
-		{symRepo.GetSymbol(6), symRepo.GetSymbol(4), symRepo.GetSymbol(6)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
 	}
 
 	svc := New(stlRepo)
@@ -58,7 +58,7 @@ func TestSettleService_GetTotalScore_1(t *testing.T) {
 		Reels: reels,
 	}
 	totalScore, _ := svc.GetTotalScore(input)
-	assert.Equal(t, 20000, totalScore)
+	assert.Equal(t, 5000000, totalScore)
 }
 
 func TestSettleService_GetWinLines_1(t *testing.T) {
