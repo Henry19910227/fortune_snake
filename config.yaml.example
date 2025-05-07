@@ -49,3 +49,22 @@ mongodb:
     - "18.167.41.209:25132"
   database: "goplay"
   auth_source: "admin"
+
+elasticsearch:
+  enabled: true                          # Elasticsearch 是否启用
+  host: "http://18.162.156.154"          # Elasticsearch 地址
+  port: 9200                             # Elasticsearch 端口
+  username: "elastic"                    # Elasticsearch 用户名
+  password: "eDloek093jbnd3fF"           # Elasticsearch 密码
+  index_prefix: "rocket_crash_"          # Elasticsearch 索引前缀
+  timeout: 2s                            # Elasticsearch 请求超时时间
+  tls_skip_verify: true                  # 是否跳过 TLS 证书验证
+  max_retries: 3                         # 最大重试次数
+  retry_wait_time: 2s                    # 每次重试等待时间
+  request_timeout: 10s                   # 每个请求的超时时间
+  keep_alive: 30s                        # 连接 Keep-Alive 时间
+  max_idle_conns: 100                    # 最大空闲连接数
+  max_conns_per_host: 50                 # 每个主机的最大连接数
+  max_idle_conns_per_host: 10            # 每个主机的最大空闲连接数
+  batch_size: 10                         # 批量提交日志数量
+  batch_interval: 2s                     # 日志批量提交时间间隔

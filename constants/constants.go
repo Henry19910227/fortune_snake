@@ -12,6 +12,16 @@ const (
 	CodeInternalError    = 500 // 服务器内部错误
 )
 
+const (
+	SYMBOL_0 int = 0 + iota // 百搭 0  ====》200
+	SYMBOL_1                // 元宝 1  ====》100
+	SYMBOL_2                // 福箱 2  ====》50
+	SYMBOL_3                // 福袋 3  ====》20
+	SYMBOL_4                // 红包 4  ====》10
+	SYMBOL_5                // 橘子 5  ====》5
+	SYMBOL_6                // 鞭炮 6  ====》3
+)
+
 // 缓存命名
 
 // CacheNamePlayerSession 定义玩家会话 key 名称

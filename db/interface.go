@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
@@ -19,4 +20,8 @@ type RedisDB interface {
 type MongoDB interface {
 	Client() *mongo.Client
 	Close()
+}
+
+type ElkDB interface {
+	Client() *elasticsearch.Client
 }

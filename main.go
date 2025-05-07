@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"game_server_slots_fortune_snake/config"
 	"game_server_slots_fortune_snake/db"
@@ -12,7 +13,9 @@ import (
 	"game_server_slots_fortune_snake/internal/router/game"
 	"game_server_slots_fortune_snake/internal/server"
 	"game_server_slots_fortune_snake/pkg"
+	"game_server_slots_fortune_snake/tool"
 	"game_server_slots_fortune_snake/utils"
+	"go.uber.org/zap"
 	"log"
 	"os"
 	"os/signal"
@@ -27,6 +30,9 @@ func main() {
 
 	// 1. 加载配置文件
 	appConfig := config.New(configFile)
+
+	// 2.初始化日志系统，后续绑定 ELK
+	tool.InitLoggerInstance(appConfig.Config())
 
 	// 2. 初始化语言包
 	pkg.InitLocalizeInstance(appConfig.Config().Language.Default)
@@ -62,6 +68,15 @@ func main() {
 		log.Fatalf("❌ MongoDB 初始化失败: %v", err)
 	}
 	defer mongoDB.Close()
+
+	// 9.初始化 ELK
+	elkDB := db.NewElkDB(appConfig.Config())
+	if elkDB.Client() == nil {
+		tool.LoggerInstance().Logs("error", true, "❌ ⚠️ ELK 初始化失败: Elasticsearch 连接不可用", zap.String("Component", "Elasticsearch"), zap.Error(errors.New("connection unavailable")))
+		return
+	}
+	// 綁定 ELK
+	tool.LoggerInstance().SetELK(elkDB.Client())
 
 	// 8. 初始化 etcd 客户端
 	if err := etcd.InitEtcd(appConfig.Config().Etcd); err != nil {
