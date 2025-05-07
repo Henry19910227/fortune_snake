@@ -50,6 +50,17 @@ mongodb:
   database: "goplay"
   auth_source: "admin"
 
+log:
+  enabled: true  # 是否启用本地日志
+  level: info  # 日志等级
+  log_dir: ./storage/logs  # 日志目录
+  format: json       # 日志格式（可选 json）
+  show_line: true    # 是否显示调用行
+  max_backups: 10   # 旧文件的最大个数
+  max_size: 500     # 单个日志文件最大大小（MB）
+  max_age: 30       # 旧日志最大保留天数
+  compress: true    # 是否压缩日志
+
 elasticsearch:
   enabled: true                          # Elasticsearch 是否启用
   host: "http://18.162.156.154"          # Elasticsearch 地址
