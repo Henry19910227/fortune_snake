@@ -1,5 +1,5 @@
 app: # 应用基本配置
-  app_name: game_server_mini_rocket_crash # 应用名称
+  app_name: game_server_slots_fortune_snake # 应用名称
   ip: 127.0.0.1 # 服务监听IP(rpc服务访问使用)
   port: 8181 # 服务监听端口号
   server_node: 1 #  服务器节点
@@ -13,7 +13,7 @@ language: #语言包相关
 etcd:
   endpoints:
     - "127.0.0.1:2379"  # Etcd 地址
-  service_prefix: "/game_services/rocket_crash"
+  service_prefix: "/game_services/fortune_snake"
   ttl: 10  # 注册信息的过期时间（秒）
 
 database:
@@ -56,7 +56,7 @@ elasticsearch:
   port: 9200                             # Elasticsearch 端口
   username: "elastic"                    # Elasticsearch 用户名
   password: "eDloek093jbnd3fF"           # Elasticsearch 密码
-  index_prefix: "rocket_crash_"          # Elasticsearch 索引前缀
+  index_prefix: "fortune_snake_"          # Elasticsearch 索引前缀
   timeout: 2s                            # Elasticsearch 请求超时时间
   tls_skip_verify: true                  # 是否跳过 TLS 证书验证
   max_retries: 3                         # 最大重试次数
