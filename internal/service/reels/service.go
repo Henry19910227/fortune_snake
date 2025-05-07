@@ -3,6 +3,7 @@ package reels
 import (
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
 	symbolRepo "game_server_slots_fortune_snake/internal/repository/symbol"
+	"math/rand"
 )
 
 type service struct {
@@ -21,6 +22,13 @@ func (s *service) Generate(layout []int) [][]*symbol.Item {
 			reel = append(reel, s.symbolRepo.GetRandomSymbol())
 		}
 		reelSet = append(reelSet, reel)
+	}
+	// 將第二軸全 wild 的機率提升為 50%，比較容易能產生出高分數盤面結果
+	num := rand.Intn(100) + 1
+	if num > 50 {
+		for i := 0; i < len(reelSet[1]); i++ {
+			reelSet[1][i] = s.symbolRepo.GetSymbol(0)
+		}
 	}
 	return reelSet
 }
