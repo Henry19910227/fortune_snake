@@ -5,6 +5,7 @@ import (
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
 )
 
+// Input 輸入
 type Input struct {
 	model.BaseInput
 	Param Param
@@ -14,4 +15,26 @@ type Param struct {
 	Bet   int
 	Value int
 	Reels [][]*symbol.Item
+}
+
+func NewInput(param Param) *Input {
+	return &Input{Param: param}
+}
+
+// Output 輸出
+type Output struct {
+	model.BaseOutput
+	Data Data
+}
+
+type Data struct {
+	Score int
+}
+
+func (o *Output) GetScore() int {
+	return o.Data.Score
+}
+
+func NewOutput(Score int) *Output {
+	return &Output{Data: Data{Score: Score}}
 }

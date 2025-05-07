@@ -1,4 +1,4 @@
-package get_rate
+package to_json
 
 import (
 	"game_server_slots_fortune_snake/internal/model"
@@ -12,13 +12,11 @@ type Input struct {
 }
 
 type Param struct {
-	Bet   int
-	Value int
-	Reels [][]*symbol.Item
+	Items [][]*symbol.Item
 }
 
-func NewInput(param Param) *Input {
-	return &Input{Param: param}
+func NewInput(Items [][]*symbol.Item) *Input {
+	return &Input{Param: Param{Items: Items}}
 }
 
 // Output 輸出
@@ -28,13 +26,9 @@ type Output struct {
 }
 
 type Data struct {
-	Rate float64
+	JsonString string
 }
 
-func (o *Output) GetRate() float64 {
-	return o.Data.Rate
-}
-
-func NewOutput(rate float64) *Output {
-	return &Output{Data: Data{Rate: rate}}
+func NewOutput(JsonString string) *Output {
+	return &Output{Data: Data{JsonString: JsonString}}
 }

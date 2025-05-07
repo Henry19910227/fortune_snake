@@ -5,11 +5,12 @@ import (
 	"game_server_slots_fortune_snake/constants"
 	lineModel "game_server_slots_fortune_snake/internal/model/entity/line"
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
-	appError "game_server_slots_fortune_snake/internal/model/err"
+	errMsg "game_server_slots_fortune_snake/internal/model/err"
 	"game_server_slots_fortune_snake/internal/model/service/settle/check_win_line"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_total_score"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_win_lines"
+	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 	settleRepo "game_server_slots_fortune_snake/internal/repository/settle"
 )
 
@@ -32,21 +33,27 @@ func (s *service) GetRate(input *get_rate.Input) (output *get_rate.Output, err e
 	}
 	realBet := input.Param.Bet * input.Param.Value * 10
 	rate := float64(totalScore) / float64(realBet)
-	output = &get_rate.Output{}
-	output.Rate = rate
+	output = get_rate.NewOutput(rate)
 	return output, nil
 }
 
-func (s *service) GetTotalScore(input *get_total_score.Input) (int, error) {
-	return s.getTotalScore(input.Param)
+func (s *service) GetTotalScore(input *get_total_score.Input) (output *get_total_score.Output, err error) {
+	score, err := s.getTotalScore(input.Param)
+	if err != nil {
+		return nil, err
+	}
+	output = get_total_score.NewOutput(score)
+	return output, nil
 }
 
 func (s *service) GetWinLines(input *get_win_lines.Input) ([]*lineModel.Item, error) {
 	return s.getWinLines(input.Param)
 }
 
-func (s *service) CheckWinLine(input *check_win_line.Input) *symbol.Item {
-	return s.checkWinLine(input.Param)
+func (s *service) CheckWinLine(input *check_win_line.Input) (output *check_win_line.Output, err error) {
+	item := s.checkWinLine(input.Param)
+	output = check_win_line.NewOutput(item)
+	return output, nil
 }
 
 func (s *service) getTotalScore(param get_total_score.Param) (int, error) {
@@ -88,7 +95,7 @@ func (s *service) getWinLines(param get_win_lines.Param) ([]*lineModel.Item, err
 	hitLines := s.settleRepo.HitLines()
 	// 判斷軸數是否相同
 	if len(reels) != len(hitLines[0]) {
-		return []*lineModel.Item{}, appError.New(constants.CodeBadRequest, "盤面格式不符", nil)
+		return []*lineModel.Item{}, errMsg.New(constants.CodeBadRequest, "盤面格式不符", nil)
 	}
 	// 依照 hitLines 中的點位組成 Line
 	winLines := make([]*lineModel.Item, 0)
@@ -140,7 +147,8 @@ func (s *service) checkWinLine(param check_win_line.Param) *symbol.Item {
 	return checkSymbol
 }
 
-func (s *service) ToJson(items [][]*symbol.Item) (string, error) {
+func (s *service) ToJson(input *to_json.Input) (output *to_json.Output, err error) {
+	items := input.Param.Items
 	symbols := make([][]int, 0)
 	for i := 0; i < len(items); i++ {
 		symbols = append(symbols, make([]int, 0))
@@ -152,7 +160,8 @@ func (s *service) ToJson(items [][]*symbol.Item) (string, error) {
 	}
 	jsonString, err := json.Marshal(symbols)
 	if err != nil {
-		return "", appError.New(constants.CodeBadRequest, err.Error(), err)
+		return nil, errMsg.New(constants.CodeBadRequest, err.Error(), err)
 	}
-	return string(jsonString), nil
+	output = to_json.NewOutput(string(jsonString))
+	return output, nil
 }
