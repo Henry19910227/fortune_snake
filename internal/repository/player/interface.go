@@ -2,7 +2,7 @@ package player
 
 import (
 	"context"
-	playerModel "game_server_slots_fortune_snake/internal/model/player"
+	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 )
 
 type Repository interface {

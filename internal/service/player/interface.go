@@ -1,7 +1,7 @@
 package player
 
 import (
-	"game_server_slots_fortune_snake/internal/model/player/get_player_session"
+	"game_server_slots_fortune_snake/internal/model/service/player/get_player_session"
 )
 
 type Service interface {

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"game_server_slots_fortune_snake/constants"
-	playerModel "game_server_slots_fortune_snake/internal/model/player"
+	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	"github.com/redis/go-redis/v9"
 )
 

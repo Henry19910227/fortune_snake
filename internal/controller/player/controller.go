@@ -4,7 +4,7 @@ import (
 	"context"
 	"game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/internal/model"
-	"game_server_slots_fortune_snake/internal/model/player/get_player_session"
+	"game_server_slots_fortune_snake/internal/model/service/player/get_player_session"
 	"game_server_slots_fortune_snake/internal/server"
 	playerService "game_server_slots_fortune_snake/internal/service/player"
 )

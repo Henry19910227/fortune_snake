@@ -4,7 +4,7 @@ import (
 	"errors"
 	"game_server_slots_fortune_snake/constants"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
-	"game_server_slots_fortune_snake/internal/model/player/get_player_session"
+	"game_server_slots_fortune_snake/internal/model/service/player/get_player_session"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
 	"game_server_slots_fortune_snake/pkg"
 	"github.com/redis/go-redis/v9"

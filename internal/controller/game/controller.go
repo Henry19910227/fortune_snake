@@ -3,7 +3,7 @@ package game
 import (
 	"context"
 	"game_server_slots_fortune_snake/constants"
-	playerModel "game_server_slots_fortune_snake/internal/model/player"
+	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	"game_server_slots_fortune_snake/internal/model/service/game/bet"
 	"game_server_slots_fortune_snake/internal/model/service/game/enter_game"
 	"game_server_slots_fortune_snake/internal/server"
