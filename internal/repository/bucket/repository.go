@@ -1,6 +1,7 @@
 package result
 
 import (
+	"fmt"
 	"game_server_slots_fortune_snake/internal/model"
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
 	"sync"
@@ -58,8 +59,11 @@ func (r *repository) Quota() int {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	var total int
-	for _, v := range r.quota {
+	for k, v := range r.quota {
 		total += v
+		if v > 0 {
+			fmt.Printf("%f : %d \n", k, v)
+		}
 	}
 	return total
 }

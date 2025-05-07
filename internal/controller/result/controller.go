@@ -26,7 +26,7 @@ func (c *controller) Generate() {
 		getRateInput := &get_rate.Input{}
 		getRateInput.Param = get_rate.Param{
 			Bet:   1,
-			Value: 10000,
+			Value: 1000,
 			Reels: reels,
 		}
 		rate, _ := c.settleSvc.GetRate(getRateInput)
@@ -36,8 +36,6 @@ func (c *controller) Generate() {
 			Result: item,
 		}
 		quota := c.resultSvc.SaveToBucket(input)
-		fmt.Println(c.settleSvc.Transform(reels))
-		fmt.Println(rate)
 		fmt.Println(quota)
 		if quota > 0 {
 			continue
