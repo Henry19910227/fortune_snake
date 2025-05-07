@@ -20,8 +20,9 @@ func (s *service) Save(input *save.Input) error {
 	return nil
 }
 
-func (s *service) SaveToBucket(input *save_to_bucket.Input) int {
+func (s *service) SaveToBucket(input *save_to_bucket.Input) (output *save_to_bucket.Output) {
 	result := input.Param.Result
 	s.bucketRepo.Save(result)
-	return s.bucketRepo.Quota()
+	output = save_to_bucket.NewOutput(s.bucketRepo.Quota())
+	return output
 }

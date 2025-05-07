@@ -32,3 +32,7 @@ type Data struct {
 func NewOutput(JsonString string) *Output {
 	return &Output{Data: Data{JsonString: JsonString}}
 }
+
+func (o *Output) GetJson() string {
+	return o.Data.JsonString
+}

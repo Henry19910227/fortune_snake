@@ -5,6 +5,7 @@ import (
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
 	"game_server_slots_fortune_snake/internal/model/service/result/save_to_bucket"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
+	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 	reelService "game_server_slots_fortune_snake/internal/service/reels"
 	resultService "game_server_slots_fortune_snake/internal/service/result"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
@@ -22,27 +23,21 @@ func New(reelSvc reelService.Service, settleSvc settleService.Service, resultSvc
 
 func (c *controller) Generate() {
 	for {
+		// 生成一個盤面
 		reels := c.reelSvc.Generate([]int{3, 4, 3})
-		getRateInput := &get_rate.Input{}
-		getRateInput.Param = get_rate.Param{
-			Bet:   1,
-			Value: 1000,
-			Reels: reels,
-		}
-		getRateOut, _ := c.settleSvc.GetRate(getRateInput)
-		symbolString, err := c.settleSvc.ToJson(reels)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		item := &resultModel.Item{Rate: getRateOut.Rate, Symbols: symbolString}
-		input := &save_to_bucket.Input{}
-		input.Param = save_to_bucket.Param{
-			Result: item,
-		}
-		quota := c.resultSvc.SaveToBucket(input)
-		fmt.Println(quota)
-		if quota > 0 {
+		// 獲取賠率
+		getRateInput := get_rate.NewInput(get_rate.Param{Bet: 1, Value: 1000, Reels: reels})
+		getRateOutput, _ := c.settleSvc.GetRate(getRateInput)
+		// 將盤面物件轉換為Json
+		toJsonInput := to_json.NewInput(reels)
+		toJsonOutput, _ := c.settleSvc.ToJson(toJsonInput)
+		// 盤面結果 model
+		result := &resultModel.Item{Rate: getRateOutput.GetRate(), Symbols: toJsonOutput.GetJson()}
+		// 將盤面結果存進 bucket
+		saveInput := save_to_bucket.NewInput(result)
+		saveOutput := c.resultSvc.SaveToBucket(saveInput)
+		if saveOutput.GetQuota() > 0 {
+			fmt.Println(saveOutput.GetQuota())
 			continue
 		}
 		return

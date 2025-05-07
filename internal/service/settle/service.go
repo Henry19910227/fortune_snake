@@ -46,8 +46,13 @@ func (s *service) GetTotalScore(input *get_total_score.Input) (output *get_total
 	return output, nil
 }
 
-func (s *service) GetWinLines(input *get_win_lines.Input) ([]*lineModel.Item, error) {
-	return s.getWinLines(input.Param)
+func (s *service) GetWinLines(input *get_win_lines.Input) (output *get_win_lines.Output, err error) {
+	lines, err := s.getWinLines(input.Param)
+	if err != nil {
+		return nil, err
+	}
+	output = get_win_lines.NewOutput(lines)
+	return output, nil
 }
 
 func (s *service) CheckWinLine(input *check_win_line.Input) (output *check_win_line.Output, err error) {

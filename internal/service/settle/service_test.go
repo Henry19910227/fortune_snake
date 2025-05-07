@@ -86,17 +86,16 @@ func TestSettleService_GetWinLines_1(t *testing.T) {
 	}
 
 	svc := New(stlRepo)
-	input := &get_win_lines.Input{}
-	input.Ctx = context.Background()
-	input.Param = get_win_lines.Param{
+	input := get_win_lines.NewInput(get_win_lines.Param{
 		Bet:   1,
 		Value: 100,
 		Reels: reels,
-	}
-	winLines, _ := svc.GetWinLines(input)
-	assert.Equal(t, 4, len(winLines))
-	assert.Equal(t, 0, winLines[0].Symbol.ID)
-	assert.Equal(t, 20000, winLines[0].Score)
+	})
+	input.Ctx = context.Background()
+	output, _ := svc.GetWinLines(input)
+	assert.Equal(t, 4, len(output.GetLines()))
+	assert.Equal(t, 0, output.GetLines()[0].Symbol.ID)
+	assert.Equal(t, 20000, output.GetLines()[0].Score)
 }
 
 // TestSettleRepo_CheckLine_1_1 測試第一個符號是百搭的情境
