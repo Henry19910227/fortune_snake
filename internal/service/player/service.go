@@ -3,6 +3,7 @@ package player
 import (
 	"errors"
 	"game_server_slots_fortune_snake/constants"
+	errMsg "game_server_slots_fortune_snake/internal/model/err"
 	"game_server_slots_fortune_snake/internal/model/player/get_player_session"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
 	"game_server_slots_fortune_snake/pkg"
@@ -17,21 +18,18 @@ func NewService(playerRepo playerRepo.Repository) Service {
 	return &service{playerRepo: playerRepo}
 }
 
-func (s *service) GetPlayerSession(input *get_player_session.Input) (output *get_player_session.Output) {
-	output = &get_player_session.Output{}
+func (s *service) GetPlayerSession(input *get_player_session.Input) (output *get_player_session.Output, err error) {
 	data, err := s.playerRepo.FindPlayerSessionById(input.Ctx, input.PlayerId)
 	if err != nil {
+		var e *errMsg.Error
 		if errors.Is(err, redis.Nil) {
-			output.Code = constants.CodeUnauthorized
-			output.Message = pkg.LocalizeInstance().LocalizeMessage("TokenExpired")
-			return output
+			e = errMsg.New(constants.CodeUnauthorized, pkg.LocalizeInstance().LocalizeMessage("TokenExpired"), err)
+			return nil, e
 		}
-		output.Code = constants.CodeBadRequest
-		output.Message = pkg.LocalizeInstance().LocalizeMessage("RedisError", map[string]interface{}{"err": err})
-		return output
+		e = errMsg.New(constants.CodeBadRequest, pkg.LocalizeInstance().LocalizeMessage("RedisError", map[string]interface{}{"err": err}), err)
+		return nil, e
 	}
-	output.Code = constants.CodeSuccess
-	output.Message = "success"
-	output.Data = data
-	return output
+	output = &get_player_session.Output{}
+	output.Session = data
+	return output, nil
 }

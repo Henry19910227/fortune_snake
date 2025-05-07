@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"game_server_slots_fortune_snake/internal/model"
+	errors "game_server_slots_fortune_snake/internal/model/err"
 	"sync"
 )
 
@@ -16,10 +17,11 @@ type Context struct {
 	result   []byte
 }
 
-func (c *Context) SendError(code int32, msg string) {
+func (c *Context) SendError(err error) {
+	e := errors.Err(err)
 	resp := &model.MessageResponse{
-		Code:    code,
-		Message: msg,
+		Code:    e.Code,
+		Message: e.Message,
 	}
 	c.result, _ = json.Marshal(resp)
 }

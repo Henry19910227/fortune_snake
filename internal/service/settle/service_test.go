@@ -35,8 +35,8 @@ func TestSettleService_GetRate(t *testing.T) {
 		Value: 1000,
 		Reels: reels,
 	}
-	rate, _ := svc.GetRate(input)
-	assert.Equal(t, float64(5000), rate)
+	output, _ := svc.GetRate(input)
+	assert.Equal(t, float64(5000), output.Rate)
 }
 
 // [[6 3 5] [4 0 5 3] [4 5 6]]

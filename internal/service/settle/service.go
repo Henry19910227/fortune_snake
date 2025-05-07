@@ -21,18 +21,20 @@ func New(settleRepo settleRepo.Repository) Service {
 	return &service{settleRepo: settleRepo}
 }
 
-func (s *service) GetRate(input *get_rate.Input) (float64, error) {
+func (s *service) GetRate(input *get_rate.Input) (output *get_rate.Output, err error) {
 	totalScore, err := s.getTotalScore(get_total_score.Param{
 		Bet:   input.Param.Bet,
 		Value: input.Param.Value,
 		Reels: input.Param.Reels,
 	})
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	realBet := input.Param.Bet * input.Param.Value * 10
 	rate := float64(totalScore) / float64(realBet)
-	return rate, nil
+	output = &get_rate.Output{}
+	output.Rate = rate
+	return output, nil
 }
 
 func (s *service) GetTotalScore(input *get_total_score.Input) (int, error) {

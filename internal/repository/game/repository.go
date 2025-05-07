@@ -1,6 +1,8 @@
 package game
 
-import gameModel "game_server_slots_fortune_snake/internal/model/game"
+import (
+	gameModel "game_server_slots_fortune_snake/internal/model/service/game"
+)
 
 type repository struct {
 }

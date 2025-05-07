@@ -11,7 +11,7 @@ import (
 
 type Service interface {
 	// GetRate 獲取賠率
-	GetRate(input *get_rate.Input) (float64, error)
+	GetRate(input *get_rate.Input) (output *get_rate.Output, err error)
 	// GetTotalScore 獲取總分
 	GetTotalScore(input *get_total_score.Input) (int, error)
 	// GetWinLines 將盤面數據傳入獲取中獎賠付線

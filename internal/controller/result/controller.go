@@ -29,13 +29,13 @@ func (c *controller) Generate() {
 			Value: 1000,
 			Reels: reels,
 		}
-		rate, _ := c.settleSvc.GetRate(getRateInput)
+		getRateOut, _ := c.settleSvc.GetRate(getRateInput)
 		symbolString, err := c.settleSvc.ToJson(reels)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-		item := &resultModel.Item{Rate: rate, Symbols: symbolString}
+		item := &resultModel.Item{Rate: getRateOut.Rate, Symbols: symbolString}
 		input := &save_to_bucket.Input{}
 		input.Param = save_to_bucket.Param{
 			Result: item,

@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/internal/model/player/get_player_session"
 	"game_server_slots_fortune_snake/internal/server"
 	playerService "game_server_slots_fortune_snake/internal/service/player"
@@ -24,11 +23,11 @@ func (c *controller) Verify(ctx *server.Context) {
 	input := get_player_session.Input{}
 	input.Ctx = grpcCtx
 	input.PlayerId = playerId
-	output := c.playerService.GetPlayerSession(&input)
-	if output.Code != constants.CodeSuccess {
-		ctx.SendError(constants.CodeBadRequest, output.Message)
+	output, err := c.playerService.GetPlayerSession(&input)
+	if err != nil {
+		ctx.SendError(err)
 		ctx.Abort()
 		return
 	}
-	ctx.Set("session", output.Data)
+	ctx.Set("session", output.Session)
 }

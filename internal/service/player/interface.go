@@ -5,5 +5,5 @@ import (
 )
 
 type Service interface {
-	GetPlayerSession(input *get_player_session.Input) (output *get_player_session.Output)
+	GetPlayerSession(input *get_player_session.Input) (output *get_player_session.Output, err error)
 }

@@ -11,6 +11,5 @@ type Input struct {
 }
 
 type Output struct {
-	model.BaseOutput
-	Data *playerModel.Session
+	Session *playerModel.Session
 }

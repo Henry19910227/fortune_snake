@@ -2,6 +2,7 @@ package player
 
 import (
 	"context"
+	"game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/internal/model"
 	"game_server_slots_fortune_snake/internal/model/player/get_player_session"
 	"game_server_slots_fortune_snake/internal/server"
@@ -23,7 +24,11 @@ func (c *controller) GetPlayerSession(ctx *server.Context) {
 	input := &get_player_session.Input{}
 	input.Ctx = grpcCtx
 	input.PlayerId = req.PlayerId
-	output := c.playerService.GetPlayerSession(input)
+	output, err := c.playerService.GetPlayerSession(input)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
 	// 返回結果
-	ctx.Send(output.Code, output.Message, output.Data)
+	ctx.Send(constants.CodeSuccess, "success", output.Session)
 }

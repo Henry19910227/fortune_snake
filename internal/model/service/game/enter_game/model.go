@@ -12,7 +12,6 @@ type Input struct {
 }
 
 type Output struct {
-	model.BaseOutput
 	Data *Data
 }
 

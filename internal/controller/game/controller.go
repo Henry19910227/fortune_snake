@@ -3,9 +3,9 @@ package game
 import (
 	"context"
 	"game_server_slots_fortune_snake/constants"
-	"game_server_slots_fortune_snake/internal/model/game/bet"
-	"game_server_slots_fortune_snake/internal/model/game/enter_game"
 	playerModel "game_server_slots_fortune_snake/internal/model/player"
+	"game_server_slots_fortune_snake/internal/model/service/game/bet"
+	"game_server_slots_fortune_snake/internal/model/service/game/enter_game"
 	"game_server_slots_fortune_snake/internal/server"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
 )
@@ -29,9 +29,13 @@ func (c *controller) EnterGame(ctx *server.Context) {
 	input := &enter_game.Input{}
 	input.Ctx = grpcCtx
 	input.Session = session
-	output := service.EnterGame(input)
+	data, err := service.EnterGame(input)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
 	// 返回結果
-	ctx.Send(output.Code, output.Message, output.Data)
+	ctx.Send(constants.CodeSuccess, "success", data)
 }
 
 func (c *controller) Bet(ctx *server.Context) {
@@ -41,8 +45,7 @@ func (c *controller) Bet(ctx *server.Context) {
 	// 獲取參數
 	var param bet.Param
 	if err := ctx.Bind(&param); err != nil {
-		ctx.SendError(constants.CodeBadRequest, err.Error())
-		ctx.Abort()
+		ctx.SendError(err)
 		return
 	}
 	// 處理輸入參數
@@ -53,8 +56,12 @@ func (c *controller) Bet(ctx *server.Context) {
 	// 以 mode 獲取對應的 game service
 	service := c.getGameService(session.Mode)
 	// 執行 Bet 業務邏輯
-	output := service.Bet(input)
-	ctx.Send(output.Code, output.Message, output.Data)
+	output, err := service.Bet(input)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+	ctx.Send(constants.CodeSuccess, "success", output.Data)
 }
 
 func (c *controller) getGameService(mode string) gameService.Service {

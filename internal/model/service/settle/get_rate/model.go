@@ -10,6 +10,10 @@ type Input struct {
 	Param Param
 }
 
+type Output struct {
+	Rate float64 `json:"rate"` // 賠率
+}
+
 type Param struct {
 	Bet   int
 	Value int
