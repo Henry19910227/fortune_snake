@@ -81,7 +81,7 @@ func main() {
 	if err := etcd.InitEtcd(appConfig.Config().Etcd); err != nil {
 		log.Printf("⚠️ Etcd 连接失败: %v（服务器仍会继续运行）", err)
 	} else if err := etcd.RegisterService(*appConfig.Config()); err != nil {
-		log.Printf("⚠️ Etcd 小火箭服务注册失败: %v", err)
+		log.Printf("⚠️ Etcd 金蛇服务注册失败: %v", err)
 	} else {
 		defer etcd.UnregisterService(appConfig.Config().Etcd)
 	}

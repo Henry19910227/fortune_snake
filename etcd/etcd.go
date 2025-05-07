@@ -32,7 +32,7 @@ func InitEtcd(config model.EtcdConfig) error {
 	return fmt.Errorf("❌ Etcd 连接失败，所有重试均已失败")
 }
 
-// RegisterService 注册 小火箭 服务器到 Etcd
+// RegisterService 注册 金蛇 服务器到 Etcd
 func RegisterService(config model.Config) error {
 	if EtcdClient == nil {
 		return fmt.Errorf("etcd 未初始化")
@@ -48,7 +48,7 @@ func RegisterService(config model.Config) error {
 	if err != nil {
 		return fmt.Errorf("注册服务失败: %v", err)
 	}
-	log.Printf("✅ 小火箭 服务已注册到 Etcd: %s -> %s", key, value)
+	log.Printf("✅ 金蛇 服务已注册到 Etcd: %s -> %s", key, value)
 	keepAliveCh, err = EtcdClient.KeepAlive(context.Background(), leaseID)
 	if err != nil {
 		return fmt.Errorf("续租失败: %v", err)
