@@ -6,4 +6,5 @@ import (
 
 type Controller interface {
 	Verify(ctx *server.Context)
+	Recover(ctx *server.Context)
 }

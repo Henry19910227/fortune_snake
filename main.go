@@ -91,7 +91,7 @@ func main() {
 	serviceFact := serviceFactory.New(repoFact)
 	factory := controllerFactory.New(serviceFact)
 
-	// 9. 創建 gRPC Engine
+	// 創建 gRPC Engine
 	wg.Add(1)
 	engine := server.New(appConfig.Config().Server)
 
@@ -102,16 +102,17 @@ func main() {
 
 	// 設定Base路由
 	baseGroup := engine.Group("/")
+	baseGroup.Use(factory.MiddleController().Recover)
 	// 添加路由
 	game.SetRoute(baseGroup, factory)
 
-	// 9. 启动 gRPC Engine
+	// 启动 gRPC Engine
 	go func() {
 		defer wg.Done()
 		engine.Run(ctx)
 	}()
 
-	// 10. 捕获系统退出信号
+	// 捕获系统退出信号
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 	<-sigCh

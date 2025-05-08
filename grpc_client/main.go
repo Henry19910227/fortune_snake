@@ -27,7 +27,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	resp, err := client.SendMessage(ctx, &proto.MessageRequest{Action: "bet", PlayerId: 6917529027641081862, Data: string(b)})
+	resp, err := client.SendMessage(ctx, &proto.MessageRequest{Action: "bet", PlayerId: 707500801282543616, Data: string(b)})
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -15,8 +15,8 @@ type controller struct {
 	gameDemoService gameService.Service // 試玩模式 service
 }
 
-func New(gameService gameService.Service) Controller {
-	return &controller{gameService: gameService}
+func New(gameService gameService.Service, gameDemoService gameService.Service) Controller {
+	return &controller{gameService: gameService, gameDemoService: gameDemoService}
 }
 
 func (c *controller) EnterGame(ctx *server.Context) {

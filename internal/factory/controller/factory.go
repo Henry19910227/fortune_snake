@@ -17,7 +17,7 @@ func New(serviceFactory serviceFactory.Factory) Factory {
 }
 
 func (f *factory) GameController() gameController.Controller {
-	return game.New(f.serviceFactory.GameService())
+	return game.New(f.serviceFactory.GameService(), f.serviceFactory.GameDemoService())
 }
 
 func (f *factory) PlayerController() player.Controller {
