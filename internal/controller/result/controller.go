@@ -33,11 +33,12 @@ func (c *controller) Generate() {
 		// 將盤面物件轉換為Json
 		toJsonInput := to_json.NewInput(reels)
 		toJsonOutput, _ := c.settleSvc.ToJson(toJsonInput)
-		// 盤面結果 model
+		// 準備盤面結果 model
 		result := &resultModel.Item{Rate: getRateOutput.GetRate(), Symbols: toJsonOutput.GetJson()}
 		// 將盤面結果存進 bucket 暫存區
 		saveInput := save_to_bucket.NewInput(result)
 		saveOutput := c.resultSvc.SaveToBucket(saveInput)
+		// 判斷 Bucket 剩餘空間是否還大於零，如大於零則繼續生產
 		if saveOutput.GetQuota() > 0 {
 			fmt.Println(saveOutput.GetQuota())
 			continue
@@ -51,9 +52,4 @@ func (c *controller) Generate() {
 		fmt.Println(err)
 	}
 	fmt.Println("盤面數據遷移至DB完成")
-}
-
-func (c *controller) SaveToDatabase() {
-	//TODO implement me
-	panic("implement me")
 }

@@ -32,18 +32,22 @@ func TestResultController_Generate(t *testing.T) {
 	}
 	defer mysqlDB.Close()
 
+	// repo 建立
 	symRepo := symbolRepository.New()
 	settRepo := settleRepository.New()
 	resultRepo := resultRepository.New(mysqlDB.DB())
 	bucketRepo := bucketRepository.New(cfg.BaseBucketConfig())
 
+	// service 建立
 	reelSvc := reelService.New(symRepo)
 	settleSvc := settleService.New(settRepo)
 	resultSvc := resultService.New(resultRepo, bucketRepo)
 
-	con := New(reelSvc, settleSvc, resultSvc)
-	con.Generate()
-
+	// controller 建立
+	resultController := New(reelSvc, settleSvc, resultSvc)
+	// 生產盤面數據
+	resultController.Generate()
+	// 檢查數據
 	results := bucketRepo.Items(200, 500)
 	for _, result := range results {
 		fmt.Printf("rate: %v, symbols: %v\n", result.Rate, result.Symbols)
