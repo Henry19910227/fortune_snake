@@ -1,4 +1,4 @@
-package result
+package bucket
 
 import (
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"

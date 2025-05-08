@@ -6,6 +6,7 @@ import (
 	"game_server_slots_fortune_snake/db"
 	"game_server_slots_fortune_snake/internal/model/entity/result"
 	"game_server_slots_fortune_snake/internal/model/repository/result/create_items"
+	"game_server_slots_fortune_snake/internal/model/repository/result/random"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
@@ -47,4 +48,31 @@ func TestRepository_CreatItems(t *testing.T) {
 	// 插入數據
 	err = repo.CreateItems(create_items.NewInput(items))
 	assert.Nil(t, err)
+}
+
+// TestRepository_LoadData 測試載入盤面資料至內存場景
+func TestRepository_LoadData(t *testing.T) {
+	// 加載 yaml
+	configFile := flag.String("config", "config.yaml", "YAML configuration file name")
+	flag.Parse()
+
+	// 加载配置文件
+	appConfig := config.New(configFile)
+
+	// 初始化 MySQL DB
+	mysqlDB, err := db.NewMysqlDB(appConfig.Config().Database)
+	if err != nil {
+		log.Fatalf("❌ MySQL 初始化失败: %v", err)
+	}
+	defer mysqlDB.Close()
+
+	// 創建 repo
+	repo := New(mysqlDB.DB())
+	// 插入數據
+	err = repo.LoadData()
+	assert.Nil(t, err)
+	// 獲取某個rate對應的隨機盤面
+	output, err := repo.Random(random.NewInput(1038))
+	assert.Nil(t, err)
+	assert.Equal(t, "[[5, 0, 6], [0, 0, 0, 0], [3, 0, 4]]", output.GetItem().Symbols)
 }
