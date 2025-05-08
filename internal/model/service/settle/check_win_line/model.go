@@ -1,14 +1,14 @@
 package check_win_line
 
 import (
-	"game_server_slots_fortune_snake/internal/model"
 	"game_server_slots_fortune_snake/internal/model/entity/line"
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
+	"game_server_slots_fortune_snake/internal/model/service/base"
 )
 
 // Input 輸入
 type Input struct {
-	model.BaseInput
+	base.Input
 	Param Param
 }
 
@@ -22,7 +22,7 @@ func NewInput(line *line.Item) *Input {
 
 // Output 輸出
 type Output struct {
-	model.BaseOutput
+	base.Output
 	Data Data
 }
 

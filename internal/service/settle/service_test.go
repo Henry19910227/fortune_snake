@@ -1,7 +1,6 @@
 package settle
 
 import (
-	"context"
 	lineModel "game_server_slots_fortune_snake/internal/model/entity/line"
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
 	"game_server_slots_fortune_snake/internal/model/service/settle/check_win_line"
@@ -11,6 +10,7 @@ import (
 	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 	settleRepo "game_server_slots_fortune_snake/internal/repository/settle"
 	symbolRepo "game_server_slots_fortune_snake/internal/repository/symbol"
+	"game_server_slots_fortune_snake/internal/server"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -30,7 +30,7 @@ func TestSettleService_GetRate(t *testing.T) {
 
 	svc := New(stlRepo)
 	input := get_rate.NewInput(get_rate.Param{Bet: 1, Value: 1000, Reels: reels})
-	input.Ctx = context.Background()
+	input.Ctx = server.Context{}
 	output, _ := svc.GetRate(input)
 	assert.Equal(t, float64(5000), output.GetRate())
 }
@@ -54,7 +54,7 @@ func TestSettleService_GetTotalScore_1(t *testing.T) {
 		Value: 100,
 		Reels: reels,
 	})
-	input.Ctx = context.Background()
+	input.Ctx = server.Context{}
 	output, _ := svc.GetTotalScore(input)
 	assert.Equal(t, 5000000, output.GetScore())
 
@@ -69,7 +69,7 @@ func TestSettleService_GetTotalScore_1(t *testing.T) {
 		Value: 100,
 		Reels: reels,
 	})
-	input.Ctx = context.Background()
+	input.Ctx = server.Context{}
 	output, _ = svc.GetTotalScore(input)
 	assert.Equal(t, 315000, output.GetScore())
 }
@@ -91,7 +91,7 @@ func TestSettleService_GetWinLines_1(t *testing.T) {
 		Value: 100,
 		Reels: reels,
 	})
-	input.Ctx = context.Background()
+	input.Ctx = server.Context{}
 	output, _ := svc.GetWinLines(input)
 	assert.Equal(t, 4, len(output.GetLines()))
 	assert.Equal(t, 0, output.GetLines()[0].Symbol.ID)
@@ -112,7 +112,7 @@ func TestSettleRepo_CheckLine_1_1(t *testing.T) {
 
 	svc := New(stlRepo)
 	input := check_win_line.NewInput(line)
-	input.Ctx = context.Background()
+	input.Ctx = server.Context{}
 	output, _ := svc.CheckWinLine(input)
 	assert.NotNil(t, output.GetSymbol())
 	assert.Equal(t, 1, output.GetSymbol().ID)

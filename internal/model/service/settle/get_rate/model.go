@@ -1,13 +1,13 @@
 package get_rate
 
 import (
-	"game_server_slots_fortune_snake/internal/model"
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
+	"game_server_slots_fortune_snake/internal/model/service/base"
 )
 
 // Input 輸入
 type Input struct {
-	model.BaseInput
+	base.Input
 	Param Param
 }
 
@@ -23,7 +23,7 @@ func NewInput(param Param) *Input {
 
 // Output 輸出
 type Output struct {
-	model.BaseOutput
+	base.Output
 	Data Data
 }
 
