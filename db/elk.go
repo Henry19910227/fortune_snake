@@ -45,14 +45,14 @@ func NewElkDB(config *model.Config) ElkDB {
 		if err == nil {
 			break // 成功连接后跳出循环
 		}
-		tool.LoggerInstance().Logs("error", true, fmt.Sprintf("⚠️ [ELK ERROR] Connection attempt %d failed", i+1), zap.String("Component", "Elasticsearch"), zap.Error(err))
+		tool.Log().Logs("error", true, fmt.Sprintf("⚠️ [ELK ERROR] Connection attempt %d failed", i+1), zap.String("Component", "Elasticsearch"), zap.Error(err))
 		time.Sleep(config.Elasticsearch.RetryWaitTime) // 等待一段时间后重试
 	}
 	if err != nil {
-		tool.LoggerInstance().Logs("error", true, fmt.Sprintf("❌ [ELK ERROR] Failed to connect to Elasticsearch after %d attempts", config.Elasticsearch.MaxRetries), zap.String("Component", "Elasticsearch"), zap.Error(err))
+		tool.Log().Logs("error", true, fmt.Sprintf("❌ [ELK ERROR] Failed to connect to Elasticsearch after %d attempts", config.Elasticsearch.MaxRetries), zap.String("Component", "Elasticsearch"), zap.Error(err))
 		return &elkDB{client: nil}
 	}
-	tool.LoggerInstance().Logs("info", false, fmt.Sprintf("✅ [ELK] Successfully connected to Elasticsearch at %s", esURL), zap.String("Component", "Elasticsearch"))
+	tool.Log().Logs("info", false, fmt.Sprintf("✅ [ELK] Successfully connected to Elasticsearch at %s", esURL), zap.String("Component", "Elasticsearch"))
 	return &elkDB{client: client}
 }
 

@@ -220,6 +220,6 @@ func InitLoggerInstance(config *model.Config) {
 	})
 }
 
-func LoggerInstance() Logger {
+func Log() Logger {
 	return instance
 }

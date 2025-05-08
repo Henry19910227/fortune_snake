@@ -72,10 +72,10 @@ func main() {
 	// 9.初始化 ELK
 	elkDB := db.NewElkDB(appConfig.Config())
 	if elkDB.Client() == nil {
-		tool.LoggerInstance().Logs("error", true, "❌ ⚠️ ELK 初始化失败: Elasticsearch 连接不可用", zap.String("Component", "Elasticsearch"), zap.Error(errors.New("connection unavailable")))
+		tool.Log().Logs("error", true, "❌ ⚠️ ELK 初始化失败: Elasticsearch 连接不可用", zap.String("Component", "Elasticsearch"), zap.Error(errors.New("connection unavailable")))
 		return
 	}
-	tool.LoggerInstance().SetELK(elkDB.Client())
+	tool.Log().SetELK(elkDB.Client())
 
 	// 10. 初始化 etcd 客户端
 	if err := etcd.InitEtcd(appConfig.Config().Etcd); err != nil {
