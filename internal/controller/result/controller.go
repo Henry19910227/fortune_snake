@@ -33,7 +33,7 @@ func (c *controller) Generate() {
 		toJsonOutput, _ := c.settleSvc.ToJson(toJsonInput)
 		// 盤面結果 model
 		result := &resultModel.Item{Rate: getRateOutput.GetRate(), Symbols: toJsonOutput.GetJson()}
-		// 將盤面結果存進 bucket
+		// 將盤面結果存進 bucket 暫存區
 		saveInput := save_to_bucket.NewInput(result)
 		saveOutput := c.resultSvc.SaveToBucket(saveInput)
 		if saveOutput.GetQuota() > 0 {
