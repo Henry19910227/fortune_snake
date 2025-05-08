@@ -3,6 +3,7 @@ package result
 import (
 	"fmt"
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
+	"game_server_slots_fortune_snake/internal/model/service/result/migrate"
 	"game_server_slots_fortune_snake/internal/model/service/result/save_to_bucket"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
 	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
@@ -22,6 +23,7 @@ func New(reelSvc reelService.Service, settleSvc settleService.Service, resultSvc
 }
 
 func (c *controller) Generate() {
+	fmt.Println("開始生成盤面數據至暫存區")
 	for {
 		// 生成一個盤面
 		reels := c.reelSvc.Generate([]int{3, 4, 3})
@@ -40,8 +42,15 @@ func (c *controller) Generate() {
 			fmt.Println(saveOutput.GetQuota())
 			continue
 		}
-		return
+		fmt.Println("盤面數據生成完成，並存入暫存區")
+		break
 	}
+	fmt.Println("開始將暫存區數據遷移至DB")
+	err := c.resultSvc.Migrate(&migrate.Input{})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("盤面數據遷移至DB完成")
 }
 
 func (c *controller) SaveToDatabase() {

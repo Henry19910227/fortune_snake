@@ -1,6 +1,7 @@
 package result
 
 import (
+	"game_server_slots_fortune_snake/internal/model/service/result/migrate"
 	"game_server_slots_fortune_snake/internal/model/service/result/save"
 	"game_server_slots_fortune_snake/internal/model/service/result/save_to_bucket"
 )
@@ -10,4 +11,6 @@ type Service interface {
 	Save(input *save.Input) error
 	// SaveToBucket 將 result 數據存到本地 bucket 中
 	SaveToBucket(input *save_to_bucket.Input) (output *save_to_bucket.Output)
+	// Migrate 將 bucket 中的數據存至 DB
+	Migrate(input *migrate.Input) (err error)
 }
