@@ -2,7 +2,7 @@ package result
 
 import (
 	"flag"
-	"game_server_slots_fortune_snake/config"
+	"game_server_slots_fortune_snake/config/system"
 	"game_server_slots_fortune_snake/db"
 	"game_server_slots_fortune_snake/internal/model/entity/result"
 	"game_server_slots_fortune_snake/internal/model/repository/result/create_items"
@@ -25,7 +25,7 @@ func TestRepository_CreatItems(t *testing.T) {
 	flag.Parse()
 
 	// 加载配置文件
-	appConfig := config.New(configFile)
+	appConfig := system.New(configFile)
 
 	// 初始化 MySQL DB
 	mysqlDB, err := db.NewMysqlDB(appConfig.Config().Database)
@@ -57,7 +57,7 @@ func TestRepository_LoadData(t *testing.T) {
 	flag.Parse()
 
 	// 加载配置文件
-	appConfig := config.New(configFile)
+	appConfig := system.New(configFile)
 
 	// 初始化 MySQL DB
 	mysqlDB, err := db.NewMysqlDB(appConfig.Config().Database)

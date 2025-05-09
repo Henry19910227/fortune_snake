@@ -1,8 +1,7 @@
 package bucket
 
 import (
-	"flag"
-	"game_server_slots_fortune_snake/config"
+	gameCfg "game_server_slots_fortune_snake/config/game"
 	"game_server_slots_fortune_snake/internal/model/entity/result"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
@@ -11,9 +10,7 @@ import (
 
 func TestResultRepo_Save(t *testing.T) {
 	// 創建配置檔組件
-	configFile := flag.String("config", "config.yaml", "YAML configuration file name")
-	flag.Parse()
-	cfg := config.New(configFile)
+	cfg := gameCfg.New()
 	resultRepo := New(cfg.BaseBucketConfig())
 
 	item := &result.Item{
@@ -32,9 +29,7 @@ func TestResultRepo_Save(t *testing.T) {
 
 func TestResultRepo_Save_2(t *testing.T) {
 	// 創建配置檔組件
-	configFile := flag.String("config", "config.yaml", "YAML configuration file name")
-	flag.Parse()
-	cfg := config.New(configFile)
+	cfg := gameCfg.New()
 
 	resultRepo := New(cfg.FreeBucketConfig())
 

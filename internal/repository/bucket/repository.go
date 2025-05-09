@@ -2,7 +2,7 @@ package bucket
 
 import (
 	"fmt"
-	"game_server_slots_fortune_snake/internal/model"
+	model "game_server_slots_fortune_snake/internal/model/config/bucket"
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
 	"game_server_slots_fortune_snake/internal/model/repository/bucket/all_items"
 	"sync"
@@ -14,13 +14,13 @@ type key struct {
 }
 
 type repository struct {
-	config    []*model.BucketConfig       // 容量配置檔
+	config    []*model.Item               // 容量配置檔
 	bucketMap map[key][]*resultModel.Item // 桶儲存器
 	quota     map[key]int                 // 配額
 	mu        sync.Mutex
 }
 
-func New(config []*model.BucketConfig) Repository {
+func New(config []*model.Item) Repository {
 	bucketMap := make(map[key][]*resultModel.Item)
 	quota := make(map[key]int)
 	for _, configItem := range config {

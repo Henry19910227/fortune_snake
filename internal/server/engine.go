@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"game_server_slots_fortune_snake/internal/model"
+	model "game_server_slots_fortune_snake/internal/model/config/system"
 )
 
 type ResolveFunc func(b []byte) string

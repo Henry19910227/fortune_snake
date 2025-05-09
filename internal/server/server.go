@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/internal/model"
+	"game_server_slots_fortune_snake/internal/model/config/system"
 	"game_server_slots_fortune_snake/pkg"
 	pb "game_server_slots_fortune_snake/proto"
 	"google.golang.org/grpc"
@@ -18,11 +19,11 @@ type Server struct {
 	pb.UnimplementedMessageServiceServer
 	grpcServer *grpc.Server
 	listener   net.Listener
-	config     model.ServerConfig
+	config     system.ServerConfig
 	engine     *Engine
 }
 
-func newServer(config model.ServerConfig, engine *Engine) *Server {
+func newServer(config system.ServerConfig, engine *Engine) *Server {
 	address := fmt.Sprintf("%s:%d", config.Ip, config.Port)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {

@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"game_server_slots_fortune_snake/internal/model"
+	model "game_server_slots_fortune_snake/internal/model/config/system"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"

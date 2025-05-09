@@ -3,7 +3,7 @@ package db
 import (
 	"crypto/tls"
 	"fmt"
-	"game_server_slots_fortune_snake/internal/model"
+	model "game_server_slots_fortune_snake/internal/model/config/system"
 	"game_server_slots_fortune_snake/tool"
 	"github.com/elastic/go-elasticsearch/v8"
 	"go.uber.org/zap"

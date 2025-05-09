@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"game_server_slots_fortune_snake/config"
+	"game_server_slots_fortune_snake/config/system"
 	"game_server_slots_fortune_snake/db"
 	"game_server_slots_fortune_snake/etcd"
 	controllerFactory "game_server_slots_fortune_snake/internal/factory/controller"
@@ -29,7 +29,7 @@ func main() {
 	flag.Parse()
 
 	// 1. 加载配置文件
-	appConfig := config.New(configFile)
+	appConfig := system.New(configFile)
 
 	// 2.初始化日志系统，后续绑定 ELK
 	tool.InitLoggerInstance(appConfig.Config())

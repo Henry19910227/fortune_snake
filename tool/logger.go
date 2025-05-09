@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"game_server_slots_fortune_snake/internal/model"
+	model "game_server_slots_fortune_snake/internal/model/config/system"
 	"github.com/elastic/go-elasticsearch/v8"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

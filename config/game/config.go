@@ -1,43 +1,16 @@
-package config
+package game
 
-import (
-	"fmt"
-	"game_server_slots_fortune_snake/internal/model"
-	"gopkg.in/yaml.v2"
-	"log"
-	"os"
-)
+import model "game_server_slots_fortune_snake/internal/model/config/bucket"
 
 type config struct {
-	config *model.Config
 }
 
-func New(configFile *string) Config {
-	// 检查配置文件参数是否为空
-	if *configFile == "" {
-		fmt.Println("❌ The configuration file name must be included")
-		os.Exit(1)
-	}
-	data, err := os.ReadFile(*configFile)
-	if err != nil {
-		log.Fatalf("❌ 读取配置文件失败: %v", err)
-	}
-
-	var cfg model.Config
-	// 将 YAML 文件反序列化到 cfg 变量中
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		log.Fatalf("❌ 解析配置文件失败: %v", err)
-	}
-	log.Println("✅ 配置加载成功")
-	return &config{config: &cfg}
+func New() Config {
+	return &config{}
 }
 
-func (c *config) Config() *model.Config {
-	return c.config
-}
-
-func (c *config) BaseBucketConfig() []*model.BucketConfig {
-	return []*model.BucketConfig{
+func (c *config) BaseBucketConfig() []*model.Item {
+	return []*model.Item{
 		{LowerLimit: 0, UpperLimit: 0, MaxCapacity: 5000},
 		{LowerLimit: 0, UpperLimit: 0.2, MaxCapacity: 0},
 		{LowerLimit: 0.2, UpperLimit: 0.3, MaxCapacity: 200},
@@ -70,8 +43,8 @@ func (c *config) BaseBucketConfig() []*model.BucketConfig {
 	}
 }
 
-func (c *config) FreeBucketConfig() []*model.BucketConfig {
-	return []*model.BucketConfig{
+func (c *config) FreeBucketConfig() []*model.Item {
+	return []*model.Item{
 		{LowerLimit: 0, UpperLimit: 2, MaxCapacity: 30},
 		{LowerLimit: 2, UpperLimit: 4, MaxCapacity: 30},
 		{LowerLimit: 4, UpperLimit: 6, MaxCapacity: 30},
