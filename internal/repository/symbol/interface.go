@@ -7,7 +7,7 @@ import (
 // Repository Symbol 資源的存取與管理介面
 type Repository interface {
 	// GetSymbols 返回所有定義的 symbol 物件
-	GetSymbols() []*symbolModel.Item
+	GetSymbols() []symbolModel.Item
 	// GetSymbol 以 symbol id 獲取 symbol 物件
 	GetSymbol(id int) *symbolModel.Item
 	// GetTotalWeight 獲取所有 symbol 權重總和

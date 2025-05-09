@@ -79,19 +79,7 @@ func (c *config) FreeBucketConfig() []*model.Item {
 	}
 }
 
-func (c *config) BaseSymbolConfig() []*symbol.Item {
-	return []*symbol.Item{
-		{ID: 0, Name: "百搭", Weight: 10, Pow: 500, IsWild: true},
-		{ID: 1, Name: "元宝", Weight: 20, Pow: 100, IsWild: false},
-		{ID: 2, Name: "金项链", Weight: 30, Pow: 50, IsWild: false},
-		{ID: 3, Name: "红包", Weight: 40, Pow: 20, IsWild: false},
-		{ID: 4, Name: "麦克风", Weight: 50, Pow: 10, IsWild: false},
-		{ID: 5, Name: "金币", Weight: 60, Pow: 5, IsWild: false},
-		{ID: 6, Name: "鞭炮", Weight: 70, Pow: 3, IsWild: false},
-	}
-}
-
-func (c *config) FreeSymbolConfig() []*symbol.Item {
+func (c *config) SymbolConfig() []*symbol.Item {
 	return []*symbol.Item{
 		{ID: 0, Name: "百搭", Weight: 10, Pow: 500, IsWild: true},
 		{ID: 1, Name: "元宝", Weight: 20, Pow: 100, IsWild: false},

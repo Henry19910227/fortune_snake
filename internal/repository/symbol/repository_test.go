@@ -10,7 +10,7 @@ func TestRepository_GetBaseSymbols(*testing.T) {
 	// 創建配置檔組件
 	cfg := gameCfg.New()
 	// 載入 base symbol
-	repo := New(cfg.BaseSymbolConfig())
+	repo := New(cfg.SymbolConfig())
 	for _, symbol := range repo.GetSymbols() {
 		fmt.Println(symbol)
 	}
@@ -21,7 +21,7 @@ func TestRepository_GetFreeSymbols(*testing.T) {
 	// 創建配置檔組件
 	cfg := gameCfg.New()
 	// 載入 free symbol
-	repo := New(cfg.FreeSymbolConfig())
+	repo := New(cfg.SymbolConfig())
 	for _, symbol := range repo.GetSymbols() {
 		fmt.Println(symbol)
 	}
