@@ -8,18 +8,20 @@ import (
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
 	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 	reelService "game_server_slots_fortune_snake/internal/service/reels"
+	reelsFreeService "game_server_slots_fortune_snake/internal/service/reels_free"
 	resultService "game_server_slots_fortune_snake/internal/service/result"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
 )
 
 type controller struct {
-	reelSvc   reelService.Service
-	settleSvc settleService.Service
-	resultSvc resultService.Service
+	reelSvc     reelService.Service
+	reelFreeSvc reelsFreeService.Service
+	settleSvc   settleService.Service
+	resultSvc   resultService.Service
 }
 
-func New(reelSvc reelService.Service, settleSvc settleService.Service, resultSvc resultService.Service) Controller {
-	return &controller{reelSvc: reelSvc, settleSvc: settleSvc, resultSvc: resultSvc}
+func New(reelSvc reelService.Service, reelFreeSvc reelsFreeService.Service, settleSvc settleService.Service, resultSvc resultService.Service) Controller {
+	return &controller{reelSvc: reelSvc, reelFreeSvc: reelFreeSvc, settleSvc: settleSvc, resultSvc: resultSvc}
 }
 
 func (c *controller) Generate() {
@@ -52,4 +54,14 @@ func (c *controller) Generate() {
 		fmt.Println(err)
 	}
 	fmt.Println("盤面數據遷移至DB完成")
+}
+
+func (c *controller) GenerateFree() {
+	// 生成一個盤面
+	reelsList := c.reelFreeSvc.Generate([]int{3, 4, 3})
+	// 將盤面物件轉換為Json
+	for _, reels := range reelsList {
+		toJsonOutput, _ := c.settleSvc.ToJson(to_json.NewInput(reels))
+		fmt.Println(toJsonOutput.GetJson())
+	}
 }
