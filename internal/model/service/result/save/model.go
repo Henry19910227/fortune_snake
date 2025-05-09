@@ -1,12 +1,12 @@
 package save
 
 import (
-	"game_server_slots_fortune_snake/internal/model"
 	"game_server_slots_fortune_snake/internal/model/entity/result"
+	"game_server_slots_fortune_snake/internal/model/service/base"
 )
 
 type Input struct {
-	model.BaseInput
+	base.Input
 	Param Param
 }
 

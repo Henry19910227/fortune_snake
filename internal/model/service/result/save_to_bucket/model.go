@@ -1,13 +1,13 @@
 package save_to_bucket
 
 import (
-	"game_server_slots_fortune_snake/internal/model"
 	"game_server_slots_fortune_snake/internal/model/entity/result"
+	"game_server_slots_fortune_snake/internal/model/service/base"
 )
 
 // Input 輸入
 type Input struct {
-	model.BaseInput
+	base.Input
 	Param Param
 }
 
@@ -21,7 +21,7 @@ func NewInput(result *result.Item) *Input {
 
 // Output 輸出
 type Output struct {
-	model.BaseOutput
+	base.Output
 	Data Data
 }
 

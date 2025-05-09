@@ -1,7 +1,6 @@
 package game
 
 import (
-	"context"
 	"game_server_slots_fortune_snake/constants"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	"game_server_slots_fortune_snake/internal/model/service/game/bet"
@@ -21,13 +20,12 @@ func New(gameService gameService.Service, gameDemoService gameService.Service) C
 
 func (c *controller) EnterGame(ctx *server.Context) {
 	// 取得中間層處理好的數據
-	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
 	// 以 mode 獲取對應的 game service
 	service := c.getGameService(session.Mode)
 	// 執行 Enter Game 業務邏輯
 	input := &enter_game.Input{}
-	input.Ctx = grpcCtx
+	input.Ctx = ctx
 	input.Session = session
 	data, err := service.EnterGame(input)
 	if err != nil {
@@ -40,7 +38,6 @@ func (c *controller) EnterGame(ctx *server.Context) {
 
 func (c *controller) Bet(ctx *server.Context) {
 	// 取得請求數據
-	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
 	// 獲取參數
 	var param bet.Param
@@ -50,7 +47,7 @@ func (c *controller) Bet(ctx *server.Context) {
 	}
 	// 處理輸入參數
 	input := &bet.Input{}
-	input.Ctx = grpcCtx
+	input.Ctx = ctx
 	input.Session = session
 	input.Param = &param
 	// 以 mode 獲取對應的 game service

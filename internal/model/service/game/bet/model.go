@@ -1,12 +1,12 @@
 package bet
 
 import (
-	"game_server_slots_fortune_snake/internal/model"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
+	"game_server_slots_fortune_snake/internal/model/service/base"
 )
 
 type Input struct {
-	model.BaseInput
+	base.Input
 	Session *playerModel.Session
 	Param   *Param
 }

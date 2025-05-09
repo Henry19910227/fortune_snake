@@ -1,13 +1,13 @@
 package enter_game
 
 import (
-	"game_server_slots_fortune_snake/internal/model"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
+	"game_server_slots_fortune_snake/internal/model/service/base"
 )
 
 // Input Service 層的 Input
 type Input struct {
-	model.BaseInput
+	base.Input
 	Session *playerModel.Session
 }
 

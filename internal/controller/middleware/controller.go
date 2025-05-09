@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"game_server_slots_fortune_snake/constants"
@@ -22,10 +21,9 @@ func New(playerService playerService.Service) Controller {
 // Verify 第三層 驗證 PlayerID 並獲取 Player Session 資訊
 func (c *controller) Verify(ctx *server.Context) {
 	playerId := ctx.MustGet("playerId").(uint64)
-	grpcCtx := ctx.MustGet("ctx").(context.Context)
 
 	input := get_player_session.Input{}
-	input.Ctx = grpcCtx
+	input.Ctx = ctx
 	input.PlayerId = playerId
 	output, err := c.playerService.GetPlayerSession(&input)
 	if err != nil {

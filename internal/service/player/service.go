@@ -1,6 +1,7 @@
 package player
 
 import (
+	"context"
 	"errors"
 	"game_server_slots_fortune_snake/constants"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
@@ -19,7 +20,8 @@ func NewService(playerRepo playerRepo.Repository) Service {
 }
 
 func (s *service) GetPlayerSession(input *get_player_session.Input) (output *get_player_session.Output, err error) {
-	data, err := s.playerRepo.FindPlayerSessionById(input.Ctx, input.PlayerId)
+	grpcCtx := input.Ctx.MustGet("ctx").(context.Context)
+	data, err := s.playerRepo.FindPlayerSessionById(grpcCtx, input.PlayerId)
 	if err != nil {
 		var e *errMsg.Error
 		if errors.Is(err, redis.Nil) {
