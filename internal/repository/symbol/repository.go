@@ -1,17 +1,19 @@
 package symbol
 
 import (
+	cfg "game_server_slots_fortune_snake/internal/model/config/symbol"
 	symbolModel "game_server_slots_fortune_snake/internal/model/entity/symbol"
 	"math/rand"
 )
 
+// Repository Symbol 資源的存取與管理介面
 type repository struct {
 	symbols     []*symbolModel.Item
 	totalWeight int
 }
 
-func New() Repository {
-	symbols := loadSymbols()
+func New(config []*cfg.Item) Repository {
+	symbols := loadSymbols(config)
 	totalWeight := 0
 	for _, symbol := range symbols {
 		totalWeight += symbol.Weight
@@ -19,10 +21,12 @@ func New() Repository {
 	return &repository{symbols: symbols, totalWeight: totalWeight}
 }
 
+// GetSymbols 返回所有定義的 symbol 物件
 func (r *repository) GetSymbols() []*symbolModel.Item {
 	return r.symbols
 }
 
+// GetSymbol 以 symbol id 獲取 symbol 物件
 func (r *repository) GetSymbol(id int) *symbolModel.Item {
 	if id < 0 || id >= len(r.symbols) {
 		return nil
@@ -30,6 +34,7 @@ func (r *repository) GetSymbol(id int) *symbolModel.Item {
 	return r.symbols[id]
 }
 
+// GetRandomSymbol 獲取一個隨機的 symbol
 func (r *repository) GetRandomSymbol() *symbolModel.Item {
 	rest := rand.Intn(r.totalWeight)
 	for _, symbol := range r.symbols {
@@ -42,24 +47,21 @@ func (r *repository) GetRandomSymbol() *symbolModel.Item {
 	return nil
 }
 
+// GetTotalWeight 獲取所有 symbol 權重總和
 func (r *repository) GetTotalWeight() int {
 	return r.totalWeight
 }
 
-func loadSymbols() []*symbolModel.Item {
+// loadSymbols Symbol 載入
+func loadSymbols(config []*cfg.Item) []*symbolModel.Item {
 	symbols := make([]*symbolModel.Item, 0)
-	names := []string{"百搭", "元宝", "金项链", "红包", "麦克风", "金币", "鞭炮"} // 圖案名稱
-	weights := []int{10, 20, 30, 40, 50, 60, 70}                  // 圖案權重
-	pows := []int{500, 100, 50, 20, 10, 5, 3}                     // 倍率
-	for i := 0; i < len(names); i++ {
+	for _, item := range config {
 		symbol := &symbolModel.Item{
-			ID:     i,
-			Name:   names[i],
-			Weight: weights[i],
-			Pow:    pows[i],
-		}
-		if i == 0 {
-			symbol.IsWild = true
+			ID:     item.ID,
+			Name:   item.Name,
+			Weight: item.Weight,
+			Pow:    item.Pow,
+			IsWild: item.IsWild,
 		}
 		symbols = append(symbols, symbol)
 	}

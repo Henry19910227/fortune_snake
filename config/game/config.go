@@ -1,6 +1,9 @@
 package game
 
-import model "game_server_slots_fortune_snake/internal/model/config/bucket"
+import (
+	model "game_server_slots_fortune_snake/internal/model/config/bucket"
+	"game_server_slots_fortune_snake/internal/model/config/symbol"
+)
 
 type config struct {
 }
@@ -73,5 +76,30 @@ func (c *config) FreeBucketConfig() []*model.Item {
 		{LowerLimit: 200, UpperLimit: 500, MaxCapacity: 10},
 		{LowerLimit: 500, UpperLimit: 1000, MaxCapacity: 5},
 		{LowerLimit: 1000, UpperLimit: 5000, MaxCapacity: 3},
+	}
+}
+
+func (c *config) BaseSymbolConfig() []*symbol.Item {
+	return []*symbol.Item{
+		{ID: 0, Name: "百搭", Weight: 10, Pow: 500, IsWild: true},
+		{ID: 1, Name: "元宝", Weight: 20, Pow: 100, IsWild: false},
+		{ID: 2, Name: "金项链", Weight: 30, Pow: 50, IsWild: false},
+		{ID: 3, Name: "红包", Weight: 40, Pow: 20, IsWild: false},
+		{ID: 4, Name: "麦克风", Weight: 50, Pow: 10, IsWild: false},
+		{ID: 5, Name: "金币", Weight: 60, Pow: 5, IsWild: false},
+		{ID: 6, Name: "鞭炮", Weight: 70, Pow: 3, IsWild: false},
+	}
+}
+
+func (c *config) FreeSymbolConfig() []*symbol.Item {
+	return []*symbol.Item{
+		{ID: 0, Name: "百搭", Weight: 10, Pow: 500, IsWild: true},
+		{ID: 1, Name: "元宝", Weight: 20, Pow: 100, IsWild: false},
+		{ID: 2, Name: "金项链", Weight: 30, Pow: 50, IsWild: false},
+		{ID: 3, Name: "红包", Weight: 40, Pow: 20, IsWild: false},
+		{ID: 4, Name: "麦克风", Weight: 50, Pow: 10, IsWild: false},
+		{ID: 5, Name: "金币", Weight: 60, Pow: 5, IsWild: false},
+		{ID: 6, Name: "鞭炮", Weight: 70, Pow: 3, IsWild: false},
+		{ID: 99, Name: "空格", Weight: 100, Pow: 0, IsWild: false},
 	}
 }
