@@ -5,6 +5,7 @@ import (
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_total_score"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_win_lines"
+	"game_server_slots_fortune_snake/internal/model/service/settle/list_to_json"
 	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 )
 
@@ -19,4 +20,6 @@ type Service interface {
 	CheckWinLine(input *check_win_line.Input) (output *check_win_line.Output, err error)
 	// ToJson 將 symbol 物件轉換成 Json
 	ToJson(input *to_json.Input) (output *to_json.Output, err error)
+	// ListToJson 將 symbol items 轉換成 Json
+	ListToJson(input *list_to_json.Input) (output *list_to_json.Output, err error)
 }

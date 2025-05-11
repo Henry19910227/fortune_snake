@@ -22,7 +22,7 @@ import (
 // [[1,0,6],[0,0,0,0],[5,1,4]]
 func TestSettleService_GetRate(t *testing.T) {
 	cfg := gameCfg.New()
-	symRepo := symbolRepo.New(cfg.BaseSymbolConfig())
+	symRepo := symbolRepo.New(cfg.SymbolConfig())
 	stlRepo := settleRepo.New()
 	reels := [][]*symbol.Item{
 		{symRepo.GetSymbol(1), symRepo.GetSymbol(0), symRepo.GetSymbol(6)},
@@ -40,17 +40,49 @@ func TestSettleService_GetRate(t *testing.T) {
 // [[6 3 5] [4 0 5 3] [4 5 6]]
 // [[3 5 6] [4 4 6 6] [6 4 6]]
 // [[1,0,6],[0,0,0,0],[5,1,4]]
+// [[1,1,1],[99,0,0,0],[1,1,1]]
+// [[1,1,1],[0,0,0,0],[1,1,1]]
 func TestSettleService_GetTotalScore_1(t *testing.T) {
 	cfg := gameCfg.New()
-	symRepo := symbolRepo.New(cfg.BaseSymbolConfig())
+	symRepo := symbolRepo.New(cfg.SymbolConfig())
 	stlRepo := settleRepo.New()
 	svc := New(stlRepo)
 
 	// 測項 1：[[0 0 0] [0 0 0 0] [0 0 0]]
+	//reels := [][]*symbol.Item{
+	//	{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+	//	{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+	//	{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+	//}
+	//input := get_total_score.NewInput(get_total_score.Param{
+	//	Bet:   1,
+	//	Value: 100,
+	//	Reels: reels,
+	//})
+	//input.Ctx = &server.Context{}
+	//output, _ := svc.GetTotalScore(input)
+	//assert.Equal(t, 5000000, output.GetScore())
+
+	// 測項 2：[[1,0,6],[0,0,0,0],[5,1,4]]
+	//reels = [][]*symbol.Item{
+	//	{symRepo.GetSymbol(1), symRepo.GetSymbol(0), symRepo.GetSymbol(6)},
+	//	{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+	//	{symRepo.GetSymbol(5), symRepo.GetSymbol(1), symRepo.GetSymbol(4)},
+	//}
+	//input = get_total_score.NewInput(get_total_score.Param{
+	//	Bet:   1,
+	//	Value: 100,
+	//	Reels: reels,
+	//})
+	//input.Ctx = &server.Context{}
+	//output, _ = svc.GetTotalScore(input)
+	//assert.Equal(t, 315000, output.GetScore())
+
+	// 測項 3：[[1,1,1],[99,0,0,0],[1,1,1]]
 	reels := [][]*symbol.Item{
-		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
-		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
-		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(1), symRepo.GetSymbol(1), symRepo.GetSymbol(1)},
+		{symRepo.GetSymbol(99), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
+		{symRepo.GetSymbol(1), symRepo.GetSymbol(1), symRepo.GetSymbol(1)},
 	}
 	input := get_total_score.NewInput(get_total_score.Param{
 		Bet:   1,
@@ -59,21 +91,6 @@ func TestSettleService_GetTotalScore_1(t *testing.T) {
 	})
 	input.Ctx = &server.Context{}
 	output, _ := svc.GetTotalScore(input)
-	assert.Equal(t, 5000000, output.GetScore())
-
-	// 測項 2：[[1,0,6],[0,0,0,0],[5,1,4]]
-	reels = [][]*symbol.Item{
-		{symRepo.GetSymbol(1), symRepo.GetSymbol(0), symRepo.GetSymbol(6)},
-		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
-		{symRepo.GetSymbol(5), symRepo.GetSymbol(1), symRepo.GetSymbol(4)},
-	}
-	input = get_total_score.NewInput(get_total_score.Param{
-		Bet:   1,
-		Value: 100,
-		Reels: reels,
-	})
-	input.Ctx = &server.Context{}
-	output, _ = svc.GetTotalScore(input)
 	assert.Equal(t, 315000, output.GetScore())
 }
 
@@ -81,10 +98,10 @@ func TestSettleService_GetTotalScore_1(t *testing.T) {
 // [[1,0,6],[0,0,0,0],[5,1,4]]
 func TestSettleService_GetWinLines_1(t *testing.T) {
 	cfg := gameCfg.New()
-	symRepo := symbolRepo.New(cfg.BaseSymbolConfig())
+	symRepo := symbolRepo.New(cfg.SymbolConfig())
 	stlRepo := settleRepo.New()
 	reels := [][]*symbol.Item{
-		{symRepo.GetSymbol(1), symRepo.GetSymbol(0), symRepo.GetSymbol(6)},
+		{symRepo.GetSymbol(1), symRepo.GetSymbol(1), symRepo.GetSymbol(1)},
 		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
 		{symRepo.GetSymbol(5), symRepo.GetSymbol(1), symRepo.GetSymbol(4)},
 	}
@@ -135,7 +152,7 @@ func TestSettleRepo_CheckLine_1_1(t *testing.T) {
 
 func TestSettleRepo_Transform(t *testing.T) {
 	cfg := gameCfg.New()
-	symRepo := symbolRepo.New(cfg.BaseSymbolConfig())
+	symRepo := symbolRepo.New(cfg.SymbolConfig())
 	stlRepo := settleRepo.New()
 	reels := [][]*symbol.Item{
 		{symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},

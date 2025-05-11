@@ -10,6 +10,7 @@ import (
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_total_score"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_win_lines"
+	"game_server_slots_fortune_snake/internal/model/service/settle/list_to_json"
 	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 	settleRepo "game_server_slots_fortune_snake/internal/repository/settle"
 )
@@ -136,6 +137,9 @@ func (s *service) checkWinLine(param check_win_line.Param) *symbol.Item {
 	}
 	var checkSymbol *symbol.Item
 	for _, symbolItem := range param.Line.Symbols {
+		if symbolItem.ID == 99 {
+			return nil
+		}
 		if checkSymbol == nil {
 			checkSymbol = symbolItem
 			continue
@@ -168,5 +172,29 @@ func (s *service) ToJson(input *to_json.Input) (output *to_json.Output, err erro
 		return nil, errMsg.New(constants.CodeBadRequest, err.Error(), err)
 	}
 	output = to_json.NewOutput(string(jsonString))
+	return output, nil
+}
+
+func (s *service) ListToJson(input *list_to_json.Input) (output *list_to_json.Output, err error) {
+	list := input.Param.List
+	symbolsList := make([][][]int, 0)
+	for _, items := range list {
+		symbols := make([][]int, 0)
+		for i := 0; i < len(items); i++ {
+			symbols = append(symbols, make([]int, 0))
+		}
+		for row := 0; row < len(items); row++ {
+			for col := 0; col < len(items[row]); col++ {
+				symbols[row] = append(symbols[row], items[row][col].ID)
+			}
+		}
+		symbolsList = append(symbolsList, symbols)
+	}
+
+	jsonString, err := json.Marshal(symbolsList)
+	if err != nil {
+		return nil, errMsg.New(constants.CodeBadRequest, err.Error(), err)
+	}
+	output = list_to_json.NewOutput(string(jsonString))
 	return output, nil
 }

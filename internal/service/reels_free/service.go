@@ -84,7 +84,7 @@ func (s *service) cover(dst [][]*symbol.Item, src [][]*symbol.Item) {
 			if dst[col][row].ID != 99 {
 				continue
 			}
-			dst[col][row].ID = src[col][row].ID
+			dst[col][row] = src[col][row]
 		}
 	}
 }

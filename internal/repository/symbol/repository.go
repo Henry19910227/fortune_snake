@@ -1,7 +1,6 @@
 package symbol
 
 import (
-	"fmt"
 	cfg "game_server_slots_fortune_snake/internal/model/config/symbol"
 	symbolModel "game_server_slots_fortune_snake/internal/model/entity/symbol"
 	"math/rand"
@@ -46,7 +45,6 @@ func (r *repository) GetSymbol(id int) *symbolModel.Item {
 // GetRandomSymbol 獲取一個隨機的 symbol
 func (r *repository) GetRandomSymbol() *symbolModel.Item {
 	rest := rand.Intn(r.totalWeight)
-	fmt.Printf("隨機值 : %v \n", rest)
 	for _, symbol := range r.symbols {
 		if rest >= symbol.Weight {
 			rest -= symbol.Weight
