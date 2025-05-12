@@ -23,3 +23,21 @@ func TestRepository_LoadFreeWeight(t *testing.T) {
 	}
 	assert.Equal(t, 224, len(repo.FreeWeight()))
 }
+
+func TestRepository_LoadBaseWeightH(t *testing.T) {
+	repo := New()
+	repo.LoadBaseWeightH()
+	for _, stat := range repo.BaseWeightH() {
+		fmt.Println(stat)
+	}
+	assert.Equal(t, 148, len(repo.BaseWeightH()))
+}
+
+func TestRepository_LoadFreeWeightH(t *testing.T) {
+	repo := New()
+	repo.LoadFreeWeightH()
+	for _, stat := range repo.FreeWeightH() {
+		fmt.Println(stat)
+	}
+	assert.Equal(t, 224, len(repo.FreeWeightH()))
+}

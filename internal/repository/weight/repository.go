@@ -7,14 +7,18 @@ import (
 )
 
 type repository struct {
-	baseWeights []*weightModel.Stat
-	freeWeights []*weightModel.Stat
+	baseWeights  []*weightModel.Stat
+	freeWeights  []*weightModel.Stat
+	baseWeightsH []*weightModel.Stat
+	freeWeightsH []*weightModel.Stat
 }
 
 func New() Repository {
 	baseWeights := make([]*weightModel.Stat, 0)
 	freeWeights := make([]*weightModel.Stat, 0)
-	return &repository{baseWeights: baseWeights, freeWeights: freeWeights}
+	baseWeightsH := make([]*weightModel.Stat, 0)
+	freeWeightsH := make([]*weightModel.Stat, 0)
+	return &repository{baseWeights: baseWeights, freeWeights: freeWeights, baseWeightsH: baseWeightsH, freeWeightsH: freeWeightsH}
 }
 
 func (r *repository) LoadBaseWeight() {
@@ -25,13 +29,20 @@ func (r *repository) LoadFreeWeight() {
 	r.load("sheet_free", &r.freeWeights)
 }
 
+func (r *repository) LoadBaseWeightH() {
+	r.load("sheet_base_H", &r.baseWeightsH)
+}
+
+func (r *repository) LoadFreeWeightH() {
+	r.load("sheet_free_h", &r.freeWeightsH)
+}
+
 func (r *repository) BaseWeight() []*weightModel.Stat {
 	return r.baseWeights
 }
 
 func (r *repository) BaseWeightH() []*weightModel.Stat {
-	//TODO implement me
-	panic("implement me")
+	return r.baseWeightsH
 }
 
 func (r *repository) FreeWeight() []*weightModel.Stat {
@@ -39,8 +50,7 @@ func (r *repository) FreeWeight() []*weightModel.Stat {
 }
 
 func (r *repository) FreeWeightH() []*weightModel.Stat {
-	//TODO implement me
-	panic("implement me")
+	return r.freeWeightsH
 }
 
 func (r *repository) load(filename string, list *[]*weightModel.Stat) {
