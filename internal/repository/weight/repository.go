@@ -8,14 +8,21 @@ import (
 
 type repository struct {
 	baseWeights []*weightModel.Stat
+	freeWeights []*weightModel.Stat
 }
 
 func New() Repository {
-	return &repository{baseWeights: make([]*weightModel.Stat, 0)}
+	baseWeights := make([]*weightModel.Stat, 0)
+	freeWeights := make([]*weightModel.Stat, 0)
+	return &repository{baseWeights: baseWeights, freeWeights: freeWeights}
 }
 
 func (r *repository) LoadBaseWeight() {
-	r.load("sheet_base")
+	r.load("sheet_base", &r.baseWeights)
+}
+
+func (r *repository) LoadFreeWeight() {
+	r.load("sheet_free", &r.freeWeights)
 }
 
 func (r *repository) BaseWeight() []*weightModel.Stat {
@@ -28,8 +35,7 @@ func (r *repository) BaseWeightH() []*weightModel.Stat {
 }
 
 func (r *repository) FreeWeight() []*weightModel.Stat {
-	//TODO implement me
-	panic("implement me")
+	return r.freeWeights
 }
 
 func (r *repository) FreeWeightH() []*weightModel.Stat {
@@ -37,7 +43,7 @@ func (r *repository) FreeWeightH() []*weightModel.Stat {
 	panic("implement me")
 }
 
-func (r *repository) load(filename string) {
+func (r *repository) load(filename string, list *[]*weightModel.Stat) {
 	xlsx, err := excelize.OpenFile("standard_slotsnum.xlsx")
 	if err != nil {
 		return
@@ -62,6 +68,6 @@ func (r *repository) load(filename string) {
 			toWeights = append(toWeights, sumWeights[col])
 		}
 		stat := weightModel.Stat{Rate: rate, FromWeights: fromWeights, WeightAccount: weightAccount, ToWeights: toWeights}
-		r.baseWeights = append(r.baseWeights, &stat)
+		*list = append(*list, &stat)
 	}
 }

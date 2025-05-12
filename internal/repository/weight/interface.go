@@ -6,6 +6,7 @@ import (
 
 type Repository interface {
 	LoadBaseWeight()
+	LoadFreeWeight()
 
 	BaseWeight() []*weightModel.Stat  // 一般權重
 	BaseWeightH() []*weightModel.Stat // 高投注權重
