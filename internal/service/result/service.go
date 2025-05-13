@@ -1,6 +1,7 @@
 package result
 
 import (
+	"encoding/json"
 	"game_server_slots_fortune_snake/constants"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
 	"game_server_slots_fortune_snake/internal/model/repository/result/create_items"
@@ -43,4 +44,17 @@ func (s *service) Migrate(input *migrate.Input) (err error) {
 
 func (s *service) LoadData() (err error) {
 	return s.resultRepo.LoadData()
+}
+
+func (s *service) Random(rate float64) ([][]int, error) {
+	item, err := s.resultRepo.Random(rate)
+	if err != nil {
+		return nil, err
+	}
+	var symbols [][]int
+	err = json.Unmarshal([]byte(item.Symbols), &symbols)
+	if err != nil {
+		return nil, errMsg.New(constants.CodeInternalError, err.Error(), err)
+	}
+	return symbols, nil
 }

@@ -5,7 +5,6 @@ import (
 	model "game_server_slots_fortune_snake/internal/model/entity/result"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
 	"game_server_slots_fortune_snake/internal/model/repository/result/create_items"
-	"game_server_slots_fortune_snake/internal/model/repository/result/random"
 	"gorm.io/gorm"
 	"math/rand"
 )
@@ -43,14 +42,12 @@ func (r *repository) LoadData() (err error) {
 	return nil
 }
 
-func (r *repository) Random(input *random.Input) (output *random.Output, err error) {
-	rate := input.Param.Rate
+func (r *repository) Random(rate float64) (*model.Item, error) {
 	items, ok := r.resultsMap[rate]
 	if !ok {
 		return nil, errMsg.New(constants.CodeInternalError, "找不到賠率", nil)
 	}
 	index := rand.Intn(len(items))
 	item := items[index]
-	output = random.NewOutput(item)
-	return output, nil
+	return item, nil
 }

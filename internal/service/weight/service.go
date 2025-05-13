@@ -19,6 +19,18 @@ func (s *service) Load() {
 	s.weightRepo.LoadFreeWeightH()
 }
 
-func (s *service) GetRandomRate(rtp int) {
-	
+func (s *service) RandomBaseWeightRate(rtp float64) (float64, error) {
+	return s.weightRepo.RandomBaseWeightRate(rtp)
+}
+
+func (s *service) RandomBaseWeightHRate(rtp float64) (float64, error) {
+	return s.weightRepo.RandomBaseWeightHRate(rtp)
+}
+
+func (s *service) RandomFreeWeightRate(rtp float64) (float64, error) {
+	return s.weightRepo.RandomFreeWeightRate(rtp)
+}
+
+func (s *service) RandomFreeWeightHRate(rtp float64) (float64, error) {
+	return s.weightRepo.RandomFreeWeightHRate(rtp)
 }

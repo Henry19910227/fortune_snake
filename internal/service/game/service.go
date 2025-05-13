@@ -9,6 +9,7 @@ import (
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
 	weightRepo "game_server_slots_fortune_snake/internal/repository/weight"
+	"math/rand"
 )
 
 // 真錢模式的 game service
@@ -52,4 +53,12 @@ func (s *service) Bet(input *bet.Input) (output *bet.Output, err error) {
 	output = &bet.Output{}
 	output.Data = &bet.Data{}
 	return output, nil
+}
+
+func (s *service) SpinMode() int {
+	probability := rand.Float64()
+	if probability <= 0.5 {
+		return 1
+	}
+	return 0
 }

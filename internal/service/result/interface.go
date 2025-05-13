@@ -12,4 +12,6 @@ type Service interface {
 	Migrate(input *migrate.Input) (err error)
 	// LoadData 將盤面結果載入至內存
 	LoadData() (err error)
+	// Random 獲取隨機盤面結果
+	Random(rate float64) ([][]int, error)
 }

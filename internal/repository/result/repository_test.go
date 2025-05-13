@@ -6,7 +6,6 @@ import (
 	"game_server_slots_fortune_snake/db"
 	"game_server_slots_fortune_snake/internal/model/entity/result"
 	"game_server_slots_fortune_snake/internal/model/repository/result/create_items"
-	"game_server_slots_fortune_snake/internal/model/repository/result/random"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
@@ -72,7 +71,7 @@ func TestRepository_LoadData(t *testing.T) {
 	err = repo.LoadData()
 	assert.Nil(t, err)
 	// 獲取某個rate對應的隨機盤面
-	output, err := repo.Random(random.NewInput(1038))
+	item, err := repo.Random(1038)
 	assert.Nil(t, err)
-	assert.Equal(t, "[[5, 0, 6], [0, 0, 0, 0], [3, 0, 4]]", output.GetItem().Symbols)
+	assert.Equal(t, "[[5, 0, 6], [0, 0, 0, 0], [3, 0, 4]]", item.Symbols)
 }

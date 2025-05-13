@@ -8,4 +8,5 @@ import (
 type Service interface {
 	EnterGame(input *enter_game.Input) (output *enter_game.Output, err error)
 	Bet(input *bet.Input) (output *bet.Output, err error)
+	SpinMode() int
 }

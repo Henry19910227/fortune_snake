@@ -4,6 +4,8 @@ import (
 	"game_server_slots_fortune_snake/constants"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
 	"game_server_slots_fortune_snake/internal/model/repository/result_free/create_items"
+	"game_server_slots_fortune_snake/internal/model/repository/result_free/random"
+	randomData "game_server_slots_fortune_snake/internal/model/repository/result_free/random"
 	"game_server_slots_fortune_snake/internal/model/service/result_free/save_to_bucket"
 	bucketRepo "game_server_slots_fortune_snake/internal/repository/bucket_free"
 	resultRepo "game_server_slots_fortune_snake/internal/repository/result_free"
@@ -42,4 +44,13 @@ func (s *service) Migrate() (err error) {
 
 func (s *service) LoadData() (err error) {
 	return s.resultRepo.LoadData()
+}
+
+func (s *service) Random(input *random.Input) (output *random.Output, err error) {
+	outputData, err := s.resultRepo.Random(randomData.NewInput(input.Param.Rate))
+	if err != nil {
+		return nil, err
+	}
+	output = random.NewOutput(outputData.GetItem())
+	return output, nil
 }
