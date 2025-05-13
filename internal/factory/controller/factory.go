@@ -30,5 +30,8 @@ func (f *factory) MiddleController() middleware.Controller {
 }
 
 func (f *factory) LoadController() loadController.Controller {
-	return loadController.New(f.serviceFactory.WeightService())
+	weightService := f.serviceFactory.WeightService()
+	resultService := f.serviceFactory.ResultService()
+	resultFreeService := f.serviceFactory.ResultFreeService()
+	return loadController.New(weightService, resultService, resultFreeService)
 }

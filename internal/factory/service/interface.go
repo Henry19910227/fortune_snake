@@ -3,6 +3,8 @@ package service
 import (
 	gameService "game_server_slots_fortune_snake/internal/service/game"
 	playerService "game_server_slots_fortune_snake/internal/service/player"
+	resultService "game_server_slots_fortune_snake/internal/service/result"
+	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 )
 
@@ -11,4 +13,6 @@ type Factory interface {
 	GameDemoService() gameService.Service
 	PlayerService() playerService.Service
 	WeightService() weightService.Service
+	ResultService() resultService.Service
+	ResultFreeService() resultFreeService.Service
 }

@@ -4,6 +4,8 @@ import (
 	"game_server_slots_fortune_snake/internal/factory/repository"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
 	playerService "game_server_slots_fortune_snake/internal/service/player"
+	resultService "game_server_slots_fortune_snake/internal/service/result"
+	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 )
 
@@ -37,4 +39,16 @@ func (f *factory) PlayerService() playerService.Service {
 func (f *factory) WeightService() weightService.Service {
 	weightRepo := f.repoFactory.WeightRepository()
 	return weightService.New(weightRepo)
+}
+
+func (f *factory) ResultService() resultService.Service {
+	resultRepo := f.repoFactory.ResultRepository()
+	bucketRepo := f.repoFactory.BucketRepository()
+	return resultService.New(resultRepo, bucketRepo)
+}
+
+func (f *factory) ResultFreeService() resultFreeService.Service {
+	resultFreeRepo := f.repoFactory.ResultFreeRepository()
+	bucketFreeRepo := f.repoFactory.BucketFreeRepository()
+	return resultFreeService.New(resultFreeRepo, bucketFreeRepo)
 }

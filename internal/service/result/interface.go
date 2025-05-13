@@ -10,4 +10,6 @@ type Service interface {
 	SaveToBucket(input *save_to_bucket.Input) (output *save_to_bucket.Output)
 	// Migrate 將 bucket 中的數據存至 DB
 	Migrate(input *migrate.Input) (err error)
+	// LoadData 將盤面結果載入至內存
+	LoadData() (err error)
 }

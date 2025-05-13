@@ -40,3 +40,7 @@ func (s *service) Migrate(input *migrate.Input) (err error) {
 	}
 	return nil
 }
+
+func (s *service) LoadData() (err error) {
+	return s.resultRepo.LoadData()
+}
