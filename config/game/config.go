@@ -91,3 +91,23 @@ func (c *config) SymbolConfig() []*symbol.Item {
 		{ID: 99, Name: "空格", Weight: 100, Pow: 0, IsWild: false},
 	}
 }
+
+func (c *config) RTPConfig() map[float64]int {
+	return map[float64]int{
+		96:  0,
+		92:  1,
+		88:  2,
+		84:  3,
+		80:  4,
+		70:  5,
+		60:  6,
+		50:  7,
+		40:  8,
+		30:  9,
+		20:  10,
+		10:  11,
+		1:   12,
+		100: 13,
+		-1:  14,
+	}
+}

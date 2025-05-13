@@ -3,6 +3,7 @@ package controller
 import (
 	"game_server_slots_fortune_snake/internal/controller/game"
 	gameController "game_server_slots_fortune_snake/internal/controller/game"
+	loadController "game_server_slots_fortune_snake/internal/controller/load"
 	"game_server_slots_fortune_snake/internal/controller/middleware"
 	"game_server_slots_fortune_snake/internal/controller/player"
 	serviceFactory "game_server_slots_fortune_snake/internal/factory/service"
@@ -26,4 +27,8 @@ func (f *factory) PlayerController() player.Controller {
 
 func (f *factory) MiddleController() middleware.Controller {
 	return middleware.New(f.serviceFactory.PlayerService())
+}
+
+func (f *factory) LoadController() loadController.Controller {
+	return loadController.New(f.serviceFactory.WeightService())
 }

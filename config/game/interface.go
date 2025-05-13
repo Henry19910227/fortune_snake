@@ -9,4 +9,5 @@ type Config interface {
 	BaseBucketConfig() []*model.Item
 	FreeBucketConfig() []*model.Item
 	SymbolConfig() []*symbol.Item
+	RTPConfig() map[float64]int
 }

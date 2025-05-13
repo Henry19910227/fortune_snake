@@ -3,6 +3,7 @@ package repository
 import (
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
+	weightRepo "game_server_slots_fortune_snake/internal/repository/weight"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -23,4 +24,8 @@ func (f *factory) GameRepository() gameRepo.Repository {
 
 func (f *factory) PlayerRepository() playerRepo.Repository {
 	return playerRepo.New(f.rdb)
+}
+
+func (f *factory) WeightRepository() weightRepo.Repository {
+	return weightRepo.New()
 }

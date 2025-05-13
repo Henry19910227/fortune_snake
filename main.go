@@ -100,6 +100,9 @@ func main() {
 		return "/" + string(b)
 	})
 
+	// 載入遊戲啟動時需要資源
+	factory.LoadController().Load()
+
 	// 設定Base路由
 	baseGroup := engine.Group("/")
 	baseGroup.Use(factory.MiddleController().Recover)

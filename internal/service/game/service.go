@@ -8,16 +8,18 @@ import (
 	"game_server_slots_fortune_snake/internal/model/service/game/enter_game"
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
+	weightRepo "game_server_slots_fortune_snake/internal/repository/weight"
 )
 
 // 真錢模式的 game service
 type service struct {
 	gameRepo   gameRepo.Repository
 	playerRepo playerRepo.Repository
+	weightRepo weightRepo.Repository
 }
 
-func NewService(gameRepo gameRepo.Repository, playerRepo playerRepo.Repository) Service {
-	return &service{gameRepo: gameRepo, playerRepo: playerRepo}
+func NewService(gameRepo gameRepo.Repository, playerRepo playerRepo.Repository, weightRepo weightRepo.Repository) Service {
+	return &service{gameRepo: gameRepo, playerRepo: playerRepo, weightRepo: weightRepo}
 }
 
 func (s *service) EnterGame(input *enter_game.Input) (output *enter_game.Output, err error) {
