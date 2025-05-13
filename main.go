@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	gameCfg "game_server_slots_fortune_snake/config/game"
 	"game_server_slots_fortune_snake/config/system"
 	"game_server_slots_fortune_snake/db"
 	"game_server_slots_fortune_snake/etcd"
@@ -87,7 +88,7 @@ func main() {
 	}
 
 	// 初始化工廠
-	repoFact := repoFactory.New(mysqlDB.DB(), redisDB.RDB())
+	repoFact := repoFactory.New(mysqlDB.DB(), redisDB.RDB(), gameCfg.New())
 	serviceFact := serviceFactory.New(repoFact)
 	factory := controllerFactory.New(serviceFact)
 
