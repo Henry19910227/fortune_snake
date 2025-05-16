@@ -20,8 +20,8 @@ type controller struct {
 	resultSvc   resultService.Service
 }
 
-func New(reelSvc reelService.Service, reelFreeSvc reelsFreeService.Service, settleSvc settleService.Service, resultSvc resultService.Service) Controller {
-	return &controller{reelSvc: reelSvc, reelFreeSvc: reelFreeSvc, settleSvc: settleSvc, resultSvc: resultSvc}
+func New(reelSvc reelService.Service, settleSvc settleService.Service, resultSvc resultService.Service) Controller {
+	return &controller{reelSvc: reelSvc, settleSvc: settleSvc, resultSvc: resultSvc}
 }
 
 func (c *controller) Generate() {
@@ -54,14 +54,4 @@ func (c *controller) Generate() {
 		fmt.Println(err)
 	}
 	fmt.Println("盤面數據遷移至DB完成")
-}
-
-func (c *controller) GenerateFree() {
-	// 生成一個盤面
-	reelsList := c.reelFreeSvc.Generate([]int{3, 4, 3})
-	// 將盤面物件轉換為Json
-	for _, reels := range reelsList {
-		toJsonOutput, _ := c.settleSvc.ToJson(to_json.NewInput(reels))
-		fmt.Println(toJsonOutput.GetJson())
-	}
 }
