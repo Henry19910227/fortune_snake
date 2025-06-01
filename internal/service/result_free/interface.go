@@ -1,7 +1,7 @@
 package result
 
 import (
-	"game_server_slots_fortune_snake/internal/model/repository/result_free/random"
+	model "game_server_slots_fortune_snake/internal/model/entity/result_free"
 	"game_server_slots_fortune_snake/internal/model/service/result_free/save_to_bucket"
 )
 
@@ -13,5 +13,5 @@ type Service interface {
 	// LoadData 將盤面結果載入至內存
 	LoadData() (err error)
 	// Random 獲取隨機盤面結果
-	Random(rate float64) (output *random.Output, err error)
+	Random(rate float64) (output *model.Item, err error)
 }

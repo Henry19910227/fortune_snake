@@ -4,7 +4,6 @@ import (
 	"game_server_slots_fortune_snake/constants"
 	model "game_server_slots_fortune_snake/internal/model/entity/result_free"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
-	"game_server_slots_fortune_snake/internal/model/repository/result_free/create_items"
 	"gorm.io/gorm"
 	"math/rand"
 )
@@ -18,8 +17,8 @@ func New(db *gorm.DB) Repository {
 	return &repository{db: db, resultsMap: make(map[float64][]*model.Item)}
 }
 
-func (r *repository) CreateItems(input *create_items.Input) (err error) {
-	err = r.db.Create(input.GetItems()).Error
+func (r *repository) CreateItems(items []*model.Item) (err error) {
+	err = r.db.Create(items).Error
 	if err != nil {
 		return errMsg.New(constants.CodeInternalError, err.Error(), err)
 	}

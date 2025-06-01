@@ -2,10 +2,8 @@ package result
 
 import (
 	"game_server_slots_fortune_snake/constants"
+	model "game_server_slots_fortune_snake/internal/model/entity/result_free"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
-	"game_server_slots_fortune_snake/internal/model/repository/result_free/create_items"
-	"game_server_slots_fortune_snake/internal/model/repository/result_free/random"
-	randomData "game_server_slots_fortune_snake/internal/model/repository/result_free/random"
 	"game_server_slots_fortune_snake/internal/model/service/result_free/save_to_bucket"
 	bucketRepo "game_server_slots_fortune_snake/internal/repository/bucket_free"
 	resultRepo "game_server_slots_fortune_snake/internal/repository/result_free"
@@ -35,7 +33,7 @@ func (s *service) Migrate() (err error) {
 	// 獲取暫存區所有產生的盤面數據
 	output := s.bucketRepo.AllItems()
 	// 將盤面數據存入db
-	err = s.resultRepo.CreateItems(create_items.NewInput(output.Items()))
+	err = s.resultRepo.CreateItems(output.Items())
 	if err != nil {
 		return err
 	}
@@ -46,11 +44,10 @@ func (s *service) LoadData() (err error) {
 	return s.resultRepo.LoadData()
 }
 
-func (s *service) Random(input *random.Input) (output *random.Output, err error) {
-	outputData, err := s.resultRepo.Random(randomData.NewInput(input.Param.Rate))
+func (s *service) Random(rate float64) (output *model.Item, err error) {
+	outputData, err := s.resultRepo.Random(rate)
 	if err != nil {
 		return nil, err
 	}
-	output = random.NewOutput(outputData.GetItem())
-	return output, nil
+	return outputData, nil
 }
