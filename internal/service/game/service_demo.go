@@ -51,3 +51,7 @@ func (s *serviceDemo) Bet(input *bet.Input) (output *bet.Output, err error) {
 	output.Data = &bet.Data{}
 	return output, nil
 }
+
+func (s *serviceDemo) SpinMode() int {
+	return 0
+}
