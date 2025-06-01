@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"game_server_slots_fortune_snake/constants"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
-	"game_server_slots_fortune_snake/internal/model/repository/result/create_items"
 	"game_server_slots_fortune_snake/internal/model/service/result/migrate"
 	"game_server_slots_fortune_snake/internal/model/service/result/save_to_bucket"
 	bucketRepo "game_server_slots_fortune_snake/internal/repository/bucket"
@@ -35,7 +34,7 @@ func (s *service) Migrate(input *migrate.Input) (err error) {
 	// 獲取暫存區所有產生的盤面數據
 	output := s.bucketRepo.AllItems()
 	// 將盤面數據存入db
-	err = s.resultRepo.CreateItems(create_items.NewInput(output.Items()))
+	err = s.resultRepo.CreateItems(output.Items())
 	if err != nil {
 		return err
 	}

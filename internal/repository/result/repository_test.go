@@ -5,7 +5,6 @@ import (
 	"game_server_slots_fortune_snake/config/system"
 	"game_server_slots_fortune_snake/db"
 	"game_server_slots_fortune_snake/internal/model/entity/result"
-	"game_server_slots_fortune_snake/internal/model/repository/result/create_items"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
@@ -45,7 +44,7 @@ func TestRepository_CreatItems(t *testing.T) {
 	repo := New(mysqlDB.DB())
 
 	// 插入數據
-	err = repo.CreateItems(create_items.NewInput(items))
+	err = repo.CreateItems(items)
 	assert.Nil(t, err)
 }
 
