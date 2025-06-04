@@ -1,9 +1,10 @@
 package player
 
 import (
-	"game_server_slots_fortune_snake/internal/model/service/player/get_player_session"
+	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
+	"game_server_slots_fortune_snake/internal/server"
 )
 
 type Service interface {
-	GetPlayerSession(input *get_player_session.Input) (output *get_player_session.Output, err error)
+	GetPlayerSession(ctx *server.Context, playerId uint64) (output *playerModel.Session, err error)
 }

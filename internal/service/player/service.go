@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"game_server_slots_fortune_snake/constants"
+	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
-	"game_server_slots_fortune_snake/internal/model/service/player/get_player_session"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
+	"game_server_slots_fortune_snake/internal/server"
 	"game_server_slots_fortune_snake/pkg"
 	"github.com/redis/go-redis/v9"
 )
@@ -19,9 +20,9 @@ func NewService(playerRepo playerRepo.Repository) Service {
 	return &service{playerRepo: playerRepo}
 }
 
-func (s *service) GetPlayerSession(input *get_player_session.Input) (output *get_player_session.Output, err error) {
-	grpcCtx := input.Ctx.MustGet("ctx").(context.Context)
-	data, err := s.playerRepo.FindPlayerSessionById(grpcCtx, input.PlayerId)
+func (s *service) GetPlayerSession(ctx *server.Context, playerId uint64) (output *playerModel.Session, err error) {
+	grpcCtx := ctx.MustGet("ctx").(context.Context)
+	data, err := s.playerRepo.FindPlayerSessionById(grpcCtx, playerId)
 	if err != nil {
 		var e *errMsg.Error
 		if errors.Is(err, redis.Nil) {
@@ -31,7 +32,5 @@ func (s *service) GetPlayerSession(input *get_player_session.Input) (output *get
 		e = errMsg.New(constants.CodeBadRequest, pkg.LocalizeInstance().LocalizeMessage("RedisError", map[string]interface{}{"err": err}), err)
 		return nil, e
 	}
-	output = &get_player_session.Output{}
-	output.Session = data
-	return output, nil
+	return data, nil
 }

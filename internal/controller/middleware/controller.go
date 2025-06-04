@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"game_server_slots_fortune_snake/constants"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
-	"game_server_slots_fortune_snake/internal/model/service/player/get_player_session"
 	"game_server_slots_fortune_snake/internal/server"
 	playerService "game_server_slots_fortune_snake/internal/service/player"
 )
@@ -21,17 +20,13 @@ func New(playerService playerService.Service) Controller {
 // Verify 第三層 驗證 PlayerID 並獲取 Player Session 資訊
 func (c *controller) Verify(ctx *server.Context) {
 	playerId := ctx.MustGet("playerId").(uint64)
-
-	input := get_player_session.Input{}
-	input.Ctx = ctx
-	input.PlayerId = playerId
-	output, err := c.playerService.GetPlayerSession(&input)
+	output, err := c.playerService.GetPlayerSession(ctx, playerId)
 	if err != nil {
 		ctx.SendError(err)
 		ctx.Abort()
 		return
 	}
-	ctx.Set("session", output.Session)
+	ctx.Set("session", output)
 }
 
 // Recover panic 恢復層

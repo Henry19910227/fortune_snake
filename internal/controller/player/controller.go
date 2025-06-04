@@ -3,7 +3,6 @@ package player
 import (
 	"game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/internal/model"
-	"game_server_slots_fortune_snake/internal/model/service/player/get_player_session"
 	"game_server_slots_fortune_snake/internal/server"
 	playerService "game_server_slots_fortune_snake/internal/service/player"
 )
@@ -19,14 +18,11 @@ func New(playerService playerService.Service) Controller {
 func (c *controller) GetPlayerSession(ctx *server.Context) {
 	req := ctx.MustGet("req").(*model.MessageRequest)
 	// 查詢 Player Session
-	input := &get_player_session.Input{}
-	input.Ctx = ctx
-	input.PlayerId = req.PlayerId
-	output, err := c.playerService.GetPlayerSession(input)
+	output, err := c.playerService.GetPlayerSession(ctx, req.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
 	// 返回結果
-	ctx.Send(constants.CodeSuccess, "success", output.Session)
+	ctx.Send(constants.CodeSuccess, "success", output)
 }
