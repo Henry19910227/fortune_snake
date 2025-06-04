@@ -3,9 +3,8 @@ package result
 import (
 	"encoding/json"
 	"game_server_slots_fortune_snake/constants"
+	"game_server_slots_fortune_snake/internal/model/entity/result"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
-	"game_server_slots_fortune_snake/internal/model/service/result/migrate"
-	"game_server_slots_fortune_snake/internal/model/service/result/save_to_bucket"
 	bucketRepo "game_server_slots_fortune_snake/internal/repository/bucket"
 	resultRepo "game_server_slots_fortune_snake/internal/repository/result"
 )
@@ -19,14 +18,12 @@ func New(resultRepo resultRepo.Repository, bucketRepo bucketRepo.Repository) Ser
 	return &service{resultRepo: resultRepo, bucketRepo: bucketRepo}
 }
 
-func (s *service) SaveToBucket(input *save_to_bucket.Input) (output *save_to_bucket.Output) {
-	result := input.Param.Result
+func (s *service) SaveToBucket(result *result.Item) (quota int) {
 	s.bucketRepo.Save(result)
-	output = save_to_bucket.NewOutput(s.bucketRepo.Quota())
-	return output
+	return s.bucketRepo.Quota()
 }
 
-func (s *service) Migrate(input *migrate.Input) (err error) {
+func (s *service) Migrate() (err error) {
 	// 判斷暫存區數據是否裝滿
 	if s.bucketRepo.Quota() > 0 {
 		return errMsg.New(constants.CodeInternalError, "盤面結果數據尚未齊全", nil)

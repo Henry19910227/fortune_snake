@@ -3,8 +3,6 @@ package result
 import (
 	"fmt"
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
-	"game_server_slots_fortune_snake/internal/model/service/result/migrate"
-	"game_server_slots_fortune_snake/internal/model/service/result/save_to_bucket"
 	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
 	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 	reelService "game_server_slots_fortune_snake/internal/service/reels"
@@ -38,18 +36,17 @@ func (c *controller) Generate() {
 		// 準備盤面結果 model
 		result := &resultModel.Item{Rate: getRateOutput.GetRate(), Symbols: toJsonOutput.GetJson()}
 		// 將盤面結果存進 bucket 暫存區
-		saveInput := save_to_bucket.NewInput(result)
-		saveOutput := c.resultSvc.SaveToBucket(saveInput)
+		quota := c.resultSvc.SaveToBucket(result)
 		// 判斷 Bucket 剩餘空間是否還大於零，如大於零則繼續生產
-		if saveOutput.GetQuota() > 0 {
-			fmt.Println(saveOutput.GetQuota())
+		if quota > 0 {
+			fmt.Println(quota)
 			continue
 		}
 		fmt.Println("盤面數據生成完成，並存入暫存區")
 		break
 	}
 	fmt.Println("開始將暫存區數據遷移至DB")
-	err := c.resultSvc.Migrate(&migrate.Input{})
+	err := c.resultSvc.Migrate()
 	if err != nil {
 		fmt.Println(err)
 	}
