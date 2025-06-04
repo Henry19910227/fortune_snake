@@ -4,7 +4,6 @@ import (
 	"fmt"
 	model "game_server_slots_fortune_snake/internal/model/config/bucket"
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result_free"
-	"game_server_slots_fortune_snake/internal/model/repository/bucket_free/all_items"
 	"sync"
 )
 
@@ -80,15 +79,14 @@ func (r *repository) Items(lowerLimit float64, upperLimit float64) []*resultMode
 	return bucket
 }
 
-func (r *repository) AllItems() (output *all_items.Output) {
+func (r *repository) AllItems() []*resultModel.Item {
 	items := make([]*resultModel.Item, 0)
 	for _, bucket := range r.bucketMap {
 		for _, item := range bucket {
 			items = append(items, item)
 		}
 	}
-	output = all_items.NewOutput(items)
-	return output
+	return items
 }
 
 func (r *repository) findKey(rate float64) *key {

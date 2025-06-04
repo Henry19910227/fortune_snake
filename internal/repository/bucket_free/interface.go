@@ -2,7 +2,6 @@ package bucket
 
 import (
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result_free"
-	"game_server_slots_fortune_snake/internal/model/repository/bucket_free/all_items"
 )
 
 type Repository interface {
@@ -12,5 +11,5 @@ type Repository interface {
 	// Items 以一個範圍區間獲取 items
 	Items(lowerLimit float64, upperLimit float64) []*resultModel.Item
 	// AllItems 獲取所有 item
-	AllItems() (output *all_items.Output)
+	AllItems() []*resultModel.Item
 }

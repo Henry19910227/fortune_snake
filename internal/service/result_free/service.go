@@ -31,9 +31,9 @@ func (s *service) Migrate() (err error) {
 		return errMsg.New(constants.CodeInternalError, "盤面結果數據尚未齊全", nil)
 	}
 	// 獲取暫存區所有產生的盤面數據
-	output := s.bucketRepo.AllItems()
+	items := s.bucketRepo.AllItems()
 	// 將盤面數據存入db
-	err = s.resultRepo.CreateItems(output.Items())
+	err = s.resultRepo.CreateItems(items)
 	if err != nil {
 		return err
 	}
