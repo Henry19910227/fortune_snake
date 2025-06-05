@@ -49,18 +49,22 @@ func (c *controller) Bet(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	// 取得對應模式下的 game service
 	gameSvc := c.getGameService(session.Mode)
-	// 取得對應模式下的 result service
-
 	// 取得旋轉模式
 	spinMode := gameSvc.SpinMode()
+	// 取得對應模式下的 result service
+	resultSvc := c.getResultService(spinMode)
 	// 取得賠率
 	rate, err := c.getRate(spinMode, float64(session.GameRtp))
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
-
-	println(rate)
+	// 取得盤面
+	_, err = resultSvc.Random(rate)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
 }
 
 func (c *controller) getRate(spinMode int, rtp float64) (float64, error) {

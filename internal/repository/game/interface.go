@@ -1,12 +1,13 @@
 package game
 
 import (
-	"game_server_slots_fortune_snake/internal/model/repository/game/info"
+	"context"
+	gameModel "game_server_slots_fortune_snake/internal/model/entity/game"
 )
 
 type Repository interface {
 	// Info 獲取遊戲配置數據
-	Info(input *info.Input) (output *info.Output, err error)
+	Info() (info *gameModel.Info, err error)
 	// IsSpecialMode 是否是特殊模式
-	IsSpecialMode() bool
+	IsSpecialMode(ctx context.Context, playerId uint64) (bool, error)
 }

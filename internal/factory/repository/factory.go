@@ -24,7 +24,7 @@ func New(db *gorm.DB, rdb *redis.Client, cfg gameCfg.Config) Factory {
 }
 
 func (f *factory) GameRepository() gameRepo.Repository {
-	return gameRepo.New()
+	return gameRepo.New(f.rdb)
 }
 
 func (f *factory) PlayerRepository() playerRepo.Repository {

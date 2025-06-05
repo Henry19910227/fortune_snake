@@ -3,7 +3,6 @@ package game
 import (
 	"game_server_slots_fortune_snake/constants"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
-	"game_server_slots_fortune_snake/internal/model/repository/game/info"
 	"game_server_slots_fortune_snake/internal/model/service/game/bet"
 	"game_server_slots_fortune_snake/internal/model/service/game/enter_game"
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
@@ -25,7 +24,7 @@ func NewService(gameRepo gameRepo.Repository, playerRepo playerRepo.Repository, 
 
 func (s *service) EnterGame(input *enter_game.Input) (output *enter_game.Output, err error) {
 	// 獲取遊戲配置
-	infoOutput, err := s.gameRepo.Info(info.NewInput())
+	info, err := s.gameRepo.Info()
 	if err != nil {
 		return nil, errMsg.New(constants.CodeBadRequest, err.Error(), err)
 	}
@@ -37,13 +36,13 @@ func (s *service) EnterGame(input *enter_game.Input) (output *enter_game.Output,
 	// 處理回傳
 	output = &enter_game.Output{}
 	output.Data = &enter_game.Data{
-		Bets:               infoOutput.GetInfo().Bets,
-		Values:             infoOutput.GetInfo().Values,
+		Bets:               info.Bets,
+		Values:             info.Values,
 		Bet:                playerGameData.Bet,
 		Value:              playerGameData.Value,
 		GameMode:           input.Session.Mode,
-		Multipler:          infoOutput.GetInfo().Multipler,
-		MultipleScoreLimit: infoOutput.GetInfo().MultipleScoreLimit,
+		Multipler:          info.Multipler,
+		MultipleScoreLimit: info.MultipleScoreLimit,
 		ScoreTry:           0, // 真實遊玩回傳 0
 	}
 	return output, nil
