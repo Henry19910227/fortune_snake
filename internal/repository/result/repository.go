@@ -18,7 +18,7 @@ func New(db *gorm.DB) Repository {
 }
 
 func (r *repository) CreateItems(items []*model.Item) (err error) {
-	err = r.db.Create(items).Error
+	err = r.db.Table("fortune_snake_results_free").Create(items).Error
 	if err != nil {
 		return errMsg.New(constants.CodeInternalError, err.Error(), err)
 	}
