@@ -7,7 +7,6 @@ import (
 	"game_server_slots_fortune_snake/internal/server"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
 	resultService "game_server_slots_fortune_snake/internal/service/result"
-	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 )
 
@@ -16,12 +15,12 @@ type controller struct {
 	gameDemoService   gameService.Service // 試玩模式 service
 	weightService     weightService.Service
 	resultService     resultService.Service
-	resultFreeService resultFreeService.Service
+	resultFreeService resultService.Service
 }
 
 func New(gameService gameService.Service, gameDemoService gameService.Service,
 	weightService weightService.Service, resultService resultService.Service,
-	resultFreeService resultFreeService.Service) Controller {
+	resultFreeService resultService.Service) Controller {
 	return &controller{gameService: gameService, gameDemoService: gameDemoService,
 		weightService: weightService, resultService: resultService,
 		resultFreeService: resultFreeService}
@@ -48,20 +47,25 @@ func (c *controller) EnterGame(ctx *server.Context) {
 func (c *controller) Bet(ctx *server.Context) {
 	// 取得 session 數據
 	session := ctx.MustGet("session").(*playerModel.Session)
+	// 取得對應模式下的 game service
+	gameSvc := c.getGameService(session.Mode)
+	// 取得對應模式下的 result service
+
 	// 取得旋轉模式
-	spinMode := c.getGameService(session.Mode).SpinMode()
+	spinMode := gameSvc.SpinMode()
 	// 取得賠率
 	rate, err := c.getRate(spinMode, float64(session.GameRtp))
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
+
 	println(rate)
 }
 
-func (c *controller) getRate(mode int, rtp float64) (float64, error) {
+func (c *controller) getRate(spinMode int, rtp float64) (float64, error) {
 	// 一般模式
-	if mode == 0 {
+	if spinMode == 0 {
 		return c.weightService.RandomBaseWeightRate(rtp)
 	}
 	// 金蛇模式
@@ -75,4 +79,13 @@ func (c *controller) getGameService(mode string) gameService.Service {
 	}
 	// 真錢模式
 	return c.gameService
+}
+
+func (c *controller) getResultService(spinMode int) resultService.Service {
+	// 試玩模式
+	if spinMode == 0 {
+		return c.resultFreeService
+	}
+	// 真錢模式
+	return c.resultService
 }

@@ -18,7 +18,7 @@ func New(db *gorm.DB) Repository {
 }
 
 func (r *repository) CreateItems(items []*model.Item) (err error) {
-	err = r.db.Table("fortune_snake_results_free").Create(items).Error
+	err = r.db.Table("fortune_snake_results").Create(items).Error
 	if err != nil {
 		return errMsg.New(constants.CodeInternalError, err.Error(), err)
 	}
@@ -28,7 +28,7 @@ func (r *repository) CreateItems(items []*model.Item) (err error) {
 func (r *repository) LoadData() (err error) {
 	// 從 db 讀取 model
 	var items []*model.Item
-	if err := r.db.Find(&items).Error; err != nil {
+	if err := r.db.Table("fortune_snake_results").Find(&items).Error; err != nil {
 		return errMsg.New(constants.CodeInternalError, err.Error(), err)
 	}
 	// 將數據依照 rate 分類

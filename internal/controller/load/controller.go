@@ -2,7 +2,6 @@ package load
 
 import (
 	resultService "game_server_slots_fortune_snake/internal/service/result"
-	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 	"game_server_slots_fortune_snake/tool"
 	"go.uber.org/zap"
@@ -11,10 +10,10 @@ import (
 type controller struct {
 	weightService     weightService.Service
 	resultService     resultService.Service
-	resultFreeService resultFreeService.Service
+	resultFreeService resultService.Service
 }
 
-func New(weightService weightService.Service, resultService resultService.Service, resultFreeService resultFreeService.Service) Controller {
+func New(weightService weightService.Service, resultService resultService.Service, resultFreeService resultService.Service) Controller {
 	return &controller{weightService: weightService, resultService: resultService, resultFreeService: resultFreeService}
 }
 

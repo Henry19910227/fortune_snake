@@ -6,12 +6,12 @@ import (
 	gameConfig "game_server_slots_fortune_snake/config/game"
 	"game_server_slots_fortune_snake/config/system"
 	"game_server_slots_fortune_snake/db"
-	bucketRepository "game_server_slots_fortune_snake/internal/repository/bucket_free"
-	resultRepository "game_server_slots_fortune_snake/internal/repository/result_free"
+	bucketRepository "game_server_slots_fortune_snake/internal/repository/bucket"
+	resultRepository "game_server_slots_fortune_snake/internal/repository/result"
 	settleRepository "game_server_slots_fortune_snake/internal/repository/settle"
 	symbolRepository "game_server_slots_fortune_snake/internal/repository/symbol"
 	reelsFreeService "game_server_slots_fortune_snake/internal/service/reels_free"
-	resultService "game_server_slots_fortune_snake/internal/service/result_free"
+	resultService "game_server_slots_fortune_snake/internal/service/result"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
 	"log"
 	"testing"
@@ -38,7 +38,7 @@ func TestResultController_Generate_Free(t *testing.T) {
 	// repo 建立
 	symRepo := symbolRepository.New(gameCfg.SymbolConfig())
 	settRepo := settleRepository.New()
-	resultRepo := resultRepository.New(mysqlDB.DB())
+	resultRepo := resultRepository.NewFree(mysqlDB.DB())
 	bucketRepo := bucketRepository.New(gameCfg.FreeBucketConfig())
 
 	// service 建立
