@@ -3,7 +3,6 @@ package game
 import (
 	"game_server_slots_fortune_snake/constants"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
-	"game_server_slots_fortune_snake/internal/model/service/game/bet"
 	"game_server_slots_fortune_snake/internal/model/service/game/enter_game"
 	"game_server_slots_fortune_snake/internal/server"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
@@ -49,64 +48,31 @@ func (c *controller) EnterGame(ctx *server.Context) {
 func (c *controller) Bet(ctx *server.Context) {
 	// 取得 session 數據
 	session := ctx.MustGet("session").(*playerModel.Session)
-	// 獲取參數
-	var param bet.Param
-	if err := ctx.Bind(&param); err != nil {
-		ctx.SendError(err)
-		return
-	}
 	// 取得旋轉模式
-	spinMode := c.gameService.SpinMode()
+	spinMode := c.getGameService(session.Mode).SpinMode()
 	// 取得賠率
-	_, err := c.getRate(float64(session.GameRtp), spinMode)
+	rate, err := c.getRate(spinMode, float64(session.GameRtp))
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
-	// 取得盤面
-	if spinMode == 1 {
+	println(rate)
+}
 
+func (c *controller) getRate(mode int, rtp float64) (float64, error) {
+	// 一般模式
+	if mode == 0 {
+		return c.weightService.RandomBaseWeightRate(rtp)
 	}
-
-	// 處理輸入參數
-	input := &bet.Input{}
-	input.Ctx = ctx
-	input.Session = session
-	input.Param = &param
-	// 以 mode 獲取對應的 game service
-	service := c.getGameService(session.Mode)
-	// 執行 Bet 業務邏輯
-	output, err := service.Bet(input)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-	ctx.Send(constants.CodeSuccess, "success", output.Data)
+	// 金蛇模式
+	return c.weightService.RandomFreeWeightRate(rtp)
 }
 
 func (c *controller) getGameService(mode string) gameService.Service {
+	// 試玩模式
 	if mode == "demo" {
 		return c.gameDemoService
-	} // 試玩模式業務層
-	return c.gameService // 真實模式業務層
-}
-
-func (c *controller) getRate(rtp float64, spinMode int) (float64, error) {
-	// 金蛇模式
-	if spinMode == 1 {
-		return c.weightService.RandomFreeWeightRate(rtp)
 	}
-	// 普通模式
-	return c.weightService.RandomBaseWeightRate(rtp)
-}
-
-func (c *controller) getResult(spinMode int, rate float64) {
-	// 金蛇模式
-	//if spinMode == 1 {
-	//	symbols, err := c.resultService.Random(rate)
-	//	if err != nil {
-	//
-	//	}
-	//}
-	// 普通模式
+	// 真錢模式
+	return c.gameService
 }
