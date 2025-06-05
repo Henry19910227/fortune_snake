@@ -33,5 +33,11 @@ const CacheNameRocketCrashBetsData = "Bets:RocketCrash:%d"
 // CacheNameChannelSettlement 游戏结算的发布订阅
 const CacheNameChannelSettlement = "Channel_Settlement_Game_%d"
 
+// CacheNameSpinMode 該用戶當前旋轉模式
+const CacheNameSpinMode = "Player:%v:FortuneSnake:SpinMode"
+
+// CacheNameCurrentFreeTimes 該用戶剩餘免費旋轉次數
+const CacheNameCurrentFreeTimes = "Player:%v:FortuneSnake:CurrentFreeTimes"
+
 // SpecialProbability 进入特殊模式的概率
 const SpecialProbability = 0.008 // 进入特殊模式的概率
