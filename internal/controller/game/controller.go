@@ -70,31 +70,33 @@ func (c *controller) BetForReal(ctx *server.Context, rtp float64) {
 
 	// 進入金蛇模式
 	if spinMode == 1 {
-		// 獲取賠率
-		rate, err := c.weightService.RandomFreeWeightRate(rtp)
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 獲取金蛇盤面
-		_, err = c.resultFreeService.Random(rate)
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 取出第一個金蛇盤面
-
-		// 緩存第一個金蛇盤面 lastResults key
-
-		// 緩存剩餘金蛇盤面至 FreeResults key
-
-		// 結算第一個金蛇盤面
-
-		// 回傳結果
-
+		c.FreeModeInReal(ctx, rtp)
 		return
 	}
+	c.BaseModeInReal(ctx, rtp)
+}
 
+func (c *controller) BetForDemo(ctx *server.Context, rtp float64) {
+	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
+	// results := c.gameService.RestoreResults
+
+	// if len(results) > 0 {
+	//     執行剩餘未完成的金蛇模式業務
+	//     return
+	// }
+
+	// 沒有尚未消費的盤面，擇開新的一局，取得當前模式
+	spinMode := c.gameService.SpinMode()
+
+	// 進入金蛇模式
+	if spinMode == 1 {
+		c.FreeModeInDemo(ctx, rtp)
+		return
+	}
+	c.BaseModeInDemo(ctx, rtp)
+}
+
+func (c *controller) BaseModeInDemo(ctx *server.Context, rtp float64) {
 	// 獲取賠率
 	rate, err := c.weightService.RandomBaseWeightRate(rtp)
 	if err != nil {
@@ -113,33 +115,81 @@ func (c *controller) BetForReal(ctx *server.Context, rtp float64) {
 
 	// 結算盤面
 
+	// 餘額計算
+
 	// 回傳結果
 }
 
-func (c *controller) BetForDemo(ctx *server.Context, rtp float64) {
-	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
-	// results := c.gameService.RestoreResults
-
-	// if len(results) > 0 {
-	//     執行剩餘未完成的金蛇模式業務
-	//     return
-	// }
-}
-
-func (c *controller) BaseModeInDemo(ctx *server.Context, rtp float64) {
-
-}
-
 func (c *controller) FreeModeInDemo(ctx *server.Context, rtp float64) {
+	// 獲取賠率
+	rate, err := c.weightService.RandomFreeWeightRate(rtp)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+	// 獲取金蛇盤面
+	_, err = c.resultFreeService.Random(rate)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+	// 取出第一個金蛇盤面
 
+	// 緩存第一個金蛇盤面 LastResults key
+
+	// 緩存剩餘金蛇盤面至 FreeResults key
+
+	// 結算第一個金蛇盤面
+
+	// 回傳結果
 }
 
 func (c *controller) BaseModeInReal(ctx *server.Context, rtp float64) {
+	// 獲取賠率
+	rate, err := c.weightService.RandomBaseWeightRate(rtp)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
 
+	// 取得隨機盤面
+	_, err = c.resultService.Random(rate)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 緩存盤面 lastResults key
+
+	// 結算盤面
+
+	// 餘額計算
+
+	// 回傳結果
 }
 
 func (c *controller) FreeModeInReal(ctx *server.Context, rtp float64) {
+	// 獲取賠率
+	rate, err := c.weightService.RandomFreeWeightRate(rtp)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+	// 獲取金蛇盤面
+	_, err = c.resultFreeService.Random(rate)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+	// 取出第一個金蛇盤面
 
+	// 緩存第一個金蛇盤面 LastResults key
+
+	// 緩存剩餘金蛇盤面至 FreeResults key
+
+	// 結算第一個金蛇盤面
+
+	// 回傳結果
 }
 
 func (c *controller) getRate(spinMode int, rtp float64) (float64, error) {
