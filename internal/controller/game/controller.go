@@ -48,75 +48,98 @@ func (c *controller) Bet(ctx *server.Context) {
 	// 取得 session 數據
 	session := ctx.MustGet("session").(*playerModel.Session)
 
-	// 取得對應模式下的 game service(real/demo)
-	gameSvc := c.getGameService(session.Mode)
-	// 檢查redis是否有免費盤面List尚未消費(real/demo)，如有則代表當前是金蛇模式
-	// results := gameSvc.RestoreResults
-	// if len(results) > 0 {
-	//     執行金蛇模式業務
-	//     return
-	// }
-
-	// 沒有免費盤面則重新隨機出旋轉模式
-	spinMode := gameSvc.SpinMode()
-
-	// 取得賠率
-	rate, err := c.getRate(spinMode, float64(session.GameRtp))
-	if err != nil {
-		ctx.SendError(err)
+	// 進入試玩模式
+	if session.Mode == "demo" {
+		c.BetForDemo(ctx, float64(session.GameRtp))
 		return
 	}
-
-	// 取得隨機盤面
-	resultSvc := c.getResultService(spinMode)
-	_, err = resultSvc.Random(rate)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// if len(results) > 0 {
-	//     執行金蛇模式業務
-	//     return
-	// }
-
-	// 緩存當前盤面
-
-	// 緩存多個金蛇盤面
-
+	c.BetForReal(ctx, float64(session.GameRtp))
 }
 
-func (c *controller) betForReal(ctx *server.Context, rtp float64) {
-	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前是金蛇模式
+func (c *controller) BetForReal(ctx *server.Context, rtp float64) {
+	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
 	// results := c.gameService.RestoreResults
 
 	// if len(results) > 0 {
-	//     執行金蛇模式業務
+	//     執行剩餘未完成的金蛇模式業務
 	//     return
 	// }
 
-	// 沒有免費盤面則重新隨機出旋轉模式
+	// 沒有尚未消費的盤面，擇開新的一局，取得當前模式
 	spinMode := c.gameService.SpinMode()
 
-	// 取得賠率
-	rate, err := c.getRate(spinMode, rtp)
+	// 進入金蛇模式
+	if spinMode == 1 {
+		// 獲取賠率
+		rate, err := c.weightService.RandomFreeWeightRate(rtp)
+		if err != nil {
+			ctx.SendError(err)
+			return
+		}
+		// 獲取金蛇盤面
+		_, err = c.resultFreeService.Random(rate)
+		if err != nil {
+			ctx.SendError(err)
+			return
+		}
+		// 取出第一個金蛇盤面
+
+		// 緩存第一個金蛇盤面 lastResults key
+
+		// 緩存剩餘金蛇盤面至 FreeResults key
+
+		// 結算第一個金蛇盤面
+
+		// 回傳結果
+
+		return
+	}
+
+	// 獲取賠率
+	rate, err := c.weightService.RandomBaseWeightRate(rtp)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
 
 	// 取得隨機盤面
-	resultSvc := c.getResultService(spinMode)
-	_, err = resultSvc.Random(rate)
+	_, err = c.resultService.Random(rate)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
+
+	// 緩存盤面 lastResults key
+
+	// 結算盤面
+
+	// 回傳結果
 }
 
-func (c *controller) betForDemo(ctx *server.Context) {
-	// 檢查redis是否有免費盤面List尚未消費(demo)，如有則代表當前是金蛇模式
+func (c *controller) BetForDemo(ctx *server.Context, rtp float64) {
+	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
 	// results := c.gameService.RestoreResults
+
+	// if len(results) > 0 {
+	//     執行剩餘未完成的金蛇模式業務
+	//     return
+	// }
+}
+
+func (c *controller) BaseModeInDemo(ctx *server.Context, rtp float64) {
+
+}
+
+func (c *controller) FreeModeInDemo(ctx *server.Context, rtp float64) {
+
+}
+
+func (c *controller) BaseModeInReal(ctx *server.Context, rtp float64) {
+
+}
+
+func (c *controller) FreeModeInReal(ctx *server.Context, rtp float64) {
+
 }
 
 func (c *controller) getRate(spinMode int, rtp float64) (float64, error) {
