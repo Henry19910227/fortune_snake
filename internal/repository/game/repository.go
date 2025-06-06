@@ -6,6 +6,7 @@ import (
 	"game_server_slots_fortune_snake/constants"
 	gameModel "game_server_slots_fortune_snake/internal/model/entity/game"
 	"github.com/redis/go-redis/v9"
+	"time"
 )
 
 type repository struct {
@@ -26,6 +27,12 @@ func (r *repository) Info() (info *gameModel.Info, err error) {
 	return info, nil
 }
 
+func (r *repository) SetSpecialMode(ctx context.Context, playerId uint64, specialMode bool) error {
+	key := fmt.Sprintf(constants.CacheNamePlayerSession, playerId)
+	err := r.rdb.SetEx(ctx, key, specialMode, 20*24*time.Hour).Err()
+	return err
+}
+
 func (r *repository) IsSpecialMode(ctx context.Context, playerId uint64) (bool, error) {
 	key := fmt.Sprintf(constants.CacheNamePlayerSession, playerId)
 	result, err := r.rdb.Get(ctx, key).Result()
@@ -36,4 +43,9 @@ func (r *repository) IsSpecialMode(ctx context.Context, playerId uint64) (bool, 
 		return false, nil
 	}
 	return true, nil
+}
+
+func (r *repository) RestoreResults() {
+	//TODO implement me
+	panic("implement me")
 }

@@ -61,3 +61,8 @@ func (s *service) SpinMode() int {
 	}
 	return 0
 }
+
+func (s *service) RestoreResults() {
+	//TODO implement me
+	panic("implement me")
+}
