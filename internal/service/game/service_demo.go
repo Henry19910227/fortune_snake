@@ -54,3 +54,8 @@ func (s *serviceDemo) Bet(input *bet.Input) (output *bet.Output, err error) {
 func (s *serviceDemo) SpinMode() int {
 	return 0
 }
+
+func (s *serviceDemo) RestoreResults() {
+	//TODO implement me
+	panic("implement me")
+}

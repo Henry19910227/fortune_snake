@@ -50,13 +50,13 @@ func (c *controller) Bet(ctx *server.Context) {
 
 	// 進入試玩模式
 	if session.Mode == "demo" {
-		c.BetForDemo(ctx, float64(session.GameRtp))
+		c.BetInDemo(ctx, float64(session.GameRtp))
 		return
 	}
-	c.BetForReal(ctx, float64(session.GameRtp))
+	c.BetInReal(ctx, float64(session.GameRtp))
 }
 
-func (c *controller) BetForReal(ctx *server.Context, rtp float64) {
+func (c *controller) BetInReal(ctx *server.Context, rtp float64) {
 	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
 	// results := c.gameService.RestoreResults
 
@@ -65,7 +65,7 @@ func (c *controller) BetForReal(ctx *server.Context, rtp float64) {
 	//     return
 	// }
 
-	// 沒有尚未消費的盤面，擇開新的一局，取得當前模式
+	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
 	spinMode := c.gameService.SpinMode()
 
 	// 進入金蛇模式
@@ -76,7 +76,7 @@ func (c *controller) BetForReal(ctx *server.Context, rtp float64) {
 	c.BaseModeInReal(ctx, rtp)
 }
 
-func (c *controller) BetForDemo(ctx *server.Context, rtp float64) {
+func (c *controller) BetInDemo(ctx *server.Context, rtp float64) {
 	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
 	// results := c.gameService.RestoreResults
 

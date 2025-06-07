@@ -13,6 +13,11 @@ const (
 )
 
 const (
+	GameModeDemo = "demo"
+	GameModeReal = "real"
+)
+
+const (
 	SYMBOL_0 int = 0 + iota // 百搭 0  ====》200
 	SYMBOL_1                // 元宝 1  ====》100
 	SYMBOL_2                // 福箱 2  ====》50
@@ -38,6 +43,9 @@ const CacheNameSpinMode = "Player:%v:FortuneSnake:SpinMode"
 
 // CacheNameCurrentFreeTimes 該用戶剩餘免費旋轉次數
 const CacheNameCurrentFreeTimes = "Player:%v:FortuneSnake:CurrentFreeTimes"
+
+// CacheNameFreeResults 該用戶剩餘免費盤面
+const CacheNameFreeResults = "Player:%v:FortuneSnake:%v:FreeResults"
 
 // SpecialProbability 进入特殊模式的概率
 const SpecialProbability = 0.008 // 进入特殊模式的概率

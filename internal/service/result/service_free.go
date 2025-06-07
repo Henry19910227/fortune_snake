@@ -9,21 +9,21 @@ import (
 	resultRepo "game_server_slots_fortune_snake/internal/repository/result"
 )
 
-type service struct {
+type serviceFree struct {
 	resultRepo resultRepo.Repository
 	bucketRepo bucketRepo.Repository
 }
 
-func New(resultRepo resultRepo.Repository, bucketRepo bucketRepo.Repository) Service {
-	return &service{resultRepo: resultRepo, bucketRepo: bucketRepo}
+func NewFree(resultRepo resultRepo.Repository, bucketRepo bucketRepo.Repository) Service {
+	return &serviceFree{resultRepo: resultRepo, bucketRepo: bucketRepo}
 }
 
-func (s *service) SaveToBucket(result *result.Item) (quota int) {
+func (s *serviceFree) SaveToBucket(result *result.Item) (quota int) {
 	s.bucketRepo.Save(result)
 	return s.bucketRepo.Quota()
 }
 
-func (s *service) Migrate() (err error) {
+func (s *serviceFree) Migrate() (err error) {
 	// 判斷暫存區數據是否裝滿
 	if s.bucketRepo.Quota() > 0 {
 		return errMsg.New(constants.CodeInternalError, "盤面結果數據尚未齊全", nil)
@@ -38,19 +38,19 @@ func (s *service) Migrate() (err error) {
 	return nil
 }
 
-func (s *service) LoadData() (err error) {
+func (s *serviceFree) LoadData() (err error) {
 	return s.resultRepo.LoadData()
 }
 
-func (s *service) Random(rate float64) ([][][]int, error) {
+func (s *serviceFree) Random(rate float64) ([][][]int, error) {
 	item, err := s.resultRepo.Random(rate)
 	if err != nil {
 		return nil, err
 	}
-	var symbols [][]int
-	err = json.Unmarshal([]byte(item.Symbols), &symbols)
+	var allSymbols [][][]int
+	err = json.Unmarshal([]byte(item.AllSymbols), &allSymbols)
 	if err != nil {
 		return nil, errMsg.New(constants.CodeInternalError, err.Error(), err)
 	}
-	return [][][]int{symbols}, nil
+	return allSymbols, nil
 }
