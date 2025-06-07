@@ -1,44 +1,52 @@
 package result_free
 
-//type repository struct {
-//	db         *gorm.DB
-//	resultsMap map[float64][]*model.Item
-//}
-//
-//func New(db *gorm.DB) Repository {
-//	return &repository{db: db, resultsMap: make(map[float64][]*model.Item)}
-//}
-//
-//func (r *repository) CreateItems(items []*model.Item) (err error) {
-//	err = r.db.Create(items).Error
-//	if err != nil {
-//		return errMsg.New(constants.CodeInternalError, err.Error(), err)
-//	}
-//	return nil
-//}
-//
-//func (r *repository) LoadData() (err error) {
-//	// 從 db 讀取 model
-//	var items []*model.Item
-//	if err := r.db.Find(&items).Error; err != nil {
-//		return errMsg.New(constants.CodeInternalError, err.Error(), err)
-//	}
-//	// 將數據依照 rate 分類
-//	for _, item := range items {
-//		if _, ok := r.resultsMap[item.Rate]; !ok {
-//			r.resultsMap[item.Rate] = []*model.Item{}
-//		}
-//		r.resultsMap[item.Rate] = append(r.resultsMap[item.Rate], item)
-//	}
-//	return nil
-//}
-//
-//func (r *repository) Random(rate float64) (*model.Item, error) {
-//	items, ok := r.resultsMap[rate]
-//	if !ok {
-//		return nil, errMsg.New(constants.CodeInternalError, "找不到賠率", nil)
-//	}
-//	index := rand.Intn(len(items))
-//	item := items[index]
-//	return item, nil
-//}
+import (
+	"context"
+	"errors"
+	"fmt"
+	"game_server_slots_fortune_snake/constants"
+	"github.com/redis/go-redis/v9"
+	"time"
+)
+
+type repository struct {
+	rdb      *redis.Client
+	gameMode string
+}
+
+func New(rdb *redis.Client) Repository {
+	return &repository{rdb: rdb, gameMode: constants.GameModeDemo}
+}
+
+func (r *repository) GameMode(gameMode string) Repository {
+	r.gameMode = gameMode
+	return r
+}
+
+func (r *repository) SaveItems(ctx context.Context, playerId int, items []string) error {
+	key := fmt.Sprintf(constants.CacheNameFreeResults, playerId, r.gameMode)
+	if len(items) == 0 {
+		return nil
+	}
+	pipe := r.rdb.TxPipeline()
+	pipe.Del(ctx, key)
+	pipe.RPush(ctx, key, items)
+	pipe.Expire(ctx, key, 20*24*time.Hour)
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *repository) PopFirstItem(ctx context.Context, playerId int) (string, error) {
+	key := fmt.Sprintf(constants.CacheNameFreeResults, playerId, r.gameMode)
+	result, err := r.rdb.LPop(ctx, key).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return "", nil
+		}
+		return "", err
+	}
+	return result, nil
+}

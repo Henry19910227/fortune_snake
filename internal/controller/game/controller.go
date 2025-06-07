@@ -6,24 +6,24 @@ import (
 	"game_server_slots_fortune_snake/internal/model/service/game/enter_game"
 	"game_server_slots_fortune_snake/internal/server"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
-	resultService "game_server_slots_fortune_snake/internal/service/result"
+	resultLoader "game_server_slots_fortune_snake/internal/service/result_loader"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 )
 
 type controller struct {
-	gameService       gameService.Service // 真實模式 service
-	gameDemoService   gameService.Service // 試玩模式 service
-	weightService     weightService.Service
-	resultService     resultService.Service
-	resultFreeService resultService.Service
+	gameService      gameService.Service // 真實模式 service
+	gameDemoService  gameService.Service // 試玩模式 service
+	weightService    weightService.Service
+	resultLoader     resultLoader.Service
+	resultFreeLoader resultLoader.Service
 }
 
 func New(gameService gameService.Service, gameDemoService gameService.Service,
-	weightService weightService.Service, resultService resultService.Service,
-	resultFreeService resultService.Service) Controller {
+	weightService weightService.Service, resultLoader resultLoader.Service,
+	resultFreeLoader resultLoader.Service) Controller {
 	return &controller{gameService: gameService, gameDemoService: gameDemoService,
-		weightService: weightService, resultService: resultService,
-		resultFreeService: resultFreeService}
+		weightService: weightService, resultLoader: resultLoader,
+		resultFreeLoader: resultFreeLoader}
 }
 
 func (c *controller) EnterGame(ctx *server.Context) {
@@ -105,7 +105,7 @@ func (c *controller) BaseModeInDemo(ctx *server.Context, rtp float64) {
 	}
 
 	// 取得隨機盤面
-	_, err = c.resultService.Random(rate)
+	_, err = c.resultLoader.Random(rate)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -128,7 +128,7 @@ func (c *controller) FreeModeInDemo(ctx *server.Context, rtp float64) {
 		return
 	}
 	// 獲取金蛇盤面
-	_, err = c.resultFreeService.Random(rate)
+	_, err = c.resultFreeLoader.Random(rate)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -153,7 +153,7 @@ func (c *controller) BaseModeInReal(ctx *server.Context, rtp float64) {
 	}
 
 	// 取得隨機盤面
-	_, err = c.resultService.Random(rate)
+	_, err = c.resultLoader.Random(rate)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -176,7 +176,7 @@ func (c *controller) FreeModeInReal(ctx *server.Context, rtp float64) {
 		return
 	}
 	// 獲取金蛇盤面
-	_, err = c.resultFreeService.Random(rate)
+	_, err = c.resultFreeLoader.Random(rate)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -210,11 +210,11 @@ func (c *controller) getGameService(mode string) gameService.Service {
 	return c.gameService
 }
 
-func (c *controller) getResultService(spinMode int) resultService.Service {
+func (c *controller) getResultService(spinMode int) resultLoader.Service {
 	// 試玩模式
 	if spinMode == 0 {
-		return c.resultFreeService
+		return c.resultFreeLoader
 	}
 	// 真錢模式
-	return c.resultService
+	return c.resultLoader
 }

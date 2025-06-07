@@ -63,7 +63,7 @@ func (s *service) SpinMode() int {
 	return 0
 }
 
-func (s *service) SaveResults(ctx context.Context, playerId int, items [][][]int) error {
+func (s *service) SaveFreeResults(ctx context.Context, playerId int, items [][][]int) error {
 	//TODO implement me
 	panic("implement me")
 }

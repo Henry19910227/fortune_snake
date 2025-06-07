@@ -7,19 +7,19 @@ import (
 	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 	reelService "game_server_slots_fortune_snake/internal/service/reels"
 	reelsFreeService "game_server_slots_fortune_snake/internal/service/reels_free"
-	resultService "game_server_slots_fortune_snake/internal/service/result"
+	resultLoaderService "game_server_slots_fortune_snake/internal/service/result_loader"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
 )
 
 type controller struct {
-	reelSvc     reelService.Service
-	reelFreeSvc reelsFreeService.Service
-	settleSvc   settleService.Service
-	resultSvc   resultService.Service
+	reelSvc      reelService.Service
+	reelFreeSvc  reelsFreeService.Service
+	settleSvc    settleService.Service
+	resultLoader resultLoaderService.Service
 }
 
-func New(reelSvc reelService.Service, settleSvc settleService.Service, resultSvc resultService.Service) Controller {
-	return &controller{reelSvc: reelSvc, settleSvc: settleSvc, resultSvc: resultSvc}
+func New(reelSvc reelService.Service, settleSvc settleService.Service, resultLoader resultLoaderService.Service) Controller {
+	return &controller{reelSvc: reelSvc, settleSvc: settleSvc, resultLoader: resultLoader}
 }
 
 func (c *controller) Generate() {
@@ -36,7 +36,7 @@ func (c *controller) Generate() {
 		// 準備盤面結果 model
 		result := &resultModel.Item{Rate: getRateOutput.GetRate(), Symbols: toJsonOutput.GetJson()}
 		// 將盤面結果存進 bucket 暫存區
-		quota := c.resultSvc.SaveToBucket(result)
+		quota := c.resultLoader.SaveToBucket(result)
 		// 判斷 Bucket 剩餘空間是否還大於零，如大於零則繼續生產
 		if quota > 0 {
 			fmt.Println(quota)
@@ -46,7 +46,7 @@ func (c *controller) Generate() {
 		break
 	}
 	fmt.Println("開始將暫存區數據遷移至DB")
-	err := c.resultSvc.Migrate()
+	err := c.resultLoader.Migrate()
 	if err != nil {
 		fmt.Println(err)
 	}

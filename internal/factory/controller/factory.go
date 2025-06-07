@@ -21,9 +21,9 @@ func (f *factory) GameController() gameController.Controller {
 	gameSvc := f.serviceFactory.GameService()
 	gameDemoSvc := f.serviceFactory.GameDemoService()
 	weightSvc := f.serviceFactory.WeightService()
-	resultSvc := f.serviceFactory.ResultService()
-	resultFreeSvc := f.serviceFactory.ResultFreeService()
-	return game.New(gameSvc, gameDemoSvc, weightSvc, resultSvc, resultFreeSvc)
+	resultLoader := f.serviceFactory.ResultLoader()
+	resultFreeLoader := f.serviceFactory.ResultFreeLoader()
+	return game.New(gameSvc, gameDemoSvc, weightSvc, resultLoader, resultFreeLoader)
 }
 
 func (f *factory) PlayerController() player.Controller {
@@ -36,7 +36,7 @@ func (f *factory) MiddleController() middleware.Controller {
 
 func (f *factory) LoadController() loadController.Controller {
 	weightService := f.serviceFactory.WeightService()
-	resultService := f.serviceFactory.ResultService()
-	resultFreeService := f.serviceFactory.ResultFreeService()
-	return loadController.New(weightService, resultService, resultFreeService)
+	resultLoader := f.serviceFactory.ResultLoader()
+	resultFreeLoader := f.serviceFactory.ResultFreeLoader()
+	return loadController.New(weightService, resultLoader, resultFreeLoader)
 }

@@ -4,14 +4,12 @@ import (
 	"flag"
 	gameCfg "game_server_slots_fortune_snake/config/game"
 	"game_server_slots_fortune_snake/config/system"
+	. "game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/db"
 	bucketRepository "game_server_slots_fortune_snake/internal/repository/bucket"
-	bucketFreeRepository "game_server_slots_fortune_snake/internal/repository/bucket_free"
-	resultRepository "game_server_slots_fortune_snake/internal/repository/result"
-	resultFreeRepository "game_server_slots_fortune_snake/internal/repository/result_free"
+	resultLoaderRepository "game_server_slots_fortune_snake/internal/repository/result_loader"
 	weightRepository "game_server_slots_fortune_snake/internal/repository/weight"
-	resultService "game_server_slots_fortune_snake/internal/service/result"
-	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
+	resultLoaderService "game_server_slots_fortune_snake/internal/service/result_loader"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 	"log"
 	"testing"
@@ -32,15 +30,15 @@ func TestLoadController_Load(t *testing.T) {
 	defer mysqlDB.Close()
 	// 初始化 repository
 	weightRepo := weightRepository.New(cfg.RTPConfig())
-	resultRepo := resultRepository.New(mysqlDB.DB())
-	resultFreeRepo := resultFreeRepository.New(mysqlDB.DB())
+	resultLoaderRepo := resultLoaderRepository.SpinMode(SpinModeNormal).Init(mysqlDB.DB())
+	resultLoaderFreeRepo := resultLoaderRepository.SpinMode(SpinModeFree).Init(mysqlDB.DB())
 	bucketRepo := bucketRepository.New(cfg.BaseBucketConfig())
-	bucketFreeRepo := bucketFreeRepository.New(cfg.FreeBucketConfig())
+	bucketFreeRepo := bucketRepository.New(cfg.FreeBucketConfig())
 	// 初始化 service
 	weightSvc := weightService.New(weightRepo)
-	resultSvc := resultService.New(resultRepo, bucketRepo)
-	resultFreeSvc := resultFreeService.New(resultFreeRepo, bucketFreeRepo)
+	resultLoaderSvc := resultLoaderService.SpinMode(SpinModeNormal).Init(resultLoaderRepo, bucketRepo)
+	resultFreeLoaderSvc := resultLoaderService.SpinMode(SpinModeFree).Init(resultLoaderFreeRepo, bucketFreeRepo)
 	// 初始化 controller
-	loadController := New(weightSvc, resultSvc, resultFreeSvc)
+	loadController := New(weightSvc, resultLoaderSvc, resultFreeLoaderSvc)
 	loadController.Load()
 }

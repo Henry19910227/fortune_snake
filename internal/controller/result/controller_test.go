@@ -5,13 +5,14 @@ import (
 	"fmt"
 	gameConfig "game_server_slots_fortune_snake/config/game"
 	"game_server_slots_fortune_snake/config/system"
+	"game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/db"
 	bucketRepository "game_server_slots_fortune_snake/internal/repository/bucket"
-	resultRepository "game_server_slots_fortune_snake/internal/repository/result"
+	resultLoaderRepository "game_server_slots_fortune_snake/internal/repository/result_loader"
 	settleRepository "game_server_slots_fortune_snake/internal/repository/settle"
 	symbolRepository "game_server_slots_fortune_snake/internal/repository/symbol"
 	reelService "game_server_slots_fortune_snake/internal/service/reels"
-	resultService "game_server_slots_fortune_snake/internal/service/result"
+	resultLoaderService "game_server_slots_fortune_snake/internal/service/result_loader"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
 	"log"
 	"testing"
@@ -38,13 +39,13 @@ func TestResultController_Generate(t *testing.T) {
 	// repo 建立
 	symRepo := symbolRepository.New(gameCfg.SymbolConfig())
 	settRepo := settleRepository.New()
-	resultRepo := resultRepository.New(mysqlDB.DB())
+	resultRepo := resultLoaderRepository.SpinMode(constants.SpinModeNormal).Init(mysqlDB.DB())
 	bucketRepo := bucketRepository.New(gameCfg.BaseBucketConfig())
 
 	// service 建立
 	reelSvc := reelService.New(symRepo)
 	settleSvc := settleService.New(settRepo)
-	resultSvc := resultService.New(resultRepo, bucketRepo)
+	resultSvc := resultLoaderService.SpinMode(constants.SpinModeNormal).Init(resultRepo, bucketRepo)
 
 	// controller 建立
 	resultController := New(reelSvc, settleSvc, resultSvc)

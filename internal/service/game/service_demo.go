@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"game_server_slots_fortune_snake/constants"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
 	"game_server_slots_fortune_snake/internal/model/service/game/bet"
@@ -56,6 +57,11 @@ func (s *serviceDemo) SpinMode() int {
 }
 
 func (s *serviceDemo) RestoreResults() {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *serviceDemo) SaveFreeResults(ctx context.Context, playerId int, items [][][]int) error {
 	//TODO implement me
 	panic("implement me")
 }

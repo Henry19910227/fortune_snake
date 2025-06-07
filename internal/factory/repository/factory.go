@@ -3,7 +3,6 @@ package repository
 import (
 	gameCfg "game_server_slots_fortune_snake/config/game"
 	bucketRepo "game_server_slots_fortune_snake/internal/repository/bucket"
-	bucketFreeRepo "game_server_slots_fortune_snake/internal/repository/bucket_free"
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
 	resultRepo "game_server_slots_fortune_snake/internal/repository/result"
@@ -47,6 +46,6 @@ func (f *factory) BucketRepository() bucketRepo.Repository {
 	return bucketRepo.New(f.cfg.BaseBucketConfig())
 }
 
-func (f *factory) BucketFreeRepository() bucketFreeRepo.Repository {
-	return bucketFreeRepo.New(f.cfg.FreeBucketConfig())
+func (f *factory) BucketFreeRepository() bucketRepo.Repository {
+	return bucketRepo.New(f.cfg.FreeBucketConfig())
 }
