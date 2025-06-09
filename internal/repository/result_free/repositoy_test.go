@@ -65,3 +65,27 @@ func TestRepository_PopFirstItem(t *testing.T) {
 	}
 	fmt.Println(result)
 }
+
+func TestRepository_Amount(t *testing.T) {
+	// 加載 yaml
+	configFile := flag.String("config", "config.yaml", "YAML configuration file name")
+	flag.Parse()
+
+	// 加载配置文件
+	appConfig := system.New(configFile)
+
+	redisDB, err := db.NewRedisDB(appConfig.Config().Redis)
+	if err != nil {
+		log.Fatalf("❌ Redis 初始化失败: %v", err)
+	}
+	defer redisDB.Close()
+
+	// 創建 repo
+	repo := New(redisDB.RDB()).GameMode(constants.GameModeDemo)
+
+	length, err := repo.Amount(context.Background(), 123)
+	if err != nil {
+		log.Fatalf("❌: %v", err)
+	}
+	fmt.Println(length)
+}

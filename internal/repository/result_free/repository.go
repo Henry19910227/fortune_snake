@@ -50,3 +50,12 @@ func (r *repository) PopFirstItem(ctx context.Context, playerId int) (string, er
 	}
 	return result, nil
 }
+
+func (r *repository) Amount(ctx context.Context, playerId int) (int64, error) {
+	key := fmt.Sprintf(constants.CacheNameFreeResults, playerId, r.gameMode)
+	length, err := r.rdb.LLen(ctx, key).Result()
+	if err != nil {
+		return 0, err
+	}
+	return length, nil
+}
