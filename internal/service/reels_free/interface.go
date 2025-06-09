@@ -7,4 +7,6 @@ import (
 type Service interface {
 	// Generate 生成免費模式盤面
 	Generate(layout []int) [][][]*symbol.Item
+
+	ToReels(slice [][]int) [][]*symbol.Item
 }
