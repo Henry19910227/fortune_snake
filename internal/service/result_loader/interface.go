@@ -1,14 +1,13 @@
 package result
 
 import (
-	"game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/internal/model/entity/result"
 	bucketRepo "game_server_slots_fortune_snake/internal/repository/bucket"
-	resultRepo "game_server_slots_fortune_snake/internal/repository/result"
+	resultLoader "game_server_slots_fortune_snake/internal/repository/result_loader"
 )
 
 type Service interface {
-	Init(resultRepo resultRepo.Repository, bucketRepo bucketRepo.Repository) Service
+	SpinMode(spinMode int) Service
 	// SaveToBucket 將 result 數據存到本地 bucket 中
 	SaveToBucket(result *result.Item) (quota int)
 	// Migrate 將 bucket 中的數據存至 DB
@@ -19,9 +18,6 @@ type Service interface {
 	Random(rate float64) ([][][]int, error)
 }
 
-func SpinMode(spinMode int) Service {
-	if spinMode == constants.SpinModeNormal {
-		return &service{}
-	}
-	return &serviceFree{}
+func New(resultLoader resultLoader.Repository, bucketRepo bucketRepo.Repository) Service {
+	return &serviceFree{resultLoader: resultLoader, bucketRepo: bucketRepo}
 }
