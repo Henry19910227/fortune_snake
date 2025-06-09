@@ -1,25 +1,21 @@
 package settle
 
 import (
-	"game_server_slots_fortune_snake/internal/model/service/settle/check_win_line"
-	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
-	"game_server_slots_fortune_snake/internal/model/service/settle/get_total_score"
-	"game_server_slots_fortune_snake/internal/model/service/settle/get_win_lines"
-	"game_server_slots_fortune_snake/internal/model/service/settle/list_to_json"
-	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
+	"game_server_slots_fortune_snake/internal/model/entity/line"
+	"game_server_slots_fortune_snake/internal/model/entity/symbol"
 )
 
 type Service interface {
 	// GetRate 獲取賠率
-	GetRate(input *get_rate.Input) (output *get_rate.Output, err error)
+	GetRate(bet int, value int, reels [][]*symbol.Item) (rate float64, err error)
 	// GetTotalScore 獲取總分
-	GetTotalScore(input *get_total_score.Input) (output *get_total_score.Output, err error)
+	GetTotalScore(bet int, value int, reels [][]*symbol.Item) (score int, err error)
 	// GetWinLines 將盤面數據傳入獲取中獎賠付線
-	GetWinLines(input *get_win_lines.Input) (output *get_win_lines.Output, err error)
+	GetWinLines(bet int, value int, reels [][]*symbol.Item) (lines []*line.Item, err error)
 	// CheckWinLine 判斷否是中獎線
-	CheckWinLine(input *check_win_line.Input) (output *check_win_line.Output, err error)
+	CheckWinLine(line *line.Item) (symbol *symbol.Item, err error)
 	// ToJson 將 symbol 物件轉換成 Json
-	ToJson(input *to_json.Input) (output *to_json.Output, err error)
+	ToJson(items [][]*symbol.Item) (JsonString string, err error)
 	// ListToJson 將 symbol items 轉換成 Json
-	ListToJson(input *list_to_json.Input) (output *list_to_json.Output, err error)
+	ListToJson(reelsList [][][]*symbol.Item) (reelsListString string, err error)
 }

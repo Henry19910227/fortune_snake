@@ -4,14 +4,8 @@ import (
 	gameCfg "game_server_slots_fortune_snake/config/game"
 	lineModel "game_server_slots_fortune_snake/internal/model/entity/line"
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
-	"game_server_slots_fortune_snake/internal/model/service/settle/check_win_line"
-	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
-	"game_server_slots_fortune_snake/internal/model/service/settle/get_total_score"
-	"game_server_slots_fortune_snake/internal/model/service/settle/get_win_lines"
-	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 	settleRepo "game_server_slots_fortune_snake/internal/repository/settle"
 	symbolRepo "game_server_slots_fortune_snake/internal/repository/symbol"
-	"game_server_slots_fortune_snake/internal/server"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -31,10 +25,8 @@ func TestSettleService_GetRate(t *testing.T) {
 	}
 
 	svc := New(stlRepo)
-	input := get_rate.NewInput(get_rate.Param{Bet: 1, Value: 1000, Reels: reels})
-	input.Ctx = &server.Context{}
-	output, _ := svc.GetRate(input)
-	assert.Equal(t, float64(5000), output.GetRate())
+	rate, _ := svc.GetRate(1, 1000, reels)
+	assert.Equal(t, float64(5000), rate)
 }
 
 // [[6 3 5] [4 0 5 3] [4 5 6]]
@@ -84,14 +76,8 @@ func TestSettleService_GetTotalScore_1(t *testing.T) {
 		{symRepo.GetSymbol(99), symRepo.GetSymbol(0), symRepo.GetSymbol(0), symRepo.GetSymbol(0)},
 		{symRepo.GetSymbol(1), symRepo.GetSymbol(1), symRepo.GetSymbol(1)},
 	}
-	input := get_total_score.NewInput(get_total_score.Param{
-		Bet:   1,
-		Value: 100,
-		Reels: reels,
-	})
-	input.Ctx = &server.Context{}
-	output, _ := svc.GetTotalScore(input)
-	assert.Equal(t, 315000, output.GetScore())
+	score, _ := svc.GetTotalScore(1, 100, reels)
+	assert.Equal(t, 315000, score)
 }
 
 // [[6,4,0],[0,0,0,0],[1,4,0]]
@@ -107,16 +93,10 @@ func TestSettleService_GetWinLines_1(t *testing.T) {
 	}
 
 	svc := New(stlRepo)
-	input := get_win_lines.NewInput(get_win_lines.Param{
-		Bet:   1,
-		Value: 100,
-		Reels: reels,
-	})
-	input.Ctx = &server.Context{}
-	output, _ := svc.GetWinLines(input)
-	assert.Equal(t, 4, len(output.GetLines()))
-	assert.Equal(t, 0, output.GetLines()[0].Symbol.ID)
-	assert.Equal(t, 20000, output.GetLines()[0].Score)
+	lines, _ := svc.GetWinLines(1, 100, reels)
+	assert.Equal(t, 4, len(lines))
+	assert.Equal(t, 0, lines[0].Symbol.ID)
+	assert.Equal(t, 20000, lines[0].Score)
 }
 
 // TestSettleRepo_CheckLine_1_1 測試第一個符號是百搭的情境
@@ -132,22 +112,18 @@ func TestSettleRepo_CheckLine_1_1(t *testing.T) {
 	}
 
 	svc := New(stlRepo)
-	input := check_win_line.NewInput(line)
-	input.Ctx = &server.Context{}
-	output, _ := svc.CheckWinLine(input)
-	assert.NotNil(t, output.GetSymbol())
-	assert.Equal(t, 1, output.GetSymbol().ID)
+
+	item, _ := svc.CheckWinLine(line)
+	assert.NotNil(t, item)
+	assert.Equal(t, 1, item.ID)
 
 	line.Symbols = []*symbol.Item{
 		{ID: 0, IsWild: true},
 		{ID: 1, IsWild: false},
 		{ID: 2, IsWild: false},
 	}
-	input.Param = check_win_line.Param{
-		Line: line,
-	}
-	output, _ = svc.CheckWinLine(input)
-	assert.Nil(t, output.GetSymbol())
+	item, _ = svc.CheckWinLine(line)
+	assert.Nil(t, item)
 }
 
 func TestSettleRepo_Transform(t *testing.T) {
@@ -161,6 +137,6 @@ func TestSettleRepo_Transform(t *testing.T) {
 	}
 
 	svc := New(stlRepo)
-	output, _ := svc.ToJson(to_json.NewInput(reels))
-	assert.Equal(t, "[[0,0,0],[0,0,0,0],[0,0,0]]", output.Data.JsonString)
+	jsonString, _ := svc.ToJson(reels)
+	assert.Equal(t, "[[0,0,0],[0,0,0,0],[0,0,0]]", jsonString)
 }

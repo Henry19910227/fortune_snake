@@ -6,12 +6,6 @@ import (
 	lineModel "game_server_slots_fortune_snake/internal/model/entity/line"
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
-	"game_server_slots_fortune_snake/internal/model/service/settle/check_win_line"
-	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
-	"game_server_slots_fortune_snake/internal/model/service/settle/get_total_score"
-	"game_server_slots_fortune_snake/internal/model/service/settle/get_win_lines"
-	"game_server_slots_fortune_snake/internal/model/service/settle/list_to_json"
-	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 	settleRepo "game_server_slots_fortune_snake/internal/repository/settle"
 )
 
@@ -23,47 +17,39 @@ func New(settleRepo settleRepo.Repository) Service {
 	return &service{settleRepo: settleRepo}
 }
 
-func (s *service) GetRate(input *get_rate.Input) (output *get_rate.Output, err error) {
-	totalScore, err := s.getTotalScore(get_total_score.Param{
-		Bet:   input.Param.Bet,
-		Value: input.Param.Value,
-		Reels: input.Param.Reels,
-	})
+func (s *service) GetRate(bet int, value int, reels [][]*symbol.Item) (rate float64, err error) {
+	totalScore, err := s.getTotalScore(bet, value, reels)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	realBet := input.Param.Bet * input.Param.Value * 10
-	rate := float64(totalScore) / float64(realBet)
-	output = get_rate.NewOutput(rate)
-	return output, nil
+	realBet := bet * value * 10
+	rate = float64(totalScore) / float64(realBet)
+	return rate, nil
 }
 
-func (s *service) GetTotalScore(input *get_total_score.Input) (output *get_total_score.Output, err error) {
-	score, err := s.getTotalScore(input.Param)
+func (s *service) GetTotalScore(bet int, value int, reels [][]*symbol.Item) (score int, err error) {
+	score, err = s.getTotalScore(bet, value, reels)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	output = get_total_score.NewOutput(score)
-	return output, nil
+	return score, nil
 }
 
-func (s *service) GetWinLines(input *get_win_lines.Input) (output *get_win_lines.Output, err error) {
-	lines, err := s.getWinLines(input.Param)
+func (s *service) GetWinLines(bet int, value int, reels [][]*symbol.Item) (lines []*lineModel.Item, err error) {
+	lines, err = s.getWinLines(bet, value, reels)
 	if err != nil {
-		return nil, err
+		return []*lineModel.Item{}, err
 	}
-	output = get_win_lines.NewOutput(lines)
-	return output, nil
+	return lines, nil
 }
 
-func (s *service) CheckWinLine(input *check_win_line.Input) (output *check_win_line.Output, err error) {
-	item := s.checkWinLine(input.Param)
-	output = check_win_line.NewOutput(item)
-	return output, nil
+func (s *service) CheckWinLine(line *lineModel.Item) (symbol *symbol.Item, err error) {
+	item := s.checkWinLine(line)
+	return item, nil
 }
 
-func (s *service) getTotalScore(param get_total_score.Param) (int, error) {
-	lines, err := s.getWinLines(get_win_lines.Param{Bet: param.Bet, Value: param.Value, Reels: param.Reels})
+func (s *service) getTotalScore(bet int, value int, reels [][]*symbol.Item) (int, error) {
+	lines, err := s.getWinLines(bet, value, reels)
 	if err != nil {
 		return 0, err
 	}
@@ -78,7 +64,7 @@ func (s *service) getTotalScore(param get_total_score.Param) (int, error) {
 	}
 	// 計算第二軸百搭個數
 	var wildCount int
-	for _, symbolItem := range param.Reels[1] {
+	for _, symbolItem := range reels[1] {
 		if !symbolItem.IsWild {
 			continue
 		}
@@ -92,11 +78,7 @@ func (s *service) getTotalScore(param get_total_score.Param) (int, error) {
 	return totalScore * 10, nil
 }
 
-func (s *service) getWinLines(param get_win_lines.Param) ([]*lineModel.Item, error) {
-	// 獲取參數
-	reels := param.Reels
-	bet := param.Bet
-	value := param.Value
+func (s *service) getWinLines(bet int, value int, reels [][]*symbol.Item) ([]*lineModel.Item, error) {
 	// 讀取中獎線資源
 	hitLines := s.settleRepo.HitLines()
 	// 判斷軸數是否相同
@@ -117,7 +99,7 @@ func (s *service) getWinLines(param get_win_lines.Param) ([]*lineModel.Item, err
 			winLine.Symbols = append(winLine.Symbols, symbolItem)
 		}
 		// 計算這條是否是中獎線
-		winSymbol := s.checkWinLine(check_win_line.Param{Line: winLine})
+		winSymbol := s.checkWinLine(winLine)
 		if winSymbol == nil {
 			continue
 		}
@@ -128,15 +110,15 @@ func (s *service) getWinLines(param get_win_lines.Param) ([]*lineModel.Item, err
 	return winLines, nil
 }
 
-func (s *service) checkWinLine(param check_win_line.Param) *symbol.Item {
+func (s *service) checkWinLine(line *lineModel.Item) *symbol.Item {
 	// 讀取中獎線資源
 	hitLines := s.settleRepo.HitLines()
 	// 判斷軸數樣式是否相符
-	if len(param.Line.Symbols) != len(hitLines[0]) {
+	if len(line.Symbols) != len(hitLines[0]) {
 		return nil
 	}
 	var checkSymbol *symbol.Item
-	for _, symbolItem := range param.Line.Symbols {
+	for _, symbolItem := range line.Symbols {
 		if symbolItem.ID == 99 {
 			return nil
 		}
@@ -156,8 +138,7 @@ func (s *service) checkWinLine(param check_win_line.Param) *symbol.Item {
 	return checkSymbol
 }
 
-func (s *service) ToJson(input *to_json.Input) (output *to_json.Output, err error) {
-	items := input.Param.Items
+func (s *service) ToJson(items [][]*symbol.Item) (JsonString string, err error) {
 	symbols := make([][]int, 0)
 	for i := 0; i < len(items); i++ {
 		symbols = append(symbols, make([]int, 0))
@@ -167,18 +148,17 @@ func (s *service) ToJson(input *to_json.Input) (output *to_json.Output, err erro
 			symbols[row] = append(symbols[row], items[row][col].ID)
 		}
 	}
-	jsonString, err := json.Marshal(symbols)
+	result, err := json.Marshal(symbols)
 	if err != nil {
-		return nil, errMsg.New(constants.CodeBadRequest, err.Error(), err)
+		return "", errMsg.New(constants.CodeBadRequest, err.Error(), err)
 	}
-	output = to_json.NewOutput(string(jsonString))
-	return output, nil
+	JsonString = string(result)
+	return JsonString, nil
 }
 
-func (s *service) ListToJson(input *list_to_json.Input) (output *list_to_json.Output, err error) {
-	list := input.Param.List
+func (s *service) ListToJson(reelsList [][][]*symbol.Item) (reelsListString string, err error) {
 	symbolsList := make([][][]int, 0)
-	for _, items := range list {
+	for _, items := range reelsList {
 		symbols := make([][]int, 0)
 		for i := 0; i < len(items); i++ {
 			symbols = append(symbols, make([]int, 0))
@@ -193,8 +173,8 @@ func (s *service) ListToJson(input *list_to_json.Input) (output *list_to_json.Ou
 
 	jsonString, err := json.Marshal(symbolsList)
 	if err != nil {
-		return nil, errMsg.New(constants.CodeBadRequest, err.Error(), err)
+		return "", errMsg.New(constants.CodeBadRequest, err.Error(), err)
 	}
-	output = list_to_json.NewOutput(string(jsonString))
-	return output, nil
+	reelsListString = string(jsonString)
+	return reelsListString, nil
 }
