@@ -39,13 +39,13 @@ func TestResultController_Generate(t *testing.T) {
 	// repo 建立
 	symRepo := symbolRepository.New(gameCfg.SymbolConfig())
 	settRepo := settleRepository.New()
-	resultRepo := resultLoaderRepository.SpinMode(constants.SpinModeNormal).Init(mysqlDB.DB())
+	resultRepo := resultLoaderRepository.SpinMode(constants.SpinModeBase).Init(mysqlDB.DB())
 	bucketRepo := bucketRepository.New(gameCfg.BaseBucketConfig())
 
 	// service 建立
 	reelSvc := reelService.New(symRepo)
 	settleSvc := settleService.New(settRepo)
-	resultSvc := resultLoaderService.SpinMode(constants.SpinModeNormal).Init(resultRepo, bucketRepo)
+	resultSvc := resultLoaderService.SpinMode(constants.SpinModeBase).Init(resultRepo, bucketRepo)
 
 	// controller 建立
 	resultController := New(reelSvc, settleSvc, resultSvc)

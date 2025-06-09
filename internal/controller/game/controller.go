@@ -1,28 +1,31 @@
 package game
 
 import (
-	"game_server_slots_fortune_snake/constants"
+	"context"
+	. "game_server_slots_fortune_snake/constants"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	"game_server_slots_fortune_snake/internal/model/service/game/enter_game"
 	"game_server_slots_fortune_snake/internal/server"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
+	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/service/result_loader"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 )
 
 type controller struct {
-	gameService      gameService.Service // 真實模式 service
-	gameDemoService  gameService.Service // 試玩模式 service
-	weightService    weightService.Service
-	resultLoader     resultLoader.Service
-	resultFreeLoader resultLoader.Service
+	gameService       gameService.Service // 真實模式 service
+	gameDemoService   gameService.Service // 試玩模式 service
+	weightService     weightService.Service
+	resultFreeService resultFreeService.Service
+	resultLoader      resultLoader.Service
+	resultFreeLoader  resultLoader.Service
 }
 
 func New(gameService gameService.Service, gameDemoService gameService.Service,
-	weightService weightService.Service, resultLoader resultLoader.Service,
+	weightService weightService.Service, resultFreeService resultFreeService.Service, resultLoader resultLoader.Service,
 	resultFreeLoader resultLoader.Service) Controller {
 	return &controller{gameService: gameService, gameDemoService: gameDemoService,
-		weightService: weightService, resultLoader: resultLoader,
+		weightService: weightService, resultFreeService: resultFreeService, resultLoader: resultLoader,
 		resultFreeLoader: resultFreeLoader}
 }
 
@@ -41,7 +44,7 @@ func (c *controller) EnterGame(ctx *server.Context) {
 		return
 	}
 	// 返回結果
-	ctx.Send(constants.CodeSuccess, "success", data)
+	ctx.Send(CodeSuccess, "success", data)
 }
 
 func (c *controller) Bet(ctx *server.Context) {
@@ -50,50 +53,108 @@ func (c *controller) Bet(ctx *server.Context) {
 
 	// 進入試玩模式
 	if session.Mode == "demo" {
-		c.BetInDemo(ctx, float64(session.GameRtp))
+		c.BetInDemo(ctx, session)
 		return
 	}
-	c.BetInReal(ctx, float64(session.GameRtp))
+	c.BetInReal(ctx, session)
 }
 
-func (c *controller) BetInReal(ctx *server.Context, rtp float64) {
+func (c *controller) BetInReal(ctx *server.Context, session *playerModel.Session) {
 	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
-	// results := c.gameService.RestoreResults
+	grpcCtx := ctx.MustGet("ctx").(context.Context)
+	amount, err := c.resultFreeService.GameMode(GameModeReal).Amount(grpcCtx, int(session.PlayerId))
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
 
-	// if len(results) > 0 {
-	//     執行剩餘未完成的金蛇模式業務
-	//     return
-	// }
+	if amount > 0 {
+		// 彈出一筆金蛇盤面
+		result, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, int(session.PlayerId))
+		if err != nil {
+			ctx.SendError(err)
+		}
+		// 執行試玩環境的免費模式流程
+		c.FreeModeInDemo(ctx, session, result)
+		return
+	}
 
 	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
 	spinMode := c.gameService.SpinMode()
 
 	// 進入金蛇模式
-	if spinMode == 1 {
-		c.FreeModeInReal(ctx, rtp)
+	if spinMode == SpinModeFree {
+		// 獲取賠率
+		rate, err := c.weightService.RandomFreeWeightRate(float64(session.GameRtp))
+		if err != nil {
+			ctx.SendError(err)
+			return
+		}
+		// 獲取金蛇盤面
+		results, err := c.resultFreeLoader.Random(rate)
+		if err != nil {
+			ctx.SendError(err)
+			return
+		}
+		// 執行真錢環境的免費模式流程
+		c.FreeModeInReal(ctx, session, results)
 		return
 	}
-	c.BaseModeInReal(ctx, rtp)
+	// 執行真錢環境的普通模式流程
+	c.BaseModeInReal(ctx, float64(session.GameRtp))
 }
 
-func (c *controller) BetInDemo(ctx *server.Context, rtp float64) {
+func (c *controller) BetInDemo(ctx *server.Context, session *playerModel.Session) {
 	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
-	// results := c.gameService.RestoreResults
+	grpcCtx := ctx.MustGet("ctx").(context.Context)
+	amount, err := c.resultFreeService.GameMode(GameModeDemo).Amount(grpcCtx, int(session.PlayerId))
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
 
-	// if len(results) > 0 {
-	//     執行剩餘未完成的金蛇模式業務
-	//     return
-	// }
+	if amount > 0 {
+		// 彈出一筆金蛇盤面
+		result, err := c.resultFreeService.GameMode(GameModeDemo).PopFirstItem(grpcCtx, int(session.PlayerId))
+		if err != nil {
+			ctx.SendError(err)
+		}
+		// 執行試玩環境的免費模式流程
+		c.FreeModeInDemo(ctx, session, result)
+		return
+	}
 
-	// 沒有尚未消費的盤面，擇開新的一局，取得當前模式
+	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
 	spinMode := c.gameService.SpinMode()
 
 	// 進入金蛇模式
-	if spinMode == 1 {
-		c.FreeModeInDemo(ctx, rtp)
+	if spinMode == SpinModeFree {
+		// 獲取賠率
+		rate, err := c.weightService.RandomFreeWeightRate(float64(session.GameRtp))
+		if err != nil {
+			ctx.SendError(err)
+			return
+		}
+		// 生成隨機金蛇盤面
+		results, err := c.resultFreeLoader.Random(rate)
+		if err != nil {
+			ctx.SendError(err)
+			return
+		}
+		// 取出第一個金蛇盤面
+		result := results[0]
+
+		// 緩存剩餘金蛇盤面
+		if err := c.resultFreeService.SaveItems(context.Background(), int(session.PlayerId), results[1:]); err != nil {
+			ctx.SendError(err)
+			return
+		}
+
+		// 執行試玩環境的免費模式流程
+		c.FreeModeInDemo(ctx, session, result)
 		return
 	}
-	c.BaseModeInDemo(ctx, rtp)
+	c.BaseModeInDemo(ctx, float64(session.GameRtp))
 }
 
 func (c *controller) BaseModeInDemo(ctx *server.Context, rtp float64) {
@@ -105,41 +166,17 @@ func (c *controller) BaseModeInDemo(ctx *server.Context, rtp float64) {
 	}
 
 	// 取得隨機盤面
-	_, err = c.resultLoader.Random(rate)
+	_, err = c.resultLoader.SpinMode(SpinModeBase).Random(rate)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
-
-	// 緩存盤面 lastResults key
 
 	// 結算盤面
 
 	// 餘額計算
 
-	// 回傳結果
-}
-
-func (c *controller) FreeModeInDemo(ctx *server.Context, rtp float64) {
-	// 獲取賠率
-	rate, err := c.weightService.RandomFreeWeightRate(rtp)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-	// 獲取金蛇盤面
-	_, err = c.resultFreeLoader.Random(rate)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-	// 取出第一個金蛇盤面
-
-	// 緩存第一個金蛇盤面 LastResults key
-
-	// 緩存剩餘金蛇盤面至 FreeResults key
-
-	// 結算第一個金蛇盤面
+	// 緩存盤面結果 lastResults key
 
 	// 回傳結果
 }
@@ -158,36 +195,27 @@ func (c *controller) BaseModeInReal(ctx *server.Context, rtp float64) {
 		ctx.SendError(err)
 		return
 	}
-
-	// 緩存盤面 lastResults key
-
 	// 結算盤面
+
+	// 續存結算的盤面結果 LastResults key
 
 	// 餘額計算
 
 	// 回傳結果
 }
 
-func (c *controller) FreeModeInReal(ctx *server.Context, rtp float64) {
-	// 獲取賠率
-	rate, err := c.weightService.RandomFreeWeightRate(rtp)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-	// 獲取金蛇盤面
-	_, err = c.resultFreeLoader.Random(rate)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-	// 取出第一個金蛇盤面
-
-	// 緩存第一個金蛇盤面 LastResults key
-
-	// 緩存剩餘金蛇盤面至 FreeResults key
-
+func (c *controller) FreeModeInDemo(ctx *server.Context, session *playerModel.Session, results [][]int) {
 	// 結算第一個金蛇盤面
+
+	// 續存結算的金蛇盤面結果 LastResults key
+
+	// 回傳結果
+}
+
+func (c *controller) FreeModeInReal(ctx *server.Context, session *playerModel.Session, results [][][]int) {
+	// 結算第一個金蛇盤面
+
+	// 續存結算的金蛇盤面結果 LastResults key
 
 	// 回傳結果
 }
