@@ -14,13 +14,6 @@ type service struct {
 	bucketRepo   bucketRepo.Repository
 }
 
-func (s *service) SpinMode(spinMode int) Service {
-	if spinMode == SpinModeFree {
-		return &serviceFree{resultLoader: s.resultLoader, bucketRepo: s.bucketRepo}
-	}
-	return &service{resultLoader: s.resultLoader, bucketRepo: s.bucketRepo}
-}
-
 func (s *service) SaveToBucket(result *result.Item) (quota int) {
 	s.bucketRepo.Save(result)
 	return s.bucketRepo.Quota()
@@ -53,7 +46,7 @@ func (s *service) Random(rate float64) ([][][]int, error) {
 	var symbols [][]int
 	err = json.Unmarshal([]byte(item.Symbols), &symbols)
 	if err != nil {
-		return nil, errMsg.New(CodeInternalError, err.Error(), err)
+		return [][][]int{}, errMsg.New(CodeInternalError, err.Error(), err)
 	}
 	return [][][]int{symbols}, nil
 }

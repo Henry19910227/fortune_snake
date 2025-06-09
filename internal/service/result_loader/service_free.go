@@ -14,13 +14,6 @@ type serviceFree struct {
 	bucketRepo   bucketRepo.Repository
 }
 
-func (s *serviceFree) SpinMode(spinMode int) Service {
-	if spinMode == SpinModeFree {
-		return &serviceFree{resultLoader: s.resultLoader, bucketRepo: s.bucketRepo}
-	}
-	return &service{resultLoader: s.resultLoader, bucketRepo: s.bucketRepo}
-}
-
 func (s *serviceFree) SaveToBucket(result *result.Item) (quota int) {
 	s.bucketRepo.Save(result)
 	return s.bucketRepo.Quota()
@@ -53,7 +46,7 @@ func (s *serviceFree) Random(rate float64) ([][][]int, error) {
 	var allSymbols [][][]int
 	err = json.Unmarshal([]byte(item.AllSymbols), &allSymbols)
 	if err != nil {
-		return nil, errMsg.New(CodeInternalError, err.Error(), err)
+		return [][][]int{}, errMsg.New(CodeInternalError, err.Error(), err)
 	}
 	return allSymbols, nil
 }
