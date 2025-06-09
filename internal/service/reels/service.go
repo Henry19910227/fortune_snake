@@ -32,3 +32,15 @@ func (s *service) Generate(layout []int) [][]*symbol.Item {
 	}
 	return reelSet
 }
+
+func (s *service) ToReels(origin [][]int) [][]*symbol.Item {
+	reelSet := make([][]*symbol.Item, 0)
+	for col := 0; col < len(origin); col++ {
+		reel := make([]*symbol.Item, 0)
+		for row := 0; row < len(origin[col]); row++ {
+			reel = append(reel, s.symbolRepo.GetSymbol(origin[col][row]))
+		}
+		reelSet = append(reelSet, reel)
+	}
+	return reelSet
+}
