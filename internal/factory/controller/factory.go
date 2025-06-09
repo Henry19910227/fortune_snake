@@ -21,9 +21,10 @@ func (f *factory) GameController() gameController.Controller {
 	gameSvc := f.serviceFactory.GameService()
 	gameDemoSvc := f.serviceFactory.GameDemoService()
 	weightSvc := f.serviceFactory.WeightService()
+	resultFreeSvc := f.serviceFactory.ResultFreeService()
 	resultLoader := f.serviceFactory.ResultLoader()
 	resultFreeLoader := f.serviceFactory.ResultFreeLoader()
-	return game.New(gameSvc, gameDemoSvc, weightSvc, resultLoader, resultFreeLoader)
+	return game.New(gameSvc, gameDemoSvc, weightSvc, resultFreeSvc, resultLoader, resultFreeLoader)
 }
 
 func (f *factory) PlayerController() player.Controller {
