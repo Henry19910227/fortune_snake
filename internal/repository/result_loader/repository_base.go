@@ -13,11 +13,6 @@ type repository struct {
 	resultsMap map[float64][]*model.Item
 }
 
-func (r *repository) Init(db *gorm.DB) Repository {
-	r.db = db
-	return r
-}
-
 func (r *repository) CreateItems(items []*model.Item) (err error) {
 	err = r.db.Table("fortune_snake_results").Create(items).Error
 	if err != nil {

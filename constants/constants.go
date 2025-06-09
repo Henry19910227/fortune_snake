@@ -18,8 +18,8 @@ const (
 )
 
 const (
-	SpinModeNormal = 0
-	SpinModeFree   = 1
+	SpinModeBase = 0
+	SpinModeFree = 1
 )
 
 const (

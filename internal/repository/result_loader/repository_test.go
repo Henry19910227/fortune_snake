@@ -3,7 +3,7 @@ package result
 import (
 	"flag"
 	"game_server_slots_fortune_snake/config/system"
-	"game_server_slots_fortune_snake/constants"
+	. "game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/db"
 	"game_server_slots_fortune_snake/internal/model/entity/result"
 	"github.com/stretchr/testify/assert"
@@ -42,7 +42,7 @@ func TestRepository_CreatItems(t *testing.T) {
 	items = append(items, &result.Item{Rate: 260, Symbols: "[[1,4,4],[0,0,0,0],[1,4,4]]", CreatedAt: time.Now().UnixMilli(), UpdatedAt: time.Now().UnixMilli()})
 
 	// 創建 repo
-	repo := SpinMode(constants.SpinModeNormal).Init(mysqlDB.DB())
+	repo := New(mysqlDB.DB(), SpinModeBase)
 
 	// 插入數據
 	err = repo.CreateItems(items)
@@ -66,7 +66,7 @@ func TestRepository_LoadData(t *testing.T) {
 	defer mysqlDB.Close()
 
 	// 創建 repo
-	repo := SpinMode(constants.SpinModeNormal).Init(mysqlDB.DB())
+	repo := New(mysqlDB.DB(), SpinModeBase)
 	// 插入數據
 	err = repo.LoadData()
 	assert.Nil(t, err)
