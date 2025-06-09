@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"game_server_slots_fortune_snake/internal/controller/game"
 	gameController "game_server_slots_fortune_snake/internal/controller/game"
 	loadController "game_server_slots_fortune_snake/internal/controller/load"
 	"game_server_slots_fortune_snake/internal/controller/middleware"
@@ -24,7 +23,10 @@ func (f *factory) GameController() gameController.Controller {
 	resultFreeSvc := f.serviceFactory.ResultFreeService()
 	resultLoader := f.serviceFactory.ResultLoader()
 	resultFreeLoader := f.serviceFactory.ResultFreeLoader()
-	return game.New(gameSvc, gameDemoSvc, weightSvc, resultFreeSvc, resultLoader, resultFreeLoader)
+	reelsSvc := f.serviceFactory.ReelsService()
+	reelsFreeSvc := f.serviceFactory.ReelsFreeService()
+	settleSvc := f.serviceFactory.SettleService()
+	return gameController.New(gameSvc, gameDemoSvc, weightSvc, resultFreeSvc, resultLoader, resultFreeLoader, reelsSvc, reelsFreeSvc, settleSvc)
 }
 
 func (f *factory) PlayerController() player.Controller {

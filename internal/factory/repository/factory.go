@@ -8,6 +8,8 @@ import (
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
 	resultFreeRepo "game_server_slots_fortune_snake/internal/repository/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/repository/result_loader"
+	settleRepository "game_server_slots_fortune_snake/internal/repository/settle"
+	symbolRepo "game_server_slots_fortune_snake/internal/repository/symbol"
 	weightRepo "game_server_slots_fortune_snake/internal/repository/weight"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -54,4 +56,12 @@ func (f *factory) BucketRepository() bucketRepo.Repository {
 
 func (f *factory) BucketFreeRepository() bucketRepo.Repository {
 	return bucketRepo.New(f.cfg.FreeBucketConfig())
+}
+
+func (f *factory) SymbolRepository() symbolRepo.Repository {
+	return symbolRepo.New(f.cfg.SymbolConfig())
+}
+
+func (f *factory) SettleRepository() settleRepository.Repository {
+	return settleRepository.New()
 }

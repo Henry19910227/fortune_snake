@@ -5,8 +5,11 @@ import (
 	"game_server_slots_fortune_snake/internal/factory/repository"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
 	playerService "game_server_slots_fortune_snake/internal/service/player"
+	reelsService "game_server_slots_fortune_snake/internal/service/reels"
+	reelsFreeService "game_server_slots_fortune_snake/internal/service/reels_free"
 	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/service/result_loader"
+	settleService "game_server_slots_fortune_snake/internal/service/settle"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 )
 
@@ -50,11 +53,26 @@ func (f *factory) ResultFreeService() resultFreeService.Service {
 func (f *factory) ResultLoader() resultLoader.Service {
 	resultRepo := f.repoFactory.ResultLoader()
 	bucketRepo := f.repoFactory.BucketRepository()
-	return resultLoader.New(resultRepo, bucketRepo).SpinMode(SpinModeBase)
+	return resultLoader.New(resultRepo, bucketRepo, SpinModeBase)
 }
 
 func (f *factory) ResultFreeLoader() resultLoader.Service {
 	resultFreeRepo := f.repoFactory.ResultFreeLoader()
 	bucketRepo := f.repoFactory.BucketRepository()
-	return resultLoader.New(resultFreeRepo, bucketRepo).SpinMode(SpinModeBase)
+	return resultLoader.New(resultFreeRepo, bucketRepo, SpinModeFree)
+}
+
+func (f *factory) ReelsService() reelsService.Service {
+	symbolRepo := f.repoFactory.SymbolRepository()
+	return reelsService.New(symbolRepo)
+}
+
+func (f *factory) ReelsFreeService() reelsFreeService.Service {
+	symbolRepo := f.repoFactory.SymbolRepository()
+	return reelsFreeService.New(symbolRepo)
+}
+
+func (f *factory) SettleService() settleService.Service {
+	settleRepo := f.repoFactory.SettleRepository()
+	return settleService.New(settleRepo)
 }
