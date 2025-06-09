@@ -17,6 +17,17 @@ type Context struct {
 	result   []byte
 }
 
+func NewContext(engine *Engine) Context {
+	return Context{
+		engine:   engine,
+		handlers: []HandlerFunc{},
+		keys:     make(map[string]interface{}),
+		index:    -1,
+		data:     []byte{},
+		result:   []byte{},
+	}
+}
+
 func (c *Context) SendError(err error) {
 	e := errors.Err(err)
 	resp := &model.MessageResponse{
@@ -38,6 +49,10 @@ func (c *Context) Send(code int32, msg string, data interface{}) {
 
 func (c *Context) Data() []byte {
 	return c.data
+}
+
+func (c *Context) SetData(b []byte) {
+	c.data = b
 }
 
 func (c *Context) Set(key string, value interface{}) {

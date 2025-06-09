@@ -30,14 +30,14 @@ func TestLoadController_Load(t *testing.T) {
 	defer mysqlDB.Close()
 	// 初始化 repository
 	weightRepo := weightRepository.New(cfg.RTPConfig())
-	resultLoaderRepo := resultLoaderRepository.SpinMode(SpinModeBase).Init(mysqlDB.DB())
-	resultLoaderFreeRepo := resultLoaderRepository.SpinMode(SpinModeFree).Init(mysqlDB.DB())
+	resultLoaderRepo := resultLoaderRepository.New(mysqlDB.DB(), SpinModeBase)
+	resultLoaderFreeRepo := resultLoaderRepository.New(mysqlDB.DB(), SpinModeFree)
 	bucketRepo := bucketRepository.New(cfg.BaseBucketConfig())
 	bucketFreeRepo := bucketRepository.New(cfg.FreeBucketConfig())
 	// 初始化 service
 	weightSvc := weightService.New(weightRepo)
-	resultLoaderSvc := resultLoaderService.SpinMode(SpinModeBase).Init(resultLoaderRepo, bucketRepo)
-	resultFreeLoaderSvc := resultLoaderService.SpinMode(SpinModeFree).Init(resultLoaderFreeRepo, bucketFreeRepo)
+	resultLoaderSvc := resultLoaderService.New(resultLoaderRepo, bucketRepo, SpinModeBase)
+	resultFreeLoaderSvc := resultLoaderService.New(resultLoaderFreeRepo, bucketFreeRepo, SpinModeFree)
 	// 初始化 controller
 	loadController := New(weightSvc, resultLoaderSvc, resultFreeLoaderSvc)
 	loadController.Load()

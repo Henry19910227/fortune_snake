@@ -2,13 +2,17 @@ package game
 
 import (
 	"context"
+	"fmt"
 	. "game_server_slots_fortune_snake/constants"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	"game_server_slots_fortune_snake/internal/model/service/game/enter_game"
 	"game_server_slots_fortune_snake/internal/server"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
+	reelsService "game_server_slots_fortune_snake/internal/service/reels"
+	reelsFreeService "game_server_slots_fortune_snake/internal/service/reels_free"
 	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/service/result_loader"
+	settleService "game_server_slots_fortune_snake/internal/service/settle"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 )
 
@@ -19,14 +23,20 @@ type controller struct {
 	resultFreeService resultFreeService.Service
 	resultLoader      resultLoader.Service
 	resultFreeLoader  resultLoader.Service
+	reelsService      reelsService.Service
+	reelsFreeService  reelsFreeService.Service
+	settleService     settleService.Service
 }
 
 func New(gameService gameService.Service, gameDemoService gameService.Service,
-	weightService weightService.Service, resultFreeService resultFreeService.Service, resultLoader resultLoader.Service,
-	resultFreeLoader resultLoader.Service) Controller {
+	weightService weightService.Service, resultFreeService resultFreeService.Service,
+	resultLoader resultLoader.Service, resultFreeLoader resultLoader.Service,
+	reelsService reelsService.Service, reelsFreeService reelsFreeService.Service,
+	settleService settleService.Service) Controller {
 	return &controller{gameService: gameService, gameDemoService: gameDemoService,
 		weightService: weightService, resultFreeService: resultFreeService, resultLoader: resultLoader,
-		resultFreeLoader: resultFreeLoader}
+		resultFreeLoader: resultFreeLoader, reelsService: reelsService, reelsFreeService: reelsFreeService,
+		settleService: settleService}
 }
 
 func (c *controller) EnterGame(ctx *server.Context) {
@@ -101,7 +111,7 @@ func (c *controller) BetInReal(ctx *server.Context, session *playerModel.Session
 		return
 	}
 	// 執行真錢環境的普通模式流程
-	c.BaseModeInReal(ctx, float64(session.GameRtp))
+	c.BaseModeInReal(ctx, session)
 }
 
 func (c *controller) BetInDemo(ctx *server.Context, session *playerModel.Session) {
@@ -154,19 +164,19 @@ func (c *controller) BetInDemo(ctx *server.Context, session *playerModel.Session
 		c.FreeModeInDemo(ctx, session, result)
 		return
 	}
-	c.BaseModeInDemo(ctx, float64(session.GameRtp))
+	c.BaseModeInDemo(ctx, session)
 }
 
-func (c *controller) BaseModeInDemo(ctx *server.Context, rtp float64) {
+func (c *controller) BaseModeInDemo(ctx *server.Context, session *playerModel.Session) {
 	// 獲取賠率
-	rate, err := c.weightService.RandomBaseWeightRate(rtp)
+	rate, err := c.weightService.RandomBaseWeightRate(float64(session.GameRtp))
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
 
 	// 取得隨機盤面
-	_, err = c.resultLoader.SpinMode(SpinModeBase).Random(rate)
+	_, err = c.resultLoader.Random(rate)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -181,9 +191,9 @@ func (c *controller) BaseModeInDemo(ctx *server.Context, rtp float64) {
 	// 回傳結果
 }
 
-func (c *controller) BaseModeInReal(ctx *server.Context, rtp float64) {
+func (c *controller) BaseModeInReal(ctx *server.Context, session *playerModel.Session) {
 	// 獲取賠率
-	rate, err := c.weightService.RandomBaseWeightRate(rtp)
+	rate, err := c.weightService.RandomBaseWeightRate(float64(session.GameRtp))
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -205,9 +215,18 @@ func (c *controller) BaseModeInReal(ctx *server.Context, rtp float64) {
 }
 
 func (c *controller) FreeModeInDemo(ctx *server.Context, session *playerModel.Session, results [][]int) {
-	// 結算第一個金蛇盤面
+	// 將盤面數據轉換為 reels
+	reels := c.reelsFreeService.ToReels(results)
 
-	// 續存結算的金蛇盤面結果 LastResults key
+	// 結算 reels
+	lines, err := c.settleService.GetWinLines(1, 1000, reels)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+	fmt.Println(lines)
+
+	// 續存結算的結果 LastResults key
 
 	// 回傳結果
 }

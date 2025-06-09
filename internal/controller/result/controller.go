@@ -3,8 +3,6 @@ package result
 import (
 	"fmt"
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
-	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
-	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 	reelService "game_server_slots_fortune_snake/internal/service/reels"
 	reelsFreeService "game_server_slots_fortune_snake/internal/service/reels_free"
 	resultLoaderService "game_server_slots_fortune_snake/internal/service/result_loader"
@@ -28,13 +26,11 @@ func (c *controller) Generate() {
 		// 生成一個盤面
 		reels := c.reelSvc.Generate([]int{3, 4, 3})
 		// 獲取賠率
-		getRateInput := get_rate.NewInput(get_rate.Param{Bet: 1, Value: 1000, Reels: reels})
-		getRateOutput, _ := c.settleSvc.GetRate(getRateInput)
+		rate, _ := c.settleSvc.GetRate(1, 1000, reels)
 		// 將盤面物件轉換為Json
-		toJsonInput := to_json.NewInput(reels)
-		toJsonOutput, _ := c.settleSvc.ToJson(toJsonInput)
+		JsonString, _ := c.settleSvc.ToJson(reels)
 		// 準備盤面結果 model
-		result := &resultModel.Item{Rate: getRateOutput.GetRate(), Symbols: toJsonOutput.GetJson()}
+		result := &resultModel.Item{Rate: rate, Symbols: JsonString}
 		// 將盤面結果存進 bucket 暫存區
 		quota := c.resultLoader.SaveToBucket(result)
 		// 判斷 Bucket 剩餘空間是否還大於零，如大於零則繼續生產

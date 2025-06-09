@@ -2,10 +2,8 @@ package result_free
 
 import (
 	"fmt"
+	. "game_server_slots_fortune_snake/constants"
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
-	"game_server_slots_fortune_snake/internal/model/service/settle/get_rate"
-	"game_server_slots_fortune_snake/internal/model/service/settle/list_to_json"
-	"game_server_slots_fortune_snake/internal/model/service/settle/to_json"
 	reelsService "game_server_slots_fortune_snake/internal/service/reels_free"
 	resultLoaderService "game_server_slots_fortune_snake/internal/service/result_loader"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
@@ -25,15 +23,15 @@ func (c *controller) Generate() {
 	fmt.Println("開始生成盤面數據至暫存區")
 	for {
 		// 生成一個免費模式盤面
-		reels := c.reelFreeSvc.Generate([]int{3, 4, 3})
-		// 獲取賠率
-		getRateInput := get_rate.NewInput(get_rate.Param{Bet: 1, Value: 1000, Reels: reels[len(reels)-1]})
-		getRateOutput, _ := c.settleSvc.GetRate(getRateInput)
-		// 將盤面物件轉換為Json
-		toJsonOutput, _ := c.settleSvc.ToJson(to_json.NewInput(reels[len(reels)-1]))
-		listToJsonOutput, _ := c.settleSvc.ListToJson(list_to_json.NewInput(reels))
+		reelsList := c.reelFreeSvc.Generate([]int{3, 4, 3})
+		// 獲取最後一個盤面的賠率
+		rate, _ := c.settleSvc.GetRate(1, 1000, reelsList[len(reelsList)-1])
+		// 將最後一個盤面轉換為Json
+		reelsString, _ := c.settleSvc.ToJson(reelsList[len(reelsList)-1])
+		// 將所有盤面轉換為Json
+		reelsListString, _ := c.settleSvc.ListToJson(reelsList)
 		// 準備盤面結果 model
-		result := &resultModel.Item{Rate: getRateOutput.GetRate(), Symbols: toJsonOutput.GetJson(), AllSymbols: listToJsonOutput.GetJson()}
+		result := &resultModel.Item{Rate: rate, Symbols: reelsString, AllSymbols: reelsListString}
 		// 將盤面結果存進 bucket 暫存區
 		quota := c.resultFreeLoader.SaveToBucket(result)
 		// 判斷 Bucket 剩餘空間是否還大於零，如大於零則繼續生產
@@ -45,7 +43,7 @@ func (c *controller) Generate() {
 		break
 	}
 	fmt.Println("開始將暫存區數據遷移至DB")
-	err := c.resultFreeLoader.Migrate()
+	err := c.resultFreeLoader.SpinMode(SpinModeFree).Migrate()
 	if err != nil {
 		fmt.Println(err)
 	}

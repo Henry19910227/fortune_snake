@@ -33,3 +33,8 @@ type Position struct {
 	Col int
 	Row int
 }
+
+type Param struct {
+	Bet   int
+	Value int
+}
