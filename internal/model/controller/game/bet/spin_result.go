@@ -10,7 +10,7 @@ type SpinResult struct {
 }
 
 func NewSpinResult(items []*lineModel.Item) *SpinResult {
-	lines := make([]*Line, len(items))
+	lines := make([]*Line, 0)
 	for _, item := range items {
 		line := NewLine(item)
 		lines = append(lines, line)

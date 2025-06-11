@@ -10,7 +10,9 @@ type Service interface {
 	// Generate 生成一個盤面
 	Generate(layout []int) [][][]*symbol.Item
 
-	ToReels(slice [][]int) [][]*symbol.Item
+	ToReels(results [][]int) [][]*symbol.Item
+
+	ToResults(itemsList [][]*symbol.Item) [][]int
 }
 
 func New(symbolRepo symbolRepo.Repository, spinMode int) Service {

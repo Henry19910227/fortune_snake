@@ -31,6 +31,18 @@ func (s *serviceFree) ToReels(origin [][]int) [][]*symbol.Item {
 	return reelSet
 }
 
+func (s *serviceFree) ToResults(itemsList [][]*symbol.Item) [][]int {
+	results := make([][]int, 0, len(itemsList))
+	for _, items := range itemsList {
+		row := make([]int, 0, len(items))
+		for _, item := range items {
+			row = append(row, item.ID)
+		}
+		results = append(results, row)
+	}
+	return results
+}
+
 func (s *serviceFree) handle(randomSymbol *symbol.Item, reelsList *[][][]*symbol.Item, layout []int) {
 	lastReels := (*reelsList)[len(*reelsList)-1]
 	targetReels := make([][]*symbol.Item, len(lastReels))

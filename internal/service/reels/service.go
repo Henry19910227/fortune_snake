@@ -40,3 +40,15 @@ func (s *service) ToReels(origin [][]int) [][]*symbol.Item {
 	}
 	return reelSet
 }
+
+func (s *service) ToResults(itemsList [][]*symbol.Item) [][]int {
+	results := make([][]int, 0, len(itemsList))
+	for _, items := range itemsList {
+		row := make([]int, 0, len(items))
+		for _, item := range items {
+			row = append(row, item.ID)
+		}
+		results = append(results, row)
+	}
+	return results
+}

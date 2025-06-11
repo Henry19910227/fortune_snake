@@ -69,63 +69,19 @@ func (c *controller) Bet(ctx *server.Context) {
 }
 
 func (c *controller) BetInReal(ctx *server.Context, session *playerModel.Session) {
-	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
-	amount, err := c.resultFreeService.GameMode(GameModeReal).Amount(grpcCtx, int(session.PlayerId))
+
+	// 檢查剩餘免費盤面數量
+	amount, err := c.resultFreeService.GameMode(GameModeReal).Amount(grpcCtx, session.PlayerUsername)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
 
-	if amount > 0 {
-		// 彈出一筆金蛇盤面
-		result, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, int(session.PlayerId))
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 執行試玩環境的免費模式流程
-		c.FreeModeInDemo(ctx, session, result)
-		return
-	}
-
-	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
-	spinMode := c.gameService.SpinMode()
-
-	// 進入金蛇模式
-	if spinMode == SpinModeFree {
-		// 獲取賠率
-		rate, err := c.weightService.RandomFreeWeightRate(float64(session.GameRtp))
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 獲取金蛇盤面
-		results, err := c.resultFreeLoader.Random(rate)
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 執行真錢環境的免費模式流程
-		c.FreeModeInReal(ctx, session, results)
-		return
-	}
-	// 執行真錢環境的普通模式流程
-	c.BaseModeInReal(ctx, session)
-}
-
-func (c *controller) BetInDemo(ctx *server.Context, session *playerModel.Session) {
 	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
-	grpcCtx := ctx.MustGet("ctx").(context.Context)
-	amount, err := c.resultFreeService.GameMode(GameModeDemo).Amount(grpcCtx, int(session.PlayerId))
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
 	if amount > 0 {
-		// 彈出一筆金蛇盤面
-		result, err := c.resultFreeService.GameMode(GameModeDemo).PopFirstItem(grpcCtx, int(session.PlayerId))
+		// 取出一筆金蛇盤面
+		result, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, session.PlayerUsername)
 		if err != nil {
 			ctx.SendError(err)
 			return
@@ -156,7 +112,61 @@ func (c *controller) BetInDemo(ctx *server.Context, session *playerModel.Session
 		result := results[0]
 
 		// 緩存剩餘金蛇盤面
-		if err := c.resultFreeService.SaveItems(context.Background(), int(session.PlayerId), results[1:]); err != nil {
+		if err := c.resultFreeService.SaveItems(context.Background(), session.PlayerUsername, results[1:]); err != nil {
+			ctx.SendError(err)
+			return
+		}
+		// 執行真錢環境的免費模式流程
+		c.FreeModeInReal(ctx, session, result)
+		return
+	}
+	// 執行真錢環境的普通模式流程
+	c.BaseModeInReal(ctx, session)
+}
+
+func (c *controller) BetInDemo(ctx *server.Context, session *playerModel.Session) {
+	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
+	grpcCtx := ctx.MustGet("ctx").(context.Context)
+	amount, err := c.resultFreeService.GameMode(GameModeDemo).Amount(grpcCtx, session.PlayerUsername)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	if amount > 0 {
+		// 彈出一筆金蛇盤面
+		result, err := c.resultFreeService.GameMode(GameModeDemo).PopFirstItem(grpcCtx, session.PlayerUsername)
+		if err != nil {
+			ctx.SendError(err)
+			return
+		}
+		// 執行試玩環境的免費模式流程
+		c.FreeModeInDemo(ctx, session, result)
+		return
+	}
+
+	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
+	spinMode := c.gameService.SpinMode()
+
+	// 進入金蛇模式
+	if spinMode == SpinModeFree {
+		// 獲取賠率
+		rate, err := c.weightService.RandomFreeWeightRate(float64(session.GameRtp))
+		if err != nil {
+			ctx.SendError(err)
+			return
+		}
+		// 生成隨機金蛇盤面
+		results, err := c.resultFreeLoader.Random(rate)
+		if err != nil {
+			ctx.SendError(err)
+			return
+		}
+		// 取出第一個金蛇盤面
+		result := results[0]
+
+		// 緩存剩餘金蛇盤面
+		if err := c.resultFreeService.SaveItems(context.Background(), session.PlayerUsername, results[1:]); err != nil {
 			ctx.SendError(err)
 			return
 		}
@@ -242,9 +252,13 @@ func (c *controller) FreeModeInDemo(ctx *server.Context, session *playerModel.Se
 
 	// 續存結算的結果 LastResults key
 
+	// 同步餘額
+
 	// 回傳結果
 	spinResult := betModel.NewSpinResult(lines)
 	spinResult.Score = totalScore
+	spinResult.Symbols = c.reelsFreeService.ToResults(reels)
+	spinResult.Times = c.settleService.GetTimes(reels)
 
 	gameResult := betModel.NewGameResult(SpinModeFree)
 	gameResult.SpinResult = spinResult
@@ -260,21 +274,53 @@ func (c *controller) FreeModeInDemo(ctx *server.Context, session *playerModel.Se
 	ctx.Send(CodeSuccess, "success", data)
 }
 
-func (c *controller) FreeModeInReal(ctx *server.Context, session *playerModel.Session, results [][][]int) {
-	// 結算第一個金蛇盤面
+func (c *controller) FreeModeInReal(ctx *server.Context, session *playerModel.Session, results [][]int) {
+	// 將盤面數據轉換為 reels
+	reels := c.reelsFreeService.ToReels(results)
 
-	// 續存結算的金蛇盤面結果 LastResults key
+	// 計算中獎線
+	lines, err := c.settleService.GetWinLines(1, 1000, reels)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 計算賠率
+	rate, err := c.settleService.GetRate(1, 1000, reels)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 計算總分
+	totalScore, err := c.settleService.GetTotalScore(1, 1000, reels)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 續存結算的結果 LastResults key
+
+	// 同步餘額
 
 	// 回傳結果
-}
+	spinResult := betModel.NewSpinResult(lines)
+	spinResult.Score = totalScore
+	spinResult.Symbols = c.reelsFreeService.ToResults(reels)
+	spinResult.Times = c.settleService.GetTimes(reels)
 
-func (c *controller) getRate(spinMode int, rtp float64) (float64, error) {
-	// 一般模式
-	if spinMode == 0 {
-		return c.weightService.RandomBaseWeightRate(rtp)
-	}
-	// 金蛇模式
-	return c.weightService.RandomFreeWeightRate(rtp)
+	gameResult := betModel.NewGameResult(SpinModeFree)
+	gameResult.SpinResult = spinResult
+	gameResult.WinRate = int(rate)
+	gameResult.TotalScore = totalScore
+	gameResult.WinType = 0
+
+	data := betModel.NewResponse(GameModeReal)
+	data.GameResult = gameResult
+	data.ScoreTry = 10000
+
+	// 返回結果
+	ctx.Send(CodeSuccess, "success", data)
 }
 
 func (c *controller) getGameService(mode string) gameService.Service {
@@ -284,13 +330,4 @@ func (c *controller) getGameService(mode string) gameService.Service {
 	}
 	// 真錢模式
 	return c.gameService
-}
-
-func (c *controller) getResultService(spinMode int) resultLoader.Service {
-	// 試玩模式
-	if spinMode == 0 {
-		return c.resultFreeLoader
-	}
-	// 真錢模式
-	return c.resultLoader
 }
