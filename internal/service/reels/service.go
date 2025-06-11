@@ -10,27 +10,23 @@ type service struct {
 	symbolRepo symbolRepo.Repository
 }
 
-func New(symbolRepo symbolRepo.Repository) Service {
-	return &service{symbolRepo: symbolRepo}
-}
-
-func (s *service) Generate(layout []int) [][]*symbol.Item {
-	reelSet := make([][]*symbol.Item, 0)
+func (s *service) Generate(layout []int) [][][]*symbol.Item {
+	reels := make([][]*symbol.Item, 0)
 	for col := 0; col < len(layout); col++ {
 		reel := make([]*symbol.Item, 0)
 		for row := 0; row < layout[col]; row++ {
 			reel = append(reel, s.symbolRepo.GetRandomSymbol())
 		}
-		reelSet = append(reelSet, reel)
+		reels = append(reels, reel)
 	}
 	// 將第二軸全 wild 的機率提升為 50%，比較容易能產生出高分數盤面結果
 	num := rand.Intn(100) + 1
 	if num > 50 {
-		for i := 0; i < len(reelSet[1]); i++ {
-			reelSet[1][i] = s.symbolRepo.GetSymbol(0)
+		for i := 0; i < len(reels[1]); i++ {
+			reels[1][i] = s.symbolRepo.GetSymbol(0)
 		}
 	}
-	return reelSet
+	return [][][]*symbol.Item{reels}
 }
 
 func (s *service) ToReels(origin [][]int) [][]*symbol.Item {

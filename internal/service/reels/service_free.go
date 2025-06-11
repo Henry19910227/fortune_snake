@@ -1,4 +1,4 @@
-package reels_free
+package reels
 
 import (
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
@@ -6,15 +6,11 @@ import (
 	"math/rand"
 )
 
-type service struct {
+type serviceFree struct {
 	symbolRepo symbolRepo.Repository
 }
 
-func New(symbolRepo symbolRepo.Repository) Service {
-	return &service{symbolRepo: symbolRepo}
-}
-
-func (s *service) Generate(layout []int) [][][]*symbol.Item {
+func (s *serviceFree) Generate(layout []int) [][][]*symbol.Item {
 	// 選擇一個隨機符號
 	randomSymbol := s.symbolRepo.GetRandomSymbol()
 	reelsList := make([][][]*symbol.Item, 0)
@@ -23,7 +19,7 @@ func (s *service) Generate(layout []int) [][][]*symbol.Item {
 	return reelsList
 }
 
-func (s *service) ToReels(origin [][]int) [][]*symbol.Item {
+func (s *serviceFree) ToReels(origin [][]int) [][]*symbol.Item {
 	reelSet := make([][]*symbol.Item, 0)
 	for col := 0; col < len(origin); col++ {
 		reel := make([]*symbol.Item, 0)
@@ -35,7 +31,7 @@ func (s *service) ToReels(origin [][]int) [][]*symbol.Item {
 	return reelSet
 }
 
-func (s *service) handle(randomSymbol *symbol.Item, reelsList *[][][]*symbol.Item, layout []int) {
+func (s *serviceFree) handle(randomSymbol *symbol.Item, reelsList *[][][]*symbol.Item, layout []int) {
 	lastReels := (*reelsList)[len(*reelsList)-1]
 	targetReels := make([][]*symbol.Item, len(lastReels))
 	s.deepCopy(targetReels, lastReels)
@@ -49,7 +45,7 @@ func (s *service) handle(randomSymbol *symbol.Item, reelsList *[][][]*symbol.Ite
 	s.handle(randomSymbol, reelsList, layout)
 }
 
-func (s *service) generate(randomSymbol *symbol.Item, layout []int) [][]*symbol.Item {
+func (s *serviceFree) generate(randomSymbol *symbol.Item, layout []int) [][]*symbol.Item {
 	// 獲取一個空白符號
 	spaceSymbol := s.symbolRepo.GetSymbol(99)
 	// ㄧ ~ 三軸
@@ -78,7 +74,7 @@ func (s *service) generate(randomSymbol *symbol.Item, layout []int) [][]*symbol.
 	return reels
 }
 
-func (s *service) isEqual(first [][]*symbol.Item, second [][]*symbol.Item) bool {
+func (s *serviceFree) isEqual(first [][]*symbol.Item, second [][]*symbol.Item) bool {
 	for i := 0; i < len(first); i++ {
 		for j := 0; j < len(first[i]); j++ {
 			if first[i][j].ID == second[i][j].ID {
@@ -90,7 +86,7 @@ func (s *service) isEqual(first [][]*symbol.Item, second [][]*symbol.Item) bool 
 	return true
 }
 
-func (s *service) cover(dst [][]*symbol.Item, src [][]*symbol.Item) {
+func (s *serviceFree) cover(dst [][]*symbol.Item, src [][]*symbol.Item) {
 	for col := 0; col < len(dst); col++ {
 		for row := 0; row < len(dst[col]); row++ {
 			if dst[col][row].ID != 99 {
@@ -101,7 +97,7 @@ func (s *service) cover(dst [][]*symbol.Item, src [][]*symbol.Item) {
 	}
 }
 
-func (s *service) deepCopy(dst [][]*symbol.Item, src [][]*symbol.Item) {
+func (s *serviceFree) deepCopy(dst [][]*symbol.Item, src [][]*symbol.Item) {
 	for i := range src {
 		dst[i] = make([]*symbol.Item, len(src[i])) // 建立內層
 		for j := range src[i] {

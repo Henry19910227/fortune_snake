@@ -2,7 +2,6 @@ package result_free
 
 import (
 	"fmt"
-	. "game_server_slots_fortune_snake/constants"
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
 	reelsService "game_server_slots_fortune_snake/internal/service/reels_free"
 	resultLoaderService "game_server_slots_fortune_snake/internal/service/result_loader"
@@ -10,20 +9,20 @@ import (
 )
 
 type controller struct {
-	reelFreeSvc      reelsService.Service
+	reelsSvc         reelsService.Service
 	settleSvc        settleService.Service
 	resultFreeLoader resultLoaderService.Service
 }
 
-func New(reelFreeSvc reelsService.Service, settleSvc settleService.Service, resultFreeLoader resultLoaderService.Service) Controller {
-	return &controller{reelFreeSvc: reelFreeSvc, settleSvc: settleSvc, resultFreeLoader: resultFreeLoader}
+func New(reelsSvc reelsService.Service, settleSvc settleService.Service, resultFreeLoader resultLoaderService.Service) Controller {
+	return &controller{reelsSvc: reelsSvc, settleSvc: settleSvc, resultFreeLoader: resultFreeLoader}
 }
 
 func (c *controller) Generate() {
 	fmt.Println("開始生成盤面數據至暫存區")
 	for {
 		// 生成一個免費模式盤面
-		reelsList := c.reelFreeSvc.Generate([]int{3, 4, 3})
+		reelsList := c.reelsSvc.Generate([]int{3, 4, 3})
 		// 獲取最後一個盤面的賠率
 		rate, _ := c.settleSvc.GetRate(1, 1000, reelsList[len(reelsList)-1])
 		// 將最後一個盤面轉換為Json
@@ -43,7 +42,7 @@ func (c *controller) Generate() {
 		break
 	}
 	fmt.Println("開始將暫存區數據遷移至DB")
-	err := c.resultFreeLoader.SpinMode(SpinModeFree).Migrate()
+	err := c.resultFreeLoader.Migrate()
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -11,7 +11,7 @@ import (
 	resultLoaderRepository "game_server_slots_fortune_snake/internal/repository/result_loader"
 	settleRepository "game_server_slots_fortune_snake/internal/repository/settle"
 	symbolRepository "game_server_slots_fortune_snake/internal/repository/symbol"
-	reelService "game_server_slots_fortune_snake/internal/service/reels"
+	reelsService "game_server_slots_fortune_snake/internal/service/reels"
 	resultLoaderService "game_server_slots_fortune_snake/internal/service/result_loader"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
 	"log"
@@ -43,12 +43,12 @@ func TestResultController_Generate(t *testing.T) {
 	bucketRepo := bucketRepository.New(gameCfg.BaseBucketConfig())
 
 	// service 建立
-	reelSvc := reelService.New(symRepo)
+	reelsSvc := reelsService.New(symRepo, constants.SpinModeBase)
 	settleSvc := settleService.New(settRepo)
 	resultSvc := resultLoaderService.New(resultRepo, bucketRepo, constants.SpinModeBase)
 
 	// controller 建立
-	resultController := New(reelSvc, settleSvc, resultSvc)
+	resultController := New(reelsSvc, settleSvc, resultSvc)
 	// 生產盤面數據
 	resultController.Generate()
 	// 檢查數據

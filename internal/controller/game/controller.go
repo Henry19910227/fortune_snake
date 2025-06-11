@@ -9,7 +9,6 @@ import (
 	"game_server_slots_fortune_snake/internal/server"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
 	reelsService "game_server_slots_fortune_snake/internal/service/reels"
-	reelsFreeService "game_server_slots_fortune_snake/internal/service/reels_free"
 	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/service/result_loader"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
@@ -24,14 +23,14 @@ type controller struct {
 	resultLoader      resultLoader.Service
 	resultFreeLoader  resultLoader.Service
 	reelsService      reelsService.Service
-	reelsFreeService  reelsFreeService.Service
+	reelsFreeService  reelsService.Service
 	settleService     settleService.Service
 }
 
 func New(gameService gameService.Service, gameDemoService gameService.Service,
 	weightService weightService.Service, resultFreeService resultFreeService.Service,
 	resultLoader resultLoader.Service, resultFreeLoader resultLoader.Service,
-	reelsService reelsService.Service, reelsFreeService reelsFreeService.Service,
+	reelsService reelsService.Service, reelsFreeService reelsService.Service,
 	settleService settleService.Service) Controller {
 	return &controller{gameService: gameService, gameDemoService: gameDemoService,
 		weightService: weightService, resultFreeService: resultFreeService, resultLoader: resultLoader,

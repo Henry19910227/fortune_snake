@@ -10,21 +10,22 @@ import (
 )
 
 type controller struct {
-	reelSvc      reelService.Service
+	reelsSvc     reelService.Service
 	reelFreeSvc  reelsFreeService.Service
 	settleSvc    settleService.Service
 	resultLoader resultLoaderService.Service
 }
 
 func New(reelSvc reelService.Service, settleSvc settleService.Service, resultLoader resultLoaderService.Service) Controller {
-	return &controller{reelSvc: reelSvc, settleSvc: settleSvc, resultLoader: resultLoader}
+	return &controller{reelsSvc: reelSvc, settleSvc: settleSvc, resultLoader: resultLoader}
 }
 
 func (c *controller) Generate() {
 	fmt.Println("開始生成盤面數據至暫存區")
 	for {
 		// 生成一個盤面
-		reels := c.reelSvc.Generate([]int{3, 4, 3})
+		reelsList := c.reelsSvc.Generate([]int{3, 4, 3})
+		reels := reelsList[0]
 		// 獲取賠率
 		rate, _ := c.settleSvc.GetRate(1, 1000, reels)
 		// 將盤面物件轉換為Json
