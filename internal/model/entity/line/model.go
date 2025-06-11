@@ -13,6 +13,7 @@ type Item struct {
 }
 
 type Position struct {
-	Col int
-	Row int
+	Col    int
+	Row    int
+	Symbol *symbol.Item // 中獎符號
 }

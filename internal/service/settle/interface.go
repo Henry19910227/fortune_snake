@@ -10,6 +10,8 @@ type Service interface {
 	GetRate(bet int, value int, reels [][]*symbol.Item) (rate float64, err error)
 	// GetTotalScore 獲取總分
 	GetTotalScore(bet int, value int, reels [][]*symbol.Item) (score int, err error)
+	// GetTimes 獲取倍數
+	GetTimes(reels [][]*symbol.Item) int
 	// GetWinLines 將盤面數據傳入獲取中獎賠付線
 	GetWinLines(bet int, value int, reels [][]*symbol.Item) (lines []*line.Item, err error)
 	// CheckWinLine 判斷否是中獎線

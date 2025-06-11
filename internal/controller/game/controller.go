@@ -2,8 +2,8 @@ package game
 
 import (
 	"context"
-	"fmt"
 	. "game_server_slots_fortune_snake/constants"
+	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	"game_server_slots_fortune_snake/internal/model/service/game/enter_game"
 	"game_server_slots_fortune_snake/internal/server"
@@ -83,6 +83,7 @@ func (c *controller) BetInReal(ctx *server.Context, session *playerModel.Session
 		result, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, int(session.PlayerId))
 		if err != nil {
 			ctx.SendError(err)
+			return
 		}
 		// 執行試玩環境的免費模式流程
 		c.FreeModeInDemo(ctx, session, result)
@@ -128,6 +129,7 @@ func (c *controller) BetInDemo(ctx *server.Context, session *playerModel.Session
 		result, err := c.resultFreeService.GameMode(GameModeDemo).PopFirstItem(grpcCtx, int(session.PlayerId))
 		if err != nil {
 			ctx.SendError(err)
+			return
 		}
 		// 執行試玩環境的免費模式流程
 		c.FreeModeInDemo(ctx, session, result)
@@ -218,17 +220,45 @@ func (c *controller) FreeModeInDemo(ctx *server.Context, session *playerModel.Se
 	// 將盤面數據轉換為 reels
 	reels := c.reelsFreeService.ToReels(results)
 
-	// 結算 reels
+	// 計算中獎線
 	lines, err := c.settleService.GetWinLines(1, 1000, reels)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
-	fmt.Println(lines)
+
+	// 計算賠率
+	rate, err := c.settleService.GetRate(1, 1000, reels)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 計算總分
+	totalScore, err := c.settleService.GetTotalScore(1, 1000, reels)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
 
 	// 續存結算的結果 LastResults key
 
 	// 回傳結果
+	spinResult := betModel.NewSpinResult(lines)
+	spinResult.Score = totalScore
+
+	gameResult := betModel.NewGameResult(SpinModeFree)
+	gameResult.SpinResult = spinResult
+	gameResult.WinRate = int(rate)
+	gameResult.TotalScore = totalScore
+	gameResult.WinType = 0
+
+	data := betModel.NewResponse(GameModeDemo)
+	data.GameResult = gameResult
+	data.ScoreTry = 10000
+
+	// 返回結果
+	ctx.Send(CodeSuccess, "success", data)
 }
 
 func (c *controller) FreeModeInReal(ctx *server.Context, session *playerModel.Session, results [][][]int) {

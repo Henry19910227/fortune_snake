@@ -18,7 +18,7 @@ func New(settleRepo settleRepo.Repository) Service {
 }
 
 func (s *service) GetRate(bet int, value int, reels [][]*symbol.Item) (rate float64, err error) {
-	totalScore, err := s.getTotalScore(bet, value, reels)
+	totalScore, err := s.GetTotalScore(bet, value, reels)
 	if err != nil {
 		return 0, err
 	}
@@ -28,27 +28,6 @@ func (s *service) GetRate(bet int, value int, reels [][]*symbol.Item) (rate floa
 }
 
 func (s *service) GetTotalScore(bet int, value int, reels [][]*symbol.Item) (score int, err error) {
-	score, err = s.getTotalScore(bet, value, reels)
-	if err != nil {
-		return 0, err
-	}
-	return score, nil
-}
-
-func (s *service) GetWinLines(bet int, value int, reels [][]*symbol.Item) (lines []*lineModel.Item, err error) {
-	lines, err = s.getWinLines(bet, value, reels)
-	if err != nil {
-		return []*lineModel.Item{}, err
-	}
-	return lines, nil
-}
-
-func (s *service) CheckWinLine(line *lineModel.Item) (symbol *symbol.Item, err error) {
-	item := s.checkWinLine(line)
-	return item, nil
-}
-
-func (s *service) getTotalScore(bet int, value int, reels [][]*symbol.Item) (int, error) {
 	lines, err := s.getWinLines(bet, value, reels)
 	if err != nil {
 		return 0, err
@@ -62,6 +41,13 @@ func (s *service) getTotalScore(bet int, value int, reels [][]*symbol.Item) (int
 	for _, line := range lines {
 		totalScore += line.Score
 	}
+	// 計算是否乘以十倍
+	times := s.GetTimes(reels)
+
+	return totalScore * times, nil
+}
+
+func (s *service) GetTimes(reels [][]*symbol.Item) int {
 	// 計算第二軸百搭個數
 	var wildCount int
 	for _, symbolItem := range reels[1] {
@@ -72,10 +58,23 @@ func (s *service) getTotalScore(bet int, value int, reels [][]*symbol.Item) (int
 	}
 	// 第二軸百搭個數小於四 則分數 * 1
 	if wildCount < 4 {
-		return totalScore, nil
+		return 1
 	}
 	// 第二軸百搭個數為四 則分數 * 10
-	return totalScore * 10, nil
+	return 10
+}
+
+func (s *service) GetWinLines(bet int, value int, reels [][]*symbol.Item) (lines []*lineModel.Item, err error) {
+	lines, err = s.getWinLines(bet, value, reels)
+	if err != nil {
+		return []*lineModel.Item{}, err
+	}
+	return lines, nil
+}
+
+func (s *service) CheckWinLine(line *lineModel.Item) (symbol *symbol.Item, err error) {
+	item := s.checkWinLine(line)
+	return item, nil
 }
 
 func (s *service) getWinLines(bet int, value int, reels [][]*symbol.Item) ([]*lineModel.Item, error) {
@@ -95,7 +94,7 @@ func (s *service) getWinLines(bet int, value int, reels [][]*symbol.Item) ([]*li
 		for j := 0; j < len(hitLines[i]); j++ {
 			checkPoint := hitLines[i][j]
 			symbolItem := reels[j][checkPoint]
-			winLine.Positions = append(winLine.Positions, lineModel.Position{Col: j, Row: checkPoint})
+			winLine.Positions = append(winLine.Positions, lineModel.Position{Col: j, Row: checkPoint, Symbol: symbolItem})
 			winLine.Symbols = append(winLine.Symbols, symbolItem)
 		}
 		// 計算這條是否是中獎線

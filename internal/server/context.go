@@ -51,6 +51,10 @@ func (c *Context) Data() []byte {
 	return c.data
 }
 
+func (c *Context) Result() []byte {
+	return c.result
+}
+
 func (c *Context) SetData(b []byte) {
 	c.data = b
 }
