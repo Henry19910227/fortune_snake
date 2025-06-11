@@ -16,13 +16,19 @@ import (
 )
 
 type factory struct {
-	db  *gorm.DB
-	rdb *redis.Client
-	cfg gameCfg.Config
+	db               *gorm.DB
+	rdb              *redis.Client
+	cfg              gameCfg.Config
+	weightRepo       weightRepo.Repository
+	resultLoader     resultLoader.Repository
+	resultFreeLoader resultLoader.Repository
 }
 
 func New(db *gorm.DB, rdb *redis.Client, cfg gameCfg.Config) Factory {
-	repoFactory := &factory{db: db, rdb: rdb, cfg: cfg}
+	weightRepo := weightRepo.New(cfg.RTPConfig())
+	resultLoad := resultLoader.New(db, SpinModeBase)
+	resultFreeLoad := resultLoader.New(db, SpinModeFree)
+	repoFactory := &factory{db: db, rdb: rdb, cfg: cfg, weightRepo: weightRepo, resultLoader: resultLoad, resultFreeLoader: resultFreeLoad}
 	return repoFactory
 }
 
@@ -35,15 +41,15 @@ func (f *factory) PlayerRepository() playerRepo.Repository {
 }
 
 func (f *factory) WeightRepository() weightRepo.Repository {
-	return weightRepo.New(f.cfg.RTPConfig())
+	return f.weightRepo
 }
 
 func (f *factory) ResultLoader() resultLoader.Repository {
-	return resultLoader.New(f.db, SpinModeBase)
+	return f.resultLoader
 }
 
 func (f *factory) ResultFreeLoader() resultLoader.Repository {
-	return resultLoader.New(f.db, SpinModeFree)
+	return f.resultFreeLoader
 }
 
 func (f *factory) ResultFreeRepository() resultFreeRepo.Repository {
