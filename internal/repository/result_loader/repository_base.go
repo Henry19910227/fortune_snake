@@ -6,10 +6,12 @@ import (
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
 	"gorm.io/gorm"
 	"math/rand"
+	"sync"
 )
 
 type repository struct {
 	db         *gorm.DB
+	mu         sync.RWMutex
 	resultsMap map[float64][]*model.Item
 }
 
@@ -22,6 +24,8 @@ func (r *repository) CreateItems(items []*model.Item) (err error) {
 }
 
 func (r *repository) LoadData() (err error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	// 從 db 讀取 model
 	var items []*model.Item
 	if err := r.db.Table("fortune_snake_results").Find(&items).Error; err != nil {
@@ -38,6 +42,8 @@ func (r *repository) LoadData() (err error) {
 }
 
 func (r *repository) Random(rate float64) (*model.Item, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	items, ok := r.resultsMap[rate]
 	if !ok {
 		return nil, errMsg.New(constants.CodeInternalError, "找不到賠率", nil)
