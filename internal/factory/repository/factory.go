@@ -3,14 +3,16 @@ package repository
 import (
 	gameCfg "game_server_slots_fortune_snake/config/game"
 	. "game_server_slots_fortune_snake/constants"
+	"game_server_slots_fortune_snake/internal/model/config/system"
 	bucketRepo "game_server_slots_fortune_snake/internal/repository/bucket"
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
 	resultFreeRepo "game_server_slots_fortune_snake/internal/repository/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/repository/result_loader"
 	settleRepository "game_server_slots_fortune_snake/internal/repository/settle"
+	snowFlakeRepository "game_server_slots_fortune_snake/internal/repository/snow_flake"
 	symbolRepo "game_server_slots_fortune_snake/internal/repository/symbol"
-	weightRepo "game_server_slots_fortune_snake/internal/repository/weight"
+	weightRepository "game_server_slots_fortune_snake/internal/repository/weight"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -19,17 +21,22 @@ type factory struct {
 	db               *gorm.DB
 	rdb              *redis.Client
 	cfg              gameCfg.Config
-	weightRepo       weightRepo.Repository
+	snowFlakeRepo    snowFlakeRepository.Repository
+	weightRepo       weightRepository.Repository
 	resultLoader     resultLoader.Repository
 	resultFreeLoader resultLoader.Repository
 }
 
-func New(db *gorm.DB, rdb *redis.Client, cfg gameCfg.Config) Factory {
-	weightRepo := weightRepo.New(cfg.RTPConfig())
+func New(db *gorm.DB, rdb *redis.Client, cfg gameCfg.Config, config *system.Config) (Factory, error) {
+	weightRepo := weightRepository.New(cfg.RTPConfig())
 	resultLoad := resultLoader.New(db, SpinModeBase)
 	resultFreeLoad := resultLoader.New(db, SpinModeFree)
-	repoFactory := &factory{db: db, rdb: rdb, cfg: cfg, weightRepo: weightRepo, resultLoader: resultLoad, resultFreeLoader: resultFreeLoad}
-	return repoFactory
+	snowFlakeRepo, err := snowFlakeRepository.New(config.Server.ServerNode)
+	if err != nil {
+		return nil, err
+	}
+	repoFactory := &factory{db: db, rdb: rdb, cfg: cfg, snowFlakeRepo: snowFlakeRepo, weightRepo: weightRepo, resultLoader: resultLoad, resultFreeLoader: resultFreeLoad}
+	return repoFactory, nil
 }
 
 func (f *factory) GameRepository() gameRepo.Repository {
@@ -40,7 +47,11 @@ func (f *factory) PlayerRepository() playerRepo.Repository {
 	return playerRepo.New(f.rdb)
 }
 
-func (f *factory) WeightRepository() weightRepo.Repository {
+func (f *factory) SnowflakeRepository() snowFlakeRepository.Repository {
+	return f.snowFlakeRepo
+}
+
+func (f *factory) WeightRepository() weightRepository.Repository {
 	return f.weightRepo
 }
 

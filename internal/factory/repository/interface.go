@@ -7,6 +7,7 @@ import (
 	resultFreeRepo "game_server_slots_fortune_snake/internal/repository/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/repository/result_loader"
 	settleRepository "game_server_slots_fortune_snake/internal/repository/settle"
+	snowFlakeRepository "game_server_slots_fortune_snake/internal/repository/snow_flake"
 	symbolRepo "game_server_slots_fortune_snake/internal/repository/symbol"
 	weightRepo "game_server_slots_fortune_snake/internal/repository/weight"
 )
@@ -22,4 +23,5 @@ type Factory interface {
 	BucketFreeRepository() bucketRepo.Repository
 	SymbolRepository() symbolRepo.Repository
 	SettleRepository() settleRepository.Repository
+	SnowflakeRepository() snowFlakeRepository.Repository
 }

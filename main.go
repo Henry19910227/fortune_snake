@@ -15,7 +15,6 @@ import (
 	"game_server_slots_fortune_snake/internal/server"
 	"game_server_slots_fortune_snake/pkg"
 	"game_server_slots_fortune_snake/tool"
-	"game_server_slots_fortune_snake/utils"
 	"go.uber.org/zap"
 	"log"
 	"os"
@@ -37,12 +36,6 @@ func main() {
 
 	// 3. 初始化语言包
 	pkg.InitLocalizeInstance(appConfig.Config().Language.Default)
-
-	// 4. 初始化分布式雪花 ID
-	_, err := utils.NewSnowFlake(appConfig.Config().Server.ServerNode)
-	if err != nil {
-		log.Fatalf("❌ 分布式雪花 ID 初始化失败: %v", err)
-	}
 
 	// 5. 创建全局 context，用于控制所有服务的退出，并传递给需要优雅关闭的服务
 	ctx, cancel := context.WithCancel(context.Background())
@@ -88,7 +81,11 @@ func main() {
 	}
 
 	// 初始化工廠
-	repoFact := repoFactory.New(mysqlDB.DB(), redisDB.RDB(), gameCfg.New())
+	repoFact, err := repoFactory.New(mysqlDB.DB(), redisDB.RDB(), gameCfg.New(), appConfig.Config())
+	if err != nil {
+		tool.Log().Logs("error", true, "❌ ⚠️ repository工廠初始化失败", zap.String("Component", "Elasticsearch"), zap.Error(err))
+		return
+	}
 	serviceFact := serviceFactory.New(repoFact)
 	factory := controllerFactory.New(serviceFact)
 
