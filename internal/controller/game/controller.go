@@ -68,13 +68,14 @@ func (c *controller) Bet(ctx *server.Context) {
 
 	// 進入試玩模式
 	if session.Mode == "demo" {
-		c.BetInDemo(ctx, session)
+		c.BetInDemo(ctx)
 		return
 	}
-	c.BetInReal(ctx, session)
+	c.BetInReal(ctx)
 }
 
-func (c *controller) BetInReal(ctx *server.Context, session *playerModel.Session) {
+func (c *controller) BetInReal(ctx *server.Context) {
+	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 
 	// 檢查剩餘免費盤面數量
@@ -85,267 +86,68 @@ func (c *controller) BetInReal(ctx *server.Context, session *playerModel.Session
 	}
 
 	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
-	if amount > 0 {
-		// 取出一筆金蛇盤面
-		result, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, session.PlayerUsername)
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 執行試玩環境的免費模式流程
-		c.FreeModeInReal(ctx, result, amount == 1)
+	if amount > 1 {
+		c.FreeModeInReal(ctx)
+		return
+	}
+
+	// 進入最後一個金蛇盤面
+	if amount == 1 {
+		c.FinalFreeModeInReal(ctx)
 		return
 	}
 
 	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
 	spinMode := c.gameService.SpinMode()
 
+	// 扣除投注額
+
 	// 進入金蛇模式
 	if spinMode == SpinModeFree {
-		// 獲取賠率
-		rate, err := c.weightService.RandomFreeWeightRate(float64(session.GameRtp))
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 生成隨機金蛇盤面
-		results, err := c.resultFreeLoader.Random(rate)
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 取出第一個金蛇盤面
-		result := results[0]
-
-		// 緩存剩餘金蛇盤面
-		if err := c.resultFreeService.SaveItems(context.Background(), session.PlayerUsername, results[1:]); err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 執行真錢環境的免費模式流程
-		c.FreeModeInReal(ctx, result, false)
+		c.StartFreeModeInReal(ctx)
 		return
 	}
+
 	// 執行真錢環境的普通模式流程
-	c.BaseModeInReal(ctx, session)
+	c.BaseModeInReal(ctx)
 }
 
-func (c *controller) BetInDemo(ctx *server.Context, session *playerModel.Session) {
-	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
+func (c *controller) BetInDemo(ctx *server.Context) {
+	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
+
+	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
 	amount, err := c.resultFreeService.GameMode(GameModeDemo).Amount(grpcCtx, session.PlayerUsername)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
 
-	if amount > 0 {
-		// 彈出一筆金蛇盤面
-		result, err := c.resultFreeService.GameMode(GameModeDemo).PopFirstItem(grpcCtx, session.PlayerUsername)
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 執行試玩環境的免費模式流程
-		c.FreeModeInDemo(ctx, result, amount == 1)
+	// 金蛇盤面進行中
+	if amount > 1 {
+		c.FreeModeInDemo(ctx)
+		return
+	}
+
+	// 進入最後一個金蛇盤面
+	if amount == 1 {
+		c.FinalFreeModeInDemo(ctx)
 		return
 	}
 
 	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
 	spinMode := c.gameService.SpinMode()
 
-	// 進入金蛇模式
+	// 扣除試玩投注額
+
+	// 開始第一局金蛇模式
 	if spinMode == SpinModeFree {
-		// 獲取賠率
-		rate, err := c.weightService.RandomFreeWeightRate(float64(session.GameRtp))
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 生成隨機金蛇盤面
-		results, err := c.resultFreeLoader.Random(rate)
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-		// 取出第一個金蛇盤面
-		result := results[0]
-
-		// 緩存剩餘金蛇盤面
-		if err := c.resultFreeService.SaveItems(context.Background(), session.PlayerUsername, results[1:]); err != nil {
-			ctx.SendError(err)
-			return
-		}
-
-		// 執行試玩環境的免費模式流程
-		c.FreeModeInDemo(ctx, result, false)
-		return
-	}
-	c.BaseModeInDemo(ctx, session)
-}
-
-func (c *controller) BaseModeInDemo(ctx *server.Context, session *playerModel.Session) {
-	// 獲取賠率
-	rate, err := c.weightService.RandomBaseWeightRate(float64(session.GameRtp))
-	if err != nil {
-		ctx.SendError(err)
+		c.StartFreeModeInDemo(ctx)
 		return
 	}
 
-	// 取得隨機盤面
-	_, err = c.resultLoader.Random(rate)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 結算盤面
-
-	// 餘額計算
-
-	// 緩存盤面結果 lastResults key
-
-	// 回傳結果
-}
-
-func (c *controller) BaseModeInReal(ctx *server.Context, session *playerModel.Session) {
-	// 獲取賠率
-	rate, err := c.weightService.RandomBaseWeightRate(float64(session.GameRtp))
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 取得隨機盤面
-	_, err = c.resultLoader.Random(rate)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-	// 結算盤面
-
-	// 續存結算的盤面結果 LastResults key
-
-	// 餘額計算
-
-	// 回傳結果
-}
-
-func (c *controller) FreeModeInDemo(ctx *server.Context, results [][]int, isFinal bool) {
-	// 取得 session 數據
-	session := ctx.MustGet("session").(*playerModel.Session)
-
-	// 將盤面數據轉換為 reels
-	reels := c.reelsFreeService.ToReels(results)
-
-	// 計算中獎線
-	lines, err := c.settleService.GetWinLines(1, 1000, reels)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 計算賠率
-	rate, err := c.settleService.GetRate(1, 1000, reels)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	spinResult := betModel.NewSpinResult(lines)
-	spinResult.Score = 0
-	spinResult.Symbols = c.reelsFreeService.ToResults(reels)
-	spinResult.Times = c.settleService.GetTimes(reels)
-
-	gameResult := betModel.NewGameResult(SpinModeFree)
-	gameResult.SpinResult = spinResult
-	gameResult.WinRate = int(rate)
-	gameResult.TotalScore = 0
-	gameResult.WinType = 0
-
-	data := betModel.NewResponse(GameModeDemo)
-	data.GameResult = gameResult
-	data.ScoreTry = int(session.Balance)
-
-	// 如果是最後一個免費模式盤面，則計算分數與同步餘額
-	if isFinal {
-		// 計算總分
-		totalScore, err := c.settleService.GetTotalScore(1, 1000, reels)
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-
-		data.GameResult.TotalScore = totalScore
-		data.GameResult.SpinResult.Score = totalScore
-		data.GameResult.WinRate = 0
-
-		// 同步試玩餘額
-	}
-
-	// 續存結算的結果 LastResults key
-
-	// 返回結果
-	ctx.Send(CodeSuccess, "success", data)
-}
-
-func (c *controller) FreeModeInReal(ctx *server.Context, results [][]int, isFinal bool) {
-	// 取得 session 數據
-	//session := ctx.MustGet("session").(*playerModel.Session)
-
-	// 將盤面數據轉換為 reels
-	reels := c.reelsFreeService.ToReels(results)
-
-	// 計算中獎線
-	lines, err := c.settleService.GetWinLines(1, 1000, reels)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 計算賠率
-	rate, err := c.settleService.GetRate(1, 1000, reels)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 回傳結果
-	spinResult := betModel.NewSpinResult(lines)
-	spinResult.Score = 0
-	spinResult.Symbols = c.reelsFreeService.ToResults(reels)
-	spinResult.Times = c.settleService.GetTimes(reels)
-
-	gameResult := betModel.NewGameResult(SpinModeFree)
-	gameResult.SpinResult = spinResult
-	gameResult.WinRate = int(rate)
-	gameResult.TotalScore = 0
-	gameResult.WinType = 0
-
-	data := betModel.NewResponse(GameModeReal)
-	data.GameResult = gameResult
-
-	// 如果是最後一個免費模式盤面，則計算分數與同步餘額
-	if isFinal {
-		// 計算總分
-		totalScore, err := c.settleService.GetTotalScore(1, 1000, reels)
-		if err != nil {
-			ctx.SendError(err)
-			return
-		}
-
-		data.GameResult.TotalScore = totalScore
-		data.GameResult.SpinResult.Score = totalScore
-		data.GameResult.WinRate = 0
-
-		// 同步真實餘額
-		data.Gold = 10000
-	}
-
-	// 續存結算的結果 LastResults key
-
-	// 返回結果
-	ctx.Send(CodeSuccess, "success", data)
+	// 一般模式
+	c.BaseModeInDemo(ctx)
 }
 
 func (c *controller) getGameService(mode string) gameService.Service {

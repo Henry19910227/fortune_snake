@@ -52,3 +52,7 @@ func (s *service) ToResults(itemsList [][]*symbol.Item) [][]int {
 	}
 	return results
 }
+
+func (s *service) GetMainSymbol(reels [][]*symbol.Item) *symbol.Item {
+	return s.symbolRepo.GetSymbol(0)
+}

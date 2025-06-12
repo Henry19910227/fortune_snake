@@ -43,7 +43,7 @@ func TestGameController_Bet(t *testing.T) {
 	defer redisDB.Close()
 
 	// 初始化工廠
-	repoFact := repoFactory.New(mysqlDB.DB(), redisDB.RDB(), gameConfig.New())
+	repoFact, _ := repoFactory.New(mysqlDB.DB(), redisDB.RDB(), gameConfig.New(), appConfig.Config())
 	serviceFact := serviceFactory.New(repoFact)
 
 	// 初始化 service 模塊
@@ -111,7 +111,7 @@ func TestGameController_FreeModeInDemo(t *testing.T) {
 	defer redisDB.Close()
 
 	// 初始化工廠
-	repoFact := repoFactory.New(mysqlDB.DB(), redisDB.RDB(), gameConfig.New())
+	repoFact, _ := repoFactory.New(mysqlDB.DB(), redisDB.RDB(), gameConfig.New(), appConfig.Config())
 	serviceFact := serviceFactory.New(repoFact)
 
 	// 初始化 game controller
@@ -141,5 +141,5 @@ func TestGameController_FreeModeInDemo(t *testing.T) {
 	engineCtx.SetData(b)
 
 	// 執行 FreeModeInDemo
-	gameController.FreeModeInDemo(engineCtx, player, [][]int{{1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1}})
+	gameController.FreeModeInDemo(engineCtx, [][]int{{1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1}}, false)
 }

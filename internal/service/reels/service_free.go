@@ -43,6 +43,18 @@ func (s *serviceFree) ToResults(itemsList [][]*symbol.Item) [][]int {
 	return results
 }
 
+func (s *serviceFree) GetMainSymbol(reels [][]*symbol.Item) *symbol.Item {
+	for _, reel := range reels {
+		for _, item := range reel {
+			if item.IsWild || item.ID == 99 {
+				continue
+			}
+			return item
+		}
+	}
+	return s.symbolRepo.GetSymbol(0)
+}
+
 func (s *serviceFree) handle(randomSymbol *symbol.Item, reelsList *[][][]*symbol.Item, layout []int) {
 	lastReels := (*reelsList)[len(*reelsList)-1]
 	targetReels := make([][]*symbol.Item, len(lastReels))

@@ -13,6 +13,8 @@ type Service interface {
 	ToReels(results [][]int) [][]*symbol.Item
 
 	ToResults(itemsList [][]*symbol.Item) [][]int
+
+	GetMainSymbol(reels [][]*symbol.Item) *symbol.Item
 }
 
 func New(symbolRepo symbolRepo.Repository, spinMode int) Service {

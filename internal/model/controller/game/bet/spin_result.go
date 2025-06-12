@@ -9,13 +9,11 @@ type SpinResult struct {
 	Times   int
 }
 
-func NewSpinResult(items []*lineModel.Item) *SpinResult {
+func (s *SpinResult) SetLines(items []*lineModel.Item) {
 	lines := make([]*Line, 0)
 	for _, item := range items {
 		line := NewLine(item)
 		lines = append(lines, line)
 	}
-	spinResult := &SpinResult{}
-	spinResult.Lines = lines
-	return spinResult
+	s.Lines = lines
 }
