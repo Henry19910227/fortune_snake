@@ -10,6 +10,12 @@ type Line struct {
 	Score    int    // 中獎金額
 }
 
+type Cell struct {
+	Col    int
+	Row    int
+	Symbol int
+}
+
 func NewLine(item *lineModel.Item) *Line {
 	line := &Line{}
 	line.HitIndex = item.Index

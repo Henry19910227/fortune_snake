@@ -60,6 +60,12 @@ func (c *controller) Bet(ctx *server.Context) {
 	// 取得 session 數據
 	session := ctx.MustGet("session").(*playerModel.Session)
 
+	param := &betModel.Param{}
+	if err := ctx.Bind(param); err != nil {
+		ctx.SendError(err)
+		return
+	}
+
 	// 進入試玩模式
 	if session.Mode == "demo" {
 		c.BetInDemo(ctx, session)
@@ -87,7 +93,7 @@ func (c *controller) BetInReal(ctx *server.Context, session *playerModel.Session
 			return
 		}
 		// 執行試玩環境的免費模式流程
-		c.FreeModeInDemo(ctx, session, result)
+		c.FreeModeInReal(ctx, result, amount == 1)
 		return
 	}
 
@@ -117,7 +123,7 @@ func (c *controller) BetInReal(ctx *server.Context, session *playerModel.Session
 			return
 		}
 		// 執行真錢環境的免費模式流程
-		c.FreeModeInReal(ctx, session, result)
+		c.FreeModeInReal(ctx, result, false)
 		return
 	}
 	// 執行真錢環境的普通模式流程
@@ -141,7 +147,7 @@ func (c *controller) BetInDemo(ctx *server.Context, session *playerModel.Session
 			return
 		}
 		// 執行試玩環境的免費模式流程
-		c.FreeModeInDemo(ctx, session, result)
+		c.FreeModeInDemo(ctx, result, amount == 1)
 		return
 	}
 
@@ -172,7 +178,7 @@ func (c *controller) BetInDemo(ctx *server.Context, session *playerModel.Session
 		}
 
 		// 執行試玩環境的免費模式流程
-		c.FreeModeInDemo(ctx, session, result)
+		c.FreeModeInDemo(ctx, result, false)
 		return
 	}
 	c.BaseModeInDemo(ctx, session)
@@ -225,7 +231,10 @@ func (c *controller) BaseModeInReal(ctx *server.Context, session *playerModel.Se
 	// 回傳結果
 }
 
-func (c *controller) FreeModeInDemo(ctx *server.Context, session *playerModel.Session, results [][]int) {
+func (c *controller) FreeModeInDemo(ctx *server.Context, results [][]int, isFinal bool) {
+	// 取得 session 數據
+	session := ctx.MustGet("session").(*playerModel.Session)
+
 	// 將盤面數據轉換為 reels
 	reels := c.reelsFreeService.ToReels(results)
 
@@ -243,38 +252,47 @@ func (c *controller) FreeModeInDemo(ctx *server.Context, session *playerModel.Se
 		return
 	}
 
-	// 計算總分
-	totalScore, err := c.settleService.GetTotalScore(1, 1000, reels)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 續存結算的結果 LastResults key
-
-	// 同步餘額
-
-	// 回傳結果
 	spinResult := betModel.NewSpinResult(lines)
-	spinResult.Score = totalScore
+	spinResult.Score = 0
 	spinResult.Symbols = c.reelsFreeService.ToResults(reels)
 	spinResult.Times = c.settleService.GetTimes(reels)
 
 	gameResult := betModel.NewGameResult(SpinModeFree)
 	gameResult.SpinResult = spinResult
 	gameResult.WinRate = int(rate)
-	gameResult.TotalScore = totalScore
+	gameResult.TotalScore = 0
 	gameResult.WinType = 0
 
 	data := betModel.NewResponse(GameModeDemo)
 	data.GameResult = gameResult
-	data.ScoreTry = 10000
+	data.ScoreTry = int(session.Balance)
+
+	// 如果是最後一個免費模式盤面，則計算分數與同步餘額
+	if isFinal {
+		// 計算總分
+		totalScore, err := c.settleService.GetTotalScore(1, 1000, reels)
+		if err != nil {
+			ctx.SendError(err)
+			return
+		}
+
+		data.GameResult.TotalScore = totalScore
+		data.GameResult.SpinResult.Score = totalScore
+		data.GameResult.WinRate = 0
+
+		// 同步試玩餘額
+	}
+
+	// 續存結算的結果 LastResults key
 
 	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }
 
-func (c *controller) FreeModeInReal(ctx *server.Context, session *playerModel.Session, results [][]int) {
+func (c *controller) FreeModeInReal(ctx *server.Context, results [][]int, isFinal bool) {
+	// 取得 session 數據
+	//session := ctx.MustGet("session").(*playerModel.Session)
+
 	// 將盤面數據轉換為 reels
 	reels := c.reelsFreeService.ToReels(results)
 
@@ -292,32 +310,39 @@ func (c *controller) FreeModeInReal(ctx *server.Context, session *playerModel.Se
 		return
 	}
 
-	// 計算總分
-	totalScore, err := c.settleService.GetTotalScore(1, 1000, reels)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 續存結算的結果 LastResults key
-
-	// 同步餘額
-
 	// 回傳結果
 	spinResult := betModel.NewSpinResult(lines)
-	spinResult.Score = totalScore
+	spinResult.Score = 0
 	spinResult.Symbols = c.reelsFreeService.ToResults(reels)
 	spinResult.Times = c.settleService.GetTimes(reels)
 
 	gameResult := betModel.NewGameResult(SpinModeFree)
 	gameResult.SpinResult = spinResult
 	gameResult.WinRate = int(rate)
-	gameResult.TotalScore = totalScore
+	gameResult.TotalScore = 0
 	gameResult.WinType = 0
 
 	data := betModel.NewResponse(GameModeReal)
 	data.GameResult = gameResult
-	data.ScoreTry = 10000
+
+	// 如果是最後一個免費模式盤面，則計算分數與同步餘額
+	if isFinal {
+		// 計算總分
+		totalScore, err := c.settleService.GetTotalScore(1, 1000, reels)
+		if err != nil {
+			ctx.SendError(err)
+			return
+		}
+
+		data.GameResult.TotalScore = totalScore
+		data.GameResult.SpinResult.Score = totalScore
+		data.GameResult.WinRate = 0
+
+		// 同步真實餘額
+		data.Gold = 10000
+	}
+
+	// 續存結算的結果 LastResults key
 
 	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
