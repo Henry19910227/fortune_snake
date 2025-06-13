@@ -10,6 +10,17 @@ import (
 
 func (c *controller) BaseModeInReal(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
+	param := &betModel.Param{}
+	if err := ctx.Bind(param); err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 計算總投注額
+	totalBet := param.Bet * param.Value * 10
+
+	// 用戶餘額減去總投注額
+	session.Balance -= int64(totalBet)
 
 	// 獲取賠率
 	rate, err := c.weightService.RandomBaseWeightRate(float64(session.GameRtp))
@@ -32,27 +43,36 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 	reels := c.reelsFreeService.ToReels(results)
 
 	// 計算賠率
-	winRate, err := c.settleService.GetRate(1, 1000, reels)
+	winRate, err := c.settleService.GetRate(param.Bet, param.Value, reels)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
 
 	// 計算中獎線
-	lines, err := c.settleService.GetWinLines(1, 1000, reels)
+	lines, err := c.settleService.GetWinLines(param.Bet, param.Value, reels)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
 
 	// 計算總分
-	totalScore, err := c.settleService.GetTotalScore(1, 1000, reels)
+	totalScore, err := c.settleService.GetTotalScore(param.Bet, param.Value, reels)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
 
-	// 數據準備
+	// 續存結果
+
+	// 派彩更新餘額
+	session.Balance += int64(totalScore)
+	if err := c.playerService.UpdateBalance(ctx, session.PlayerId, session.Balance); err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 返回結果
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = totalScore
 	spinResult.SetLines(lines)
@@ -67,12 +87,8 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 
 	data := betModel.NewResponse(GameModeReal)
 	data.GameResult = gameResult
+	data.Balance = int(session.Balance)
 
-	// 續存結果
-
-	// 派彩
-
-	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }
 
@@ -80,6 +96,17 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
+	param := &betModel.Param{}
+	if err := ctx.Bind(param); err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 計算總投注額
+	totalBet := param.Bet * param.Value * 10
+
+	// 用戶餘額減去總投注額
+	session.Balance -= int64(totalBet)
 
 	// 獲取賠率
 	rate, err := c.weightService.RandomFreeWeightRate(float64(session.GameRtp))
@@ -105,7 +132,15 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	// 將盤面數據轉換為 reels
 	reels := c.reelsFreeService.ToReels(results)
 
-	// 回傳結果
+	// 更新餘額
+	if err := c.playerService.UpdateBalance(ctx, session.PlayerId, session.Balance); err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 續存結果
+
+	// 返回結果
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = 0
 	spinResult.Lines = []*betModel.Line{}
@@ -121,10 +156,8 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 
 	data := betModel.NewResponse(GameModeReal)
 	data.GameResult = gameResult
+	data.Balance = int(session.Balance)
 
-	// 續存結果
-
-	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }
 
@@ -142,7 +175,9 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	// 將盤面數據轉換為 reels
 	reels := c.reelsFreeService.ToReels(results)
 
-	// 回傳結果
+	// 續存結果
+
+	// 返回結果
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = 0
 	spinResult.Lines = []*betModel.Line{}
@@ -158,10 +193,8 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 
 	data := betModel.NewResponse(GameModeReal)
 	data.GameResult = gameResult
+	data.Balance = int(session.Balance)
 
-	// 續存結果
-
-	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }
 
@@ -201,7 +234,16 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 		return
 	}
 
-	// 數據準備
+	// 續存結果
+
+	// 派彩更新餘額
+	session.Balance += int64(totalScore)
+	if err := c.playerService.UpdateBalance(ctx, session.PlayerId, session.Balance); err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 返回結果
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = totalScore
 	spinResult.SetLines(lines)
@@ -217,11 +259,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 
 	data := betModel.NewResponse(GameModeReal)
 	data.GameResult = gameResult
+	data.Balance = int(session.Balance)
 
-	// 續存結果
-
-	// 派彩同步
-
-	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }

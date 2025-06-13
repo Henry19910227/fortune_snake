@@ -7,6 +7,7 @@ import (
 	bucketRepo "game_server_slots_fortune_snake/internal/repository/bucket"
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
+	session "game_server_slots_fortune_snake/internal/repository/player_session"
 	resultFreeRepo "game_server_slots_fortune_snake/internal/repository/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/repository/result_loader"
 	settleRepository "game_server_slots_fortune_snake/internal/repository/settle"
@@ -44,7 +45,11 @@ func (f *factory) GameRepository() gameRepo.Repository {
 }
 
 func (f *factory) PlayerRepository() playerRepo.Repository {
-	return playerRepo.New(f.rdb)
+	return playerRepo.New(f.db)
+}
+
+func (f *factory) SessionRepository() session.Repository {
+	return session.New(f.rdb)
 }
 
 func (f *factory) SnowflakeRepository() snowFlakeRepository.Repository {

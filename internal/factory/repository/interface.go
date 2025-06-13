@@ -4,6 +4,7 @@ import (
 	bucketRepo "game_server_slots_fortune_snake/internal/repository/bucket"
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
+	session "game_server_slots_fortune_snake/internal/repository/player_session"
 	resultFreeRepo "game_server_slots_fortune_snake/internal/repository/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/repository/result_loader"
 	settleRepository "game_server_slots_fortune_snake/internal/repository/settle"
@@ -15,6 +16,7 @@ import (
 type Factory interface {
 	GameRepository() gameRepo.Repository
 	PlayerRepository() playerRepo.Repository
+	SessionRepository() session.Repository
 	WeightRepository() weightRepo.Repository
 	ResultLoader() resultLoader.Repository
 	ResultFreeLoader() resultLoader.Repository

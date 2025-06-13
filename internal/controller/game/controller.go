@@ -5,9 +5,9 @@ import (
 	. "game_server_slots_fortune_snake/constants"
 	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
-	"game_server_slots_fortune_snake/internal/model/service/game/enter_game"
 	"game_server_slots_fortune_snake/internal/server"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
+	playerService "game_server_slots_fortune_snake/internal/service/player"
 	reelsService "game_server_slots_fortune_snake/internal/service/reels"
 	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/service/result_loader"
@@ -25,35 +25,36 @@ type controller struct {
 	reelsService      reelsService.Service
 	reelsFreeService  reelsService.Service
 	settleService     settleService.Service
+	playerService     playerService.Service
 }
 
 func New(gameService gameService.Service, gameDemoService gameService.Service,
 	weightService weightService.Service, resultFreeService resultFreeService.Service,
 	resultLoader resultLoader.Service, resultFreeLoader resultLoader.Service,
 	reelsService reelsService.Service, reelsFreeService reelsService.Service,
-	settleService settleService.Service) Controller {
+	settleService settleService.Service, playerService playerService.Service) Controller {
 	return &controller{gameService: gameService, gameDemoService: gameDemoService,
 		weightService: weightService, resultFreeService: resultFreeService, resultLoader: resultLoader,
 		resultFreeLoader: resultFreeLoader, reelsService: reelsService, reelsFreeService: reelsFreeService,
-		settleService: settleService}
+		settleService: settleService, playerService: playerService}
 }
 
 func (c *controller) EnterGame(ctx *server.Context) {
-	// 取得中間層處理好的數據
-	session := ctx.MustGet("session").(*playerModel.Session)
-	// 以 mode 獲取對應的 game service
-	service := c.getGameService(session.Mode)
-	// 執行 Enter Game 業務邏輯
-	input := &enter_game.Input{}
-	input.Ctx = ctx
-	input.Session = session
-	data, err := service.EnterGame(input)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-	// 返回結果
-	ctx.Send(CodeSuccess, "success", data)
+	//// 取得中間層處理好的數據
+	//session := ctx.MustGet("session").(*playerModel.Session)
+	//// 以 mode 獲取對應的 game service
+	//service := c.getGameService(session.Mode)
+	//// 執行 Enter Game 業務邏輯
+	//input := &enter_game.Input{}
+	//input.Ctx = ctx
+	//input.Session = session
+	//data, err := service.EnterGame(input)
+	//if err != nil {
+	//	ctx.SendError(err)
+	//	return
+	//}
+	//// 返回結果
+	//ctx.Send(CodeSuccess, "success", data)
 }
 
 func (c *controller) Bet(ctx *server.Context) {
@@ -85,7 +86,7 @@ func (c *controller) BetInReal(ctx *server.Context) {
 		return
 	}
 
-	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
+	// 金蛇中盤
 	if amount > 1 {
 		c.FreeModeInReal(ctx)
 		return
@@ -148,6 +149,10 @@ func (c *controller) BetInDemo(ctx *server.Context) {
 
 	// 一般模式
 	c.BaseModeInDemo(ctx)
+}
+
+func (c *controller) Settle(ctx *server.Context) {
+
 }
 
 func (c *controller) getGameService(mode string) gameService.Service {

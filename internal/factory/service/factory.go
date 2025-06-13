@@ -23,9 +23,9 @@ func New(repoFactory repository.Factory) Factory {
 
 func (f *factory) GameService() gameService.Service {
 	gameRepo := f.repoFactory.GameRepository()
-	playerRepo := f.repoFactory.PlayerRepository()
+	sessionRepo := f.repoFactory.SessionRepository()
 	weightRepo := f.repoFactory.WeightRepository()
-	return gameService.NewService(gameRepo.Mode(GameModeReal), playerRepo, weightRepo)
+	return gameService.NewService(gameRepo.Mode(GameModeReal), sessionRepo, weightRepo)
 }
 
 func (f *factory) GameDemoService() gameService.Service {
@@ -36,7 +36,8 @@ func (f *factory) GameDemoService() gameService.Service {
 
 func (f *factory) PlayerService() playerService.Service {
 	playerRepo := f.repoFactory.PlayerRepository()
-	return playerService.NewService(playerRepo)
+	sessionRepo := f.repoFactory.SessionRepository()
+	return playerService.New(playerRepo, sessionRepo)
 }
 
 func (f *factory) WeightService() weightService.Service {

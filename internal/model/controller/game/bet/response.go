@@ -2,8 +2,7 @@ package bet
 
 type Response struct {
 	GameMode   string
-	Gold       int // 真實餘額
-	ScoreTry   int // 試玩餘額
+	Balance    int // 真實餘額
 	GameResult *GameResult
 }
 

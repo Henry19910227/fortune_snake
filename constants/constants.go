@@ -1,5 +1,7 @@
 package constants
 
+import "time"
+
 // 定义业务错误码常量
 const (
 	CodeSuccess          = 200 // 成功
@@ -37,9 +39,6 @@ const (
 // CacheNamePlayerSession 定义玩家会话 key 名称
 const CacheNamePlayerSession = "Player:Session:%d"
 
-// CacheNameRocketCrashBetsData 小火箭投注记录(区分不同的RTP)
-const CacheNameRocketCrashBetsData = "Bets:RocketCrash:%d"
-
 // CacheNameChannelSettlement 游戏结算的发布订阅
 const CacheNameChannelSettlement = "Channel_Settlement_Game_%d"
 
@@ -48,6 +47,8 @@ const CacheNameSpinMode = "Player:%v:FortuneSnake:SpinMode"
 
 // CacheNameFreeResults 該用戶剩餘免費盤面
 const CacheNameFreeResults = "Player:%v:FortuneSnake:%v:FreeResults"
+
+const CacheExpiredPlayerSession = 60 * time.Minute
 
 // SpecialProbability 进入特殊模式的概率
 const SpecialProbability = 0.008 // 进入特殊模式的概率

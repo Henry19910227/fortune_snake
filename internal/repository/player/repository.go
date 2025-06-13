@@ -1,39 +1,24 @@
 package player
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"game_server_slots_fortune_snake/constants"
-	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
-	"github.com/redis/go-redis/v9"
+	model "game_server_slots_fortune_snake/internal/model/entity/player"
+	"gorm.io/gorm"
+	"time"
 )
 
 type repository struct {
-	rdb *redis.Client
+	db *gorm.DB
 }
 
-func New(rdb *redis.Client) Repository {
-	return &repository{rdb: rdb}
+func New(db *gorm.DB) Repository {
+	return &repository{db: db}
 }
 
-func (r *repository) FindPlayerSessionById(ctx context.Context, playerId uint64) (*playerModel.Session, error) {
-	key := fmt.Sprintf(constants.CacheNamePlayerSession, playerId)
-	result, err := r.rdb.Get(ctx, key).Result()
-	if err != nil {
-		return nil, err
+func (r *repository) UpdateBalance(playerId uint64, newBalance int64) error {
+	if err := r.db.Model(&model.Table{}).
+		Where("id = ?", playerId).
+		Updates(map[string]interface{}{"balance": newBalance, "updated_at": time.Now().UnixMilli()}).Error; err != nil {
+		return err
 	}
-	var session playerModel.Session
-	if err := json.Unmarshal([]byte(result), &session); err != nil {
-		return nil, err
-	}
-	return &session, nil
-}
-
-func (r *repository) Balance() (balance int, err error) {
-	return 0, err
-}
-
-func (r *repository) GameData() (*playerModel.GameData, error) {
-	return &playerModel.GameData{Bet: 1, Value: 100}, nil
+	return nil
 }
