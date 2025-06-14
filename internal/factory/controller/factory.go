@@ -18,7 +18,6 @@ func New(serviceFactory serviceFactory.Factory) Factory {
 
 func (f *factory) GameController() gameController.Controller {
 	gameSvc := f.serviceFactory.GameService()
-	gameDemoSvc := f.serviceFactory.GameDemoService()
 	weightSvc := f.serviceFactory.WeightService()
 	resultFreeSvc := f.serviceFactory.ResultFreeService()
 	resultLoader := f.serviceFactory.ResultLoader()
@@ -27,7 +26,7 @@ func (f *factory) GameController() gameController.Controller {
 	reelsFreeSvc := f.serviceFactory.ReelsFreeService()
 	settleSvc := f.serviceFactory.SettleService()
 	playerSvc := f.serviceFactory.PlayerService()
-	return gameController.New(gameSvc, gameDemoSvc, weightSvc, resultFreeSvc, resultLoader, resultFreeLoader, reelsSvc, reelsFreeSvc, settleSvc, playerSvc)
+	return gameController.New(gameSvc, weightSvc, resultFreeSvc, resultLoader, resultFreeLoader, reelsSvc, reelsFreeSvc, settleSvc, playerSvc)
 }
 
 func (f *factory) PlayerController() player.Controller {

@@ -21,7 +21,7 @@ func (s *service) GameMode(gameMode string) Service {
 	return s
 }
 
-func (s *service) SaveItems(ctx context.Context, playerAccount string, items [][][]int) error {
+func (s *service) SaveItems(ctx context.Context, playerID uint64, items [][][]int) error {
 	if len(items) == 0 {
 		return nil
 	}
@@ -33,11 +33,11 @@ func (s *service) SaveItems(ctx context.Context, playerAccount string, items [][
 		}
 		list = append(list, string(b))
 	}
-	return s.resultFreeRepo.GameMode(s.gameMode).SaveItems(ctx, playerAccount, list)
+	return s.resultFreeRepo.GameMode(s.gameMode).SaveItems(ctx, playerID, list)
 }
 
-func (s *service) PopFirstItem(ctx context.Context, playerAccount string) ([][]int, error) {
-	resultStr, err := s.resultFreeRepo.GameMode(s.gameMode).PopFirstItem(ctx, playerAccount)
+func (s *service) PopFirstItem(ctx context.Context, playerID uint64) ([][]int, error) {
+	resultStr, err := s.resultFreeRepo.GameMode(s.gameMode).PopFirstItem(ctx, playerID)
 	if err != nil {
 		return nil, err
 	}
@@ -48,6 +48,6 @@ func (s *service) PopFirstItem(ctx context.Context, playerAccount string) ([][]i
 	return result, nil
 }
 
-func (s *service) Amount(ctx context.Context, playerAccount string) (int64, error) {
-	return s.resultFreeRepo.GameMode(s.gameMode).Amount(ctx, playerAccount)
+func (s *service) Amount(ctx context.Context, playerID uint64) (int64, error) {
+	return s.resultFreeRepo.GameMode(s.gameMode).Amount(ctx, playerID)
 }

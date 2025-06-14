@@ -42,37 +42,20 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 	// 將盤面數據轉換為 reels
 	reels := c.reelsFreeService.ToReels(results)
 
-	// 計算賠率
-	winRate, err := c.settleService.GetRate(param.Bet, param.Value, reels)
+	winRate, lines, totalScore, err := c.Settle(ctx, param, reels)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
-
-	// 計算中獎線
-	lines, err := c.settleService.GetWinLines(param.Bet, param.Value, reels)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 計算總分
-	totalScore, err := c.settleService.GetTotalScore(param.Bet, param.Value, reels)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 續存結果
 
 	// 派彩更新餘額
 	session.Balance += int64(totalScore)
-	if err := c.playerService.UpdateBalance(ctx, session.PlayerId, session.Balance); err != nil {
+	if err = c.playerService.UpdateBalance(ctx, session.PlayerId, session.Balance); err != nil {
 		ctx.SendError(err)
 		return
 	}
 
-	// 返回結果
+	// 生成響應數據
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = totalScore
 	spinResult.SetLines(lines)
@@ -88,6 +71,12 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 	data := betModel.NewResponse(GameModeReal)
 	data.GameResult = gameResult
 	data.Balance = int(session.Balance)
+
+	// 續存結果
+	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		ctx.SendError(err)
+		return
+	}
 
 	ctx.Send(CodeSuccess, "success", data)
 }
@@ -124,7 +113,7 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	results := resultsList[0]
 
 	// 緩存剩餘金蛇盤面
-	if err := c.resultFreeService.SaveItems(grpcCtx, session.PlayerUsername, resultsList[1:]); err != nil {
+	if err := c.resultFreeService.SaveItems(grpcCtx, session.PlayerId, resultsList[1:]); err != nil {
 		ctx.SendError(err)
 		return
 	}
@@ -138,9 +127,7 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 		return
 	}
 
-	// 續存結果
-
-	// 返回結果
+	// 生成響應數據
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = 0
 	spinResult.Lines = []*betModel.Line{}
@@ -158,6 +145,13 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	data.GameResult = gameResult
 	data.Balance = int(session.Balance)
 
+	// 續存結果
+	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }
 
@@ -165,8 +159,24 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
 
+	// 載入續存的 bet 與 value 值
+	param := &betModel.Param{}
+	bet, err := c.gameService.GetBet(grpcCtx, session.PlayerId)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+	param.Bet = bet
+
+	value, err := c.gameService.GetValue(grpcCtx, session.PlayerId)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+	param.Value = value
+
 	// 取出一筆金蛇盤面
-	results, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, session.PlayerUsername)
+	results, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -175,9 +185,7 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	// 將盤面數據轉換為 reels
 	reels := c.reelsFreeService.ToReels(results)
 
-	// 續存結果
-
-	// 返回結果
+	// 生成響應數據
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = 0
 	spinResult.Lines = []*betModel.Line{}
@@ -194,6 +202,12 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	data := betModel.NewResponse(GameModeReal)
 	data.GameResult = gameResult
 	data.Balance = int(session.Balance)
+
+	// 續存結果
+	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		ctx.SendError(err)
+		return
+	}
 
 	ctx.Send(CodeSuccess, "success", data)
 }
@@ -203,8 +217,24 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
 
+	// 載入續存的 bet 與 value 值
+	param := &betModel.Param{}
+	bet, err := c.gameService.GetBet(grpcCtx, session.PlayerId)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+	param.Bet = bet
+
+	value, err := c.gameService.GetValue(grpcCtx, session.PlayerId)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+	param.Value = value
+
 	// 取出最後一筆金蛇盤面
-	results, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, session.PlayerUsername)
+	results, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -214,27 +244,25 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	reels := c.reelsFreeService.ToReels(results)
 
 	// 計算賠率
-	rate, err := c.settleService.GetRate(1, 1000, reels)
+	rate, err := c.settleService.GetRate(param.Bet, param.Value, reels)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
 
 	// 計算中獎線
-	lines, err := c.settleService.GetWinLines(1, 1000, reels)
+	lines, err := c.settleService.GetWinLines(param.Bet, param.Value, reels)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
 
 	// 計算總分
-	totalScore, err := c.settleService.GetTotalScore(1, 1000, reels)
+	totalScore, err := c.settleService.GetTotalScore(param.Bet, param.Value, reels)
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
-
-	// 續存結果
 
 	// 派彩更新餘額
 	session.Balance += int64(totalScore)
@@ -243,7 +271,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 		return
 	}
 
-	// 返回結果
+	// 生成響應數據
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = totalScore
 	spinResult.SetLines(lines)
@@ -261,5 +289,12 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	data.GameResult = gameResult
 	data.Balance = int(session.Balance)
 
+	// 續存結果
+	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }

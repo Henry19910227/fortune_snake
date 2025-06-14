@@ -2,13 +2,23 @@ package game
 
 import (
 	"context"
-	"game_server_slots_fortune_snake/internal/model/service/game/bet"
+	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 )
 
 type Service interface {
-	//EnterGame(input *enter_game.Input) (output *enter_game.Output, err error)
-	Bet(input *bet.Input) (output *bet.Output, err error)
+	GameMode(gameMode string) Service
+
 	SpinMode() int
-	SaveFreeResults(ctx context.Context, playerId int, items [][][]int) error
-	RestoreResults()
+
+	SaveGameResult(ctx context.Context, playerID uint64, item *betModel.GameResult) (err error)
+
+	SaveBet(ctx context.Context, playerID uint64, bet int) (err error)
+
+	SaveValue(ctx context.Context, playerID uint64, value int) (err error)
+
+	GetGameResult(ctx context.Context, playerID uint64) (item *betModel.GameResult, err error)
+
+	GetBet(ctx context.Context, playerID uint64) (bet int, err error)
+
+	GetValue(ctx context.Context, playerID uint64) (value int, err error)
 }

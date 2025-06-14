@@ -8,9 +8,9 @@ import (
 type Repository interface {
 	GameMode(gameMode string) Repository
 	// SaveItems 保存金蛇多個盤面
-	SaveItems(ctx context.Context, playerAccount string, items []string) error
+	SaveItems(ctx context.Context, playerID uint64, items []string) error
 	// PopFirstItem 彈出第一筆金蛇盤面
-	PopFirstItem(ctx context.Context, playerAccount string) (string, error)
+	PopFirstItem(ctx context.Context, playerID uint64) (string, error)
 	// Amount 獲取剩餘盤面數量
-	Amount(ctx context.Context, playerAccount string) (int64, error)
+	Amount(ctx context.Context, playerID uint64) (int64, error)
 }

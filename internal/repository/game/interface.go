@@ -9,12 +9,16 @@ type Repository interface {
 	Mode(gameMode string) Repository
 	// Info 獲取遊戲配置數據
 	Info() (info *gameModel.Info, err error)
-	// SetSpecialMode 設置特殊模式
-	SetSpecialMode(ctx context.Context, playerId uint64, specialMode bool) error
-	// IsSpecialMode 是否是特殊模式
-	IsSpecialMode(ctx context.Context, playerId uint64) (bool, error)
-	// SaveFreeResults 保存金蛇多個盤面
-	SaveFreeResults(ctx context.Context, playerId int, items []string) error
-	// PopFirstResult 獲取第一筆金蛇盤面
-	PopFirstResult(ctx context.Context, playerId int) (string, error)
+
+	SaveGameResult(ctx context.Context, playerID uint64, data string) (err error)
+
+	SaveBet(ctx context.Context, playerID uint64, bet int) (err error)
+
+	SaveValue(ctx context.Context, playerID uint64, value int) (err error)
+
+	GetGameResult(ctx context.Context, playerID uint64) (data string, err error)
+
+	GetBet(ctx context.Context, playerID uint64) (bet int, err error)
+
+	GetValue(ctx context.Context, playerID uint64) (value int, err error)
 }

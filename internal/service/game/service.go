@@ -2,54 +2,25 @@ package game
 
 import (
 	"context"
-	"game_server_slots_fortune_snake/internal/model/service/game/bet"
+	"encoding/json"
+	. "game_server_slots_fortune_snake/constants"
+	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
-	sessionRepo "game_server_slots_fortune_snake/internal/repository/player_session"
-	weightRepo "game_server_slots_fortune_snake/internal/repository/weight"
 	"math/rand"
 )
 
-// 真錢模式的 game service
 type service struct {
-	gameRepo    gameRepo.Repository
-	sessionRepo sessionRepo.Repository
-	weightRepo  weightRepo.Repository
+	gameRepo gameRepo.Repository
+	gameMode string
 }
 
-func NewService(gameRepo gameRepo.Repository, sessionRepo sessionRepo.Repository, weightRepo weightRepo.Repository) Service {
-	return &service{gameRepo: gameRepo, sessionRepo: sessionRepo, weightRepo: weightRepo}
+func NewService(gameRepo gameRepo.Repository) Service {
+	return &service{gameRepo: gameRepo, gameMode: GameModeDemo}
 }
 
-//func (s *service) EnterGame(input *enter_game.Input) (output *enter_game.Output, err error) {
-//	// 獲取遊戲配置
-//	info, err := s.gameRepo.Info()
-//	if err != nil {
-//		return nil, errMsg.New(constants.CodeBadRequest, err.Error(), err)
-//	}
-//	// 獲取玩家遊戲緩存數據
-//	playerGameData, err := s.sessionRepo.GameData()
-//	if err != nil {
-//		return nil, errMsg.New(constants.CodeBadRequest, err.Error(), err)
-//	}
-//	// 處理回傳
-//	output = &enter_game.Output{}
-//	output.Data = &enter_game.Data{
-//		Bets:               info.Bets,
-//		Values:             info.Values,
-//		Bet:                playerGameData.Bet,
-//		Value:              playerGameData.Value,
-//		GameMode:           input.Session.Mode,
-//		Multipler:          info.Multipler,
-//		MultipleScoreLimit: info.MultipleScoreLimit,
-//		ScoreTry:           0, // 真實遊玩回傳 0
-//	}
-//	return output, nil
-//}
-
-func (s *service) Bet(input *bet.Input) (output *bet.Output, err error) {
-	output = &bet.Output{}
-	output.Data = &bet.Data{}
-	return output, nil
+func (s *service) GameMode(gameMode string) Service {
+	s.gameMode = gameMode
+	return s
 }
 
 func (s *service) SpinMode() int {
@@ -60,12 +31,61 @@ func (s *service) SpinMode() int {
 	return 0
 }
 
-func (s *service) SaveFreeResults(ctx context.Context, playerId int, items [][][]int) error {
-	//TODO implement me
-	panic("implement me")
+func (s *service) SaveGameResult(ctx context.Context, playerID uint64, item *betModel.GameResult) (err error) {
+	if item == nil {
+		return nil
+	}
+	data, err := json.Marshal(item)
+	if err != nil {
+		return err
+	}
+	if err = s.gameRepo.Mode(s.gameMode).SaveGameResult(ctx, playerID, string(data)); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (s *service) RestoreResults() {
-	//TODO implement me
-	panic("implement me")
+func (s *service) SaveBet(ctx context.Context, playerID uint64, bet int) (err error) {
+	if err = s.gameRepo.Mode(s.gameMode).SaveBet(ctx, playerID, bet); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) SaveValue(ctx context.Context, playerID uint64, value int) (err error) {
+	if err = s.gameRepo.Mode(s.gameMode).SaveValue(ctx, playerID, value); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) GetGameResult(ctx context.Context, playerID uint64) (item *betModel.GameResult, err error) {
+	data, err := s.gameRepo.Mode(s.gameMode).GetGameResult(ctx, playerID)
+	if err != nil {
+		return nil, err
+	}
+	if len(data) == 0 {
+		return nil, nil
+	}
+	gameResult := &betModel.GameResult{}
+	if err = json.Unmarshal([]byte(data), gameResult); err != nil {
+		return nil, err
+	}
+	return gameResult, nil
+}
+
+func (s *service) GetBet(ctx context.Context, playerID uint64) (bet int, err error) {
+	data, err := s.gameRepo.Mode(s.gameMode).GetBet(ctx, playerID)
+	if err != nil {
+		return 0, err
+	}
+	return data, nil
+}
+
+func (s *service) GetValue(ctx context.Context, playerID uint64) (value int, err error) {
+	data, err := s.gameRepo.Mode(s.gameMode).GetValue(ctx, playerID)
+	if err != nil {
+		return 0, err
+	}
+	return data, nil
 }

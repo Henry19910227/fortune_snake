@@ -48,7 +48,6 @@ func TestGameController_Bet(t *testing.T) {
 
 	// 初始化 service 模塊
 	gameSvc := serviceFact.GameService()
-	gameDemoSvc := serviceFact.GameDemoService()
 	weightSvc := serviceFact.WeightService()
 	resultFreeSvc := serviceFact.ResultFreeService()
 	resultLoader := serviceFact.ResultLoader()
@@ -62,7 +61,7 @@ func TestGameController_Bet(t *testing.T) {
 	loadController.Load()
 
 	// 初始化 game controller
-	gameController := &controller{gameSvc, gameDemoSvc, weightSvc, resultFreeSvc, resultLoader, resultFreeLoader, reelsSvc, reelsFreeSvc, settleSvc}
+	gameController := &controller{gameSvc, weightSvc, resultFreeSvc, resultLoader, resultFreeLoader, reelsSvc, reelsFreeSvc, settleSvc}
 
 	// 創建 param
 	m := betModel.Param{Bet: 1, Value: 1000}
@@ -116,7 +115,6 @@ func TestGameController_FreeModeInDemo(t *testing.T) {
 
 	// 初始化 game controller
 	gameSvc := serviceFact.GameService()
-	gameDemoSvc := serviceFact.GameDemoService()
 	weightSvc := serviceFact.WeightService()
 	resultFreeSvc := serviceFact.ResultFreeService()
 	resultLoader := serviceFact.ResultLoader()
@@ -124,7 +122,7 @@ func TestGameController_FreeModeInDemo(t *testing.T) {
 	reelsSvc := serviceFact.ReelsService()
 	reelsFreeSvc := serviceFact.ReelsFreeService()
 	settleSvc := serviceFact.SettleService()
-	gameController := &controller{gameSvc, gameDemoSvc, weightSvc, resultFreeSvc, resultLoader, resultFreeLoader, reelsSvc, reelsFreeSvc, settleSvc}
+	gameController := &controller{gameSvc, weightSvc, resultFreeSvc, resultLoader, resultFreeLoader, reelsSvc, reelsFreeSvc, settleSvc}
 
 	// 創建 param
 	m := betModel.Param{Bet: 1, Value: 1000}

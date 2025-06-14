@@ -12,7 +12,6 @@ import (
 
 type Factory interface {
 	GameService() gameService.Service
-	GameDemoService() gameService.Service
 	PlayerService() playerService.Service
 	WeightService() weightService.Service
 	ResultFreeService() resultFreeService.Service

@@ -124,7 +124,7 @@ func (c *controller) StartFreeModeInDemo(ctx *server.Context) {
 	results := resultsList[0]
 
 	// 緩存剩餘金蛇盤面
-	if err := c.resultFreeService.SaveItems(grpcCtx, session.PlayerUsername, resultsList[1:]); err != nil {
+	if err := c.resultFreeService.SaveItems(grpcCtx, session.PlayerId, resultsList[1:]); err != nil {
 		ctx.SendError(err)
 		return
 	}
@@ -165,7 +165,7 @@ func (c *controller) FreeModeInDemo(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 
 	// 從緩存中取出一筆金蛇盤面
-	results, err := c.resultFreeService.GameMode(GameModeDemo).PopFirstItem(grpcCtx, session.PlayerUsername)
+	results, err := c.resultFreeService.GameMode(GameModeDemo).PopFirstItem(grpcCtx, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -206,7 +206,7 @@ func (c *controller) FinalFreeModeInDemo(ctx *server.Context) {
 	}
 
 	// 從緩存中取出最後一筆金蛇盤面
-	results, err := c.resultFreeService.GameMode(GameModeDemo).PopFirstItem(grpcCtx, session.PlayerUsername)
+	results, err := c.resultFreeService.GameMode(GameModeDemo).PopFirstItem(grpcCtx, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return

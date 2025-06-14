@@ -32,16 +32,13 @@ func (r *repository) FindPlayerSessionById(ctx context.Context, playerId uint64)
 
 func (r *repository) UpdateSessionById(ctx context.Context, playerId uint64, session *playerModel.Session) error {
 	key := fmt.Sprintf(CacheNamePlayerSession, playerId)
-
 	data, err := json.Marshal(session)
 	if err != nil {
-		return fmt.Errorf("failed to marshal session: %w", err)
+		return err
 	}
-
 	if err := r.rdb.Set(ctx, key, data, CacheExpiredPlayerSession).Err(); err != nil {
 		return err
 	}
-
 	return nil
 }
 

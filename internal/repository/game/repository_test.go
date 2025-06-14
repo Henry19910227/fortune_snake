@@ -2,15 +2,18 @@ package game
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"game_server_slots_fortune_snake/config/system"
+	. "game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/db"
+	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 	"log"
 	"testing"
 )
 
-func TestRepository_SaveResults(t *testing.T) {
+func TestRepository_SaveGameResult(t *testing.T) {
 	// 加載 yaml
 	configFile := flag.String("config", "config.yaml", "YAML configuration file name")
 	flag.Parse()
@@ -24,24 +27,23 @@ func TestRepository_SaveResults(t *testing.T) {
 	}
 	defer redisDB.Close()
 
-	// 準備數據
-	items := make([]string, 0)
-	items = append(items, "[[6,0,1],[0,0,0,0],[1,2,6]]")
-	items = append(items, "[[5,6,1],[0,0,0,0],[6,6,0]]")
-	items = append(items, "[[6,1,6],[0,0,0,0],[6,0,3]]")
-	items = append(items, "[[1,2,6],[0,0,0,0],[3,0,6]]")
-	items = append(items, "[[1,4,4],[0,0,0,0],[1,4,4]]")
-
 	// 創建 repo
-	repo := New(redisDB.RDB())
+	repo := New(redisDB.RDB()).Mode(GameModeDemo)
 
-	if err = repo.SaveResults(context.Background(), 123, "demo", items); err != nil {
-		log.Fatalf("❌ Redis 存取失败: %v", err)
+	gameResult := betModel.NewGameResult(SpinModeBase)
+	gameResult.SpinResult = &betModel.SpinResult{}
+	gameResult.TotalScore = 10000
+	data, err := json.Marshal(gameResult)
+	if err != nil {
+		log.Fatal(err)
 		return
+	}
+	if err := repo.SaveGameResult(context.Background(), 123, string(data)); err != nil {
+		log.Fatalf("❌: %v", err)
 	}
 }
 
-func TestRepository_GetResults(t *testing.T) {
+func TestRepository_SaveBet(t *testing.T) {
 	// 加載 yaml
 	configFile := flag.String("config", "config.yaml", "YAML configuration file name")
 	flag.Parse()
@@ -56,11 +58,62 @@ func TestRepository_GetResults(t *testing.T) {
 	defer redisDB.Close()
 
 	// 創建 repo
-	repo := New(redisDB.RDB())
+	repo := New(redisDB.RDB()).Mode(GameModeDemo)
 
-	result, err := repo.GetResult(context.Background(), 123, "demo")
+	if err := repo.SaveBet(context.Background(), 123, 1); err != nil {
+		log.Fatalf("❌: %v", err)
+	}
+}
+
+func TestRepository_SaveValue(t *testing.T) {
+	// 加載 yaml
+	configFile := flag.String("config", "config.yaml", "YAML configuration file name")
+	flag.Parse()
+
+	// 加载配置文件
+	appConfig := system.New(configFile)
+
+	redisDB, err := db.NewRedisDB(appConfig.Config().Redis)
+	if err != nil {
+		log.Fatalf("❌ Redis 初始化失败: %v", err)
+	}
+	defer redisDB.Close()
+
+	// 創建 repo
+	repo := New(redisDB.RDB()).Mode(GameModeDemo)
+
+	if err := repo.SaveValue(context.Background(), 123, 1000); err != nil {
+		log.Fatalf("❌: %v", err)
+	}
+}
+
+func TestRepository_GetGameResult(t *testing.T) {
+	// 加載 yaml
+	configFile := flag.String("config", "config.yaml", "YAML configuration file name")
+	flag.Parse()
+
+	// 加载配置文件
+	appConfig := system.New(configFile)
+
+	redisDB, err := db.NewRedisDB(appConfig.Config().Redis)
+	if err != nil {
+		log.Fatalf("❌ Redis 初始化失败: %v", err)
+	}
+	defer redisDB.Close()
+
+	// 創建 repo
+	repo := New(redisDB.RDB()).Mode(GameModeDemo)
+
+	data, err := repo.GetGameResult(context.Background(), 123)
 	if err != nil {
 		log.Fatalf("❌: %v", err)
 	}
-	fmt.Println(result)
+
+	gameResult := &betModel.GameResult{}
+	if err = json.Unmarshal([]byte(data), gameResult); err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	fmt.Println(gameResult.TotalScore)
 }

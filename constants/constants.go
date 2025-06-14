@@ -42,13 +42,20 @@ const CacheNamePlayerSession = "Player:Session:%d"
 // CacheNameChannelSettlement 游戏结算的发布订阅
 const CacheNameChannelSettlement = "Channel_Settlement_Game_%d"
 
-// CacheNameSpinMode 該用戶當前旋轉模式
-const CacheNameSpinMode = "Player:%v:FortuneSnake:SpinMode"
+// CacheNamePlayerFreeResults 該用戶剩餘免費盤面 Player:FreeResults:GameMode:PlayerID
+const CacheNamePlayerFreeResults = "Player:FreeResults:%v:%v"
 
-// CacheNameFreeResults 該用戶剩餘免費盤面
-const CacheNameFreeResults = "Player:%v:FortuneSnake:%v:FreeResults"
+// CacheNamePlayerGameInfo 該用戶續存數據 Player:GameInfo:GameMode:PlayerID
+const CacheNamePlayerGameInfo = "Player:GameInfo:%v:%v"
 
+// CacheExpiredPlayerFreeResults 剩餘免費盤面過期時間
+const CacheExpiredPlayerFreeResults = 20 * 24 * time.Hour
+
+// CacheExpiredPlayerSession 玩家Session過期時間
 const CacheExpiredPlayerSession = 60 * time.Minute
+
+// CacheExpiredPlayerGameInfo 玩家續存數據過期時間
+const CacheExpiredPlayerGameInfo = 20 * 24 * time.Hour
 
 // SpecialProbability 进入特殊模式的概率
 const SpecialProbability = 0.008 // 进入特殊模式的概率

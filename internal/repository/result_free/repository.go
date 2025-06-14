@@ -23,8 +23,8 @@ func (r *repository) GameMode(gameMode string) Repository {
 	return r
 }
 
-func (r *repository) SaveItems(ctx context.Context, playerAccount string, items []string) error {
-	key := fmt.Sprintf(constants.CacheNameFreeResults, playerAccount, r.gameMode)
+func (r *repository) SaveItems(ctx context.Context, playerID uint64, items []string) error {
+	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, r.gameMode, playerID)
 	if len(items) == 0 {
 		return nil
 	}
@@ -39,8 +39,8 @@ func (r *repository) SaveItems(ctx context.Context, playerAccount string, items 
 	return nil
 }
 
-func (r *repository) PopFirstItem(ctx context.Context, playerAccount string) (string, error) {
-	key := fmt.Sprintf(constants.CacheNameFreeResults, playerAccount, r.gameMode)
+func (r *repository) PopFirstItem(ctx context.Context, playerID uint64) (string, error) {
+	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, r.gameMode, playerID)
 	result, err := r.rdb.LPop(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -51,8 +51,8 @@ func (r *repository) PopFirstItem(ctx context.Context, playerAccount string) (st
 	return result, nil
 }
 
-func (r *repository) Amount(ctx context.Context, playerAccount string) (int64, error) {
-	key := fmt.Sprintf(constants.CacheNameFreeResults, playerAccount, r.gameMode)
+func (r *repository) Amount(ctx context.Context, playerID uint64) (int64, error) {
+	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, r.gameMode, playerID)
 	length, err := r.rdb.LLen(ctx, key).Result()
 	if err != nil {
 		return 0, err

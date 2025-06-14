@@ -7,7 +7,7 @@ import (
 	. "game_server_slots_fortune_snake/constants"
 	gameModel "game_server_slots_fortune_snake/internal/model/entity/game"
 	"github.com/redis/go-redis/v9"
-	"time"
+	"strconv"
 )
 
 type repository struct {
@@ -34,47 +34,84 @@ func (r *repository) Info() (info *gameModel.Info, err error) {
 	return info, nil
 }
 
-func (r *repository) SetSpecialMode(ctx context.Context, playerId uint64, specialMode bool) error {
-	key := fmt.Sprintf(CacheNamePlayerSession, playerId)
-	err := r.rdb.SetEx(ctx, key, specialMode, 20*24*time.Hour).Err()
-	return err
-}
-
-func (r *repository) IsSpecialMode(ctx context.Context, playerId uint64) (bool, error) {
-	key := fmt.Sprintf(CacheNamePlayerSession, playerId)
-	result, err := r.rdb.Get(ctx, key).Result()
-	if err != nil {
-		return false, err
-	}
-	if result == "0" {
-		return false, nil
-	}
-	return true, nil
-}
-
-func (r *repository) SaveFreeResults(ctx context.Context, playerId int, items []string) error {
-	key := fmt.Sprintf(CacheNameFreeResults, playerId, r.gameMode)
-	if len(items) == 0 {
-		return nil
-	}
+func (r *repository) SaveGameResult(ctx context.Context, playerID uint64, data string) (err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
 	pipe := r.rdb.TxPipeline()
-	pipe.RPush(ctx, key, items)
-	pipe.Expire(ctx, key, 20*24*time.Hour)
-	_, err := pipe.Exec(ctx)
+	pipe.HSet(ctx, key, "GameResults", data)
+	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
+	_, err = pipe.Exec(ctx)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *repository) PopFirstResult(ctx context.Context, playerId int) (string, error) {
-	key := fmt.Sprintf(CacheNameFreeResults, playerId, r.gameMode)
-	result, err := r.rdb.LPop(ctx, key).Result()
+func (r *repository) SaveBet(ctx context.Context, playerID uint64, bet int) (err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+	pipe := r.rdb.TxPipeline()
+	pipe.HSet(ctx, key, "Bet", bet)
+	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
+	_, err = pipe.Exec(ctx)
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
-			return "", nil
-		}
+		return err
+	}
+	return nil
+}
+
+func (r *repository) SaveValue(ctx context.Context, playerID uint64, value int) (err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+	pipe := r.rdb.TxPipeline()
+	pipe.HSet(ctx, key, "Value", value)
+	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *repository) GetGameResult(ctx context.Context, playerID uint64) (data string, err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+	data, err = r.rdb.HGet(ctx, key, "GameResults").Result()
+	if errors.Is(err, redis.Nil) {
+		return "", nil
+	}
+	if err != nil {
 		return "", err
 	}
-	return result, nil
+	return data, nil
+}
+
+func (r *repository) GetBet(ctx context.Context, playerID uint64) (bet int, err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+	val, err := r.rdb.HGet(ctx, key, "Bet").Result()
+	if errors.Is(err, redis.Nil) {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	// 將字串轉換為 int
+	bet, err = strconv.Atoi(val)
+	if err != nil {
+		return 0, err
+	}
+	return bet, nil
+}
+
+func (r *repository) GetValue(ctx context.Context, playerID uint64) (value int, err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+	val, err := r.rdb.HGet(ctx, key, "Value").Result()
+	if errors.Is(err, redis.Nil) {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	// 將字串轉換為 int
+	value, err = strconv.Atoi(val)
+	if err != nil {
+		return 0, err
+	}
+	return value, nil
 }

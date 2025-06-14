@@ -17,7 +17,6 @@ import (
 
 type controller struct {
 	gameService       gameService.Service // 真實模式 service
-	gameDemoService   gameService.Service // 試玩模式 service
 	weightService     weightService.Service
 	resultFreeService resultFreeService.Service
 	resultLoader      resultLoader.Service
@@ -28,12 +27,12 @@ type controller struct {
 	playerService     playerService.Service
 }
 
-func New(gameService gameService.Service, gameDemoService gameService.Service,
+func New(gameService gameService.Service,
 	weightService weightService.Service, resultFreeService resultFreeService.Service,
 	resultLoader resultLoader.Service, resultFreeLoader resultLoader.Service,
 	reelsService reelsService.Service, reelsFreeService reelsService.Service,
 	settleService settleService.Service, playerService playerService.Service) Controller {
-	return &controller{gameService: gameService, gameDemoService: gameDemoService,
+	return &controller{gameService: gameService,
 		weightService: weightService, resultFreeService: resultFreeService, resultLoader: resultLoader,
 		resultFreeLoader: resultFreeLoader, reelsService: reelsService, reelsFreeService: reelsFreeService,
 		settleService: settleService, playerService: playerService}
@@ -80,7 +79,7 @@ func (c *controller) BetInReal(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 
 	// 檢查剩餘免費盤面數量
-	amount, err := c.resultFreeService.GameMode(GameModeReal).Amount(grpcCtx, session.PlayerUsername)
+	amount, err := c.resultFreeService.GameMode(GameModeReal).Amount(grpcCtx, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -99,7 +98,7 @@ func (c *controller) BetInReal(ctx *server.Context) {
 	}
 
 	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
-	spinMode := c.gameService.SpinMode()
+	spinMode := c.gameService.GameMode(GameModeReal).SpinMode()
 
 	// 扣除投注額
 
@@ -118,7 +117,7 @@ func (c *controller) BetInDemo(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 
 	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
-	amount, err := c.resultFreeService.GameMode(GameModeDemo).Amount(grpcCtx, session.PlayerUsername)
+	amount, err := c.resultFreeService.GameMode(GameModeDemo).Amount(grpcCtx, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -137,9 +136,7 @@ func (c *controller) BetInDemo(ctx *server.Context) {
 	}
 
 	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
-	spinMode := c.gameService.SpinMode()
-
-	// 扣除試玩投注額
+	spinMode := c.gameService.GameMode(GameModeDemo).SpinMode()
 
 	// 開始第一局金蛇模式
 	if spinMode == SpinModeFree {
@@ -149,17 +146,4 @@ func (c *controller) BetInDemo(ctx *server.Context) {
 
 	// 一般模式
 	c.BaseModeInDemo(ctx)
-}
-
-func (c *controller) Settle(ctx *server.Context) {
-
-}
-
-func (c *controller) getGameService(mode string) gameService.Service {
-	// 試玩模式
-	if mode == "demo" {
-		return c.gameDemoService
-	}
-	// 真錢模式
-	return c.gameService
 }
