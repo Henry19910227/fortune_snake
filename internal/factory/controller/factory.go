@@ -26,7 +26,8 @@ func (f *factory) GameController() gameController.Controller {
 	reelsFreeSvc := f.serviceFactory.ReelsFreeService()
 	settleSvc := f.serviceFactory.SettleService()
 	playerSvc := f.serviceFactory.PlayerService()
-	return gameController.New(gameSvc, weightSvc, resultFreeSvc, resultLoader, resultFreeLoader, reelsSvc, reelsFreeSvc, settleSvc, playerSvc)
+	betRecordSvc := f.serviceFactory.BetRecordService()
+	return gameController.New(gameSvc, weightSvc, resultFreeSvc, resultLoader, resultFreeLoader, reelsSvc, reelsFreeSvc, settleSvc, playerSvc, betRecordSvc)
 }
 
 func (f *factory) PlayerController() player.Controller {

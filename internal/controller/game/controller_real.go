@@ -10,6 +10,7 @@ import (
 
 func (c *controller) BaseModeInReal(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
+	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	param := &betModel.Param{}
 	if err := ctx.Bind(param); err != nil {
 		ctx.SendError(err)
@@ -42,7 +43,8 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 	// 將盤面數據轉換為 reels
 	reels := c.reelsFreeService.ToReels(results)
 
-	winRate, lines, totalScore, err := c.Settle(ctx, param, reels)
+	// 結算盤面
+	winRate, lines, totalScore, err := c.Settle(param, reels)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -50,7 +52,7 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 
 	// 派彩更新餘額
 	session.Balance += int64(totalScore)
-	if err = c.playerService.UpdateBalance(ctx, session.PlayerId, session.Balance); err != nil {
+	if err = c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
 		ctx.SendError(err)
 		return
 	}
@@ -122,7 +124,7 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	reels := c.reelsFreeService.ToReels(results)
 
 	// 更新餘額
-	if err := c.playerService.UpdateBalance(ctx, session.PlayerId, session.Balance); err != nil {
+	if err := c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
 		ctx.SendError(err)
 		return
 	}
@@ -159,7 +161,13 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
 
-	// 載入續存的 bet 與 value 值
+	record, err := c.betRecordService.Create(session)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 載入續存的 bet 值
 	param := &betModel.Param{}
 	bet, err := c.gameService.GetBet(grpcCtx, session.PlayerId)
 	if err != nil {
@@ -168,6 +176,7 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	}
 	param.Bet = bet
 
+	// 載入續存的 value 值
 	value, err := c.gameService.GetValue(grpcCtx, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
@@ -209,6 +218,11 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 		return
 	}
 
+	if err = c.betRecordService.Update(record); err != nil {
+		ctx.SendError(err)
+		return
+	}
+
 	ctx.Send(CodeSuccess, "success", data)
 }
 
@@ -217,7 +231,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
 
-	// 載入續存的 bet 與 value 值
+	// 載入續存的 bet 值
 	param := &betModel.Param{}
 	bet, err := c.gameService.GetBet(grpcCtx, session.PlayerId)
 	if err != nil {
@@ -226,6 +240,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	}
 	param.Bet = bet
 
+	// 載入續存的 value 值
 	value, err := c.gameService.GetValue(grpcCtx, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
@@ -243,22 +258,8 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	// 將盤面數據轉換為 reels
 	reels := c.reelsFreeService.ToReels(results)
 
-	// 計算賠率
-	rate, err := c.settleService.GetRate(param.Bet, param.Value, reels)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 計算中獎線
-	lines, err := c.settleService.GetWinLines(param.Bet, param.Value, reels)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 計算總分
-	totalScore, err := c.settleService.GetTotalScore(param.Bet, param.Value, reels)
+	// 結算盤面
+	winRate, lines, totalScore, err := c.Settle(param, reels)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -266,7 +267,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 
 	// 派彩更新餘額
 	session.Balance += int64(totalScore)
-	if err := c.playerService.UpdateBalance(ctx, session.PlayerId, session.Balance); err != nil {
+	if err := c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
 		ctx.SendError(err)
 		return
 	}
@@ -281,7 +282,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	gameResult := betModel.NewGameResult(SpinModeFree)
 	gameResult.RandSymbol = c.reelsFreeService.GetMainSymbol(reels).ID
 	gameResult.SpinResult = spinResult
-	gameResult.WinRate = int(rate)
+	gameResult.WinRate = int(winRate)
 	gameResult.TotalScore = totalScore
 	gameResult.WinType = 0
 

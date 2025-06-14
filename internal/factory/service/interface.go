@@ -1,6 +1,7 @@
 package service
 
 import (
+	betRecordService "game_server_slots_fortune_snake/internal/service/bet_record"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
 	playerService "game_server_slots_fortune_snake/internal/service/player"
 	reelsService "game_server_slots_fortune_snake/internal/service/reels"
@@ -20,4 +21,5 @@ type Factory interface {
 	ReelsService() reelsService.Service
 	ReelsFreeService() reelsService.Service
 	SettleService() settleService.Service
+	BetRecordService() betRecordService.Service
 }

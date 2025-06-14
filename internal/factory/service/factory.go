@@ -3,6 +3,7 @@ package service
 import (
 	. "game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/internal/factory/repository"
+	betRecordService "game_server_slots_fortune_snake/internal/service/bet_record"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
 	playerService "game_server_slots_fortune_snake/internal/service/player"
 	reelsService "game_server_slots_fortune_snake/internal/service/reels"
@@ -67,4 +68,10 @@ func (f *factory) ReelsFreeService() reelsService.Service {
 func (f *factory) SettleService() settleService.Service {
 	settleRepo := f.repoFactory.SettleRepository()
 	return settleService.New(settleRepo)
+}
+
+func (f *factory) BetRecordService() betRecordService.Service {
+	betRecordRepo := f.repoFactory.BetRecordRepository()
+	snowflakeRepo := f.repoFactory.SnowflakeRepository()
+	return betRecordService.New(betRecordRepo, snowflakeRepo)
 }

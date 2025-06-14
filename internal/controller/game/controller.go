@@ -6,6 +6,7 @@ import (
 	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	"game_server_slots_fortune_snake/internal/server"
+	betRecordService "game_server_slots_fortune_snake/internal/service/bet_record"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
 	playerService "game_server_slots_fortune_snake/internal/service/player"
 	reelsService "game_server_slots_fortune_snake/internal/service/reels"
@@ -25,17 +26,23 @@ type controller struct {
 	reelsFreeService  reelsService.Service
 	settleService     settleService.Service
 	playerService     playerService.Service
+	betRecordService  betRecordService.Service
 }
 
 func New(gameService gameService.Service,
-	weightService weightService.Service, resultFreeService resultFreeService.Service,
-	resultLoader resultLoader.Service, resultFreeLoader resultLoader.Service,
-	reelsService reelsService.Service, reelsFreeService reelsService.Service,
-	settleService settleService.Service, playerService playerService.Service) Controller {
+	weightService weightService.Service,
+	resultFreeService resultFreeService.Service,
+	resultLoader resultLoader.Service,
+	resultFreeLoader resultLoader.Service,
+	reelsService reelsService.Service,
+	reelsFreeService reelsService.Service,
+	settleService settleService.Service,
+	playerService playerService.Service,
+	betRecordService betRecordService.Service) Controller {
 	return &controller{gameService: gameService,
 		weightService: weightService, resultFreeService: resultFreeService, resultLoader: resultLoader,
 		resultFreeLoader: resultFreeLoader, reelsService: reelsService, reelsFreeService: reelsFreeService,
-		settleService: settleService, playerService: playerService}
+		settleService: settleService, playerService: playerService, betRecordService: betRecordService}
 }
 
 func (c *controller) EnterGame(ctx *server.Context) {
@@ -99,8 +106,6 @@ func (c *controller) BetInReal(ctx *server.Context) {
 
 	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
 	spinMode := c.gameService.GameMode(GameModeReal).SpinMode()
-
-	// 扣除投注額
 
 	// 進入金蛇模式
 	if spinMode == SpinModeFree {

@@ -29,7 +29,7 @@ func (c *controller) SavePlayerGameInfo(ctx *server.Context, gameResult *betMode
 }
 
 // Settle 結算盤面
-func (c *controller) Settle(ctx *server.Context, param *betModel.Param, reels [][]*symbol.Item) (winRate float64, lines []*line.Item, totalScore int, err error) {
+func (c *controller) Settle(param *betModel.Param, reels [][]*symbol.Item) (winRate float64, lines []*line.Item, totalScore int, err error) {
 	// 計算賠率
 	winRate, err = c.settleService.GetRate(param.Bet, param.Value, reels)
 	if err != nil {

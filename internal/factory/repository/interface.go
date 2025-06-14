@@ -1,6 +1,7 @@
 package repository
 
 import (
+	betRecordRepository "game_server_slots_fortune_snake/internal/repository/bet_record"
 	bucketRepo "game_server_slots_fortune_snake/internal/repository/bucket"
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
@@ -26,4 +27,5 @@ type Factory interface {
 	SymbolRepository() symbolRepo.Repository
 	SettleRepository() settleRepository.Repository
 	SnowflakeRepository() snowFlakeRepository.Repository
+	BetRecordRepository() betRecordRepository.Repository
 }

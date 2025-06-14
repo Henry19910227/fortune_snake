@@ -20,3 +20,8 @@ func (r *repository) Create(table *model.Table) (id uint64, err error) {
 	}
 	return table.ID, err
 }
+
+func (r *repository) Update(item *model.Table) (err error) {
+	err = r.db.Model(&model.Table{}).Where("id = ?", item.ID).Save(item).Error
+	return err
+}

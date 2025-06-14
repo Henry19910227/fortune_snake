@@ -8,7 +8,6 @@ import (
 	errMsg "game_server_slots_fortune_snake/internal/model/err"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
 	sessionRepo "game_server_slots_fortune_snake/internal/repository/player_session"
-	"game_server_slots_fortune_snake/internal/server"
 	"game_server_slots_fortune_snake/pkg"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -27,9 +26,8 @@ func (s *service) Tx(tx *gorm.DB) Service {
 	return s.txService(tx)
 }
 
-func (s *service) GetPlayerSession(ctx *server.Context, playerId uint64) (output *playerModel.Session, err error) {
-	grpcCtx := ctx.MustGet("ctx").(context.Context)
-	data, err := s.sessionRepo.FindPlayerSessionById(grpcCtx, playerId)
+func (s *service) GetPlayerSession(ctx context.Context, playerId uint64) (output *playerModel.Session, err error) {
+	data, err := s.sessionRepo.FindPlayerSessionById(ctx, playerId)
 	if err != nil {
 		var e *errMsg.Error
 		if errors.Is(err, redis.Nil) {
@@ -42,8 +40,7 @@ func (s *service) GetPlayerSession(ctx *server.Context, playerId uint64) (output
 	return data, nil
 }
 
-func (s *service) UpdateBalance(ctx *server.Context, playerId uint64, value int64) error {
-	grpcCtx := ctx.MustGet("ctx").(context.Context)
+func (s *service) UpdateBalance(ctx context.Context, playerId uint64, value int64) error {
 	session, err := s.GetPlayerSession(ctx, playerId)
 	if err != nil {
 		return err
@@ -51,7 +48,7 @@ func (s *service) UpdateBalance(ctx *server.Context, playerId uint64, value int6
 	session.Balance = value
 
 	// 更新 session
-	if err := s.sessionRepo.UpdateSessionById(grpcCtx, playerId, session); err != nil {
+	if err := s.sessionRepo.UpdateSessionById(ctx, playerId, session); err != nil {
 		return err
 	}
 	if session.Mode == "demo" {

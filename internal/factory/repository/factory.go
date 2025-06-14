@@ -4,6 +4,7 @@ import (
 	gameCfg "game_server_slots_fortune_snake/config/game"
 	. "game_server_slots_fortune_snake/constants"
 	"game_server_slots_fortune_snake/internal/model/config/system"
+	betRecordRepo "game_server_slots_fortune_snake/internal/repository/bet_record"
 	bucketRepo "game_server_slots_fortune_snake/internal/repository/bucket"
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
@@ -86,4 +87,8 @@ func (f *factory) SymbolRepository() symbolRepo.Repository {
 
 func (f *factory) SettleRepository() settleRepository.Repository {
 	return settleRepository.New()
+}
+
+func (f *factory) BetRecordRepository() betRecordRepo.Repository {
+	return betRecordRepo.New(f.db)
 }
