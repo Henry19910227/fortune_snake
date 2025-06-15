@@ -49,3 +49,7 @@ func (c *controller) Settle(param *betModel.Param, reels [][]*symbol.Item) (winR
 	}
 	return winRate, lines, totalScore, nil
 }
+
+func (c *controller) name() {
+
+}

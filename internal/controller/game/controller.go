@@ -2,8 +2,8 @@ package game
 
 import (
 	"context"
+	"fmt"
 	. "game_server_slots_fortune_snake/constants"
-	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	"game_server_slots_fortune_snake/internal/server"
 	betRecordService "game_server_slots_fortune_snake/internal/service/bet_record"
@@ -63,16 +63,9 @@ func (c *controller) EnterGame(ctx *server.Context) {
 	//ctx.Send(CodeSuccess, "success", data)
 }
 
-func (c *controller) Bet(ctx *server.Context) {
+func (c *controller) PreBet(ctx *server.Context) {
 	// 取得 session 數據
 	session := ctx.MustGet("session").(*playerModel.Session)
-
-	param := &betModel.Param{}
-	if err := ctx.Bind(param); err != nil {
-		ctx.SendError(err)
-		return
-	}
-
 	// 進入試玩模式
 	if session.Mode == "demo" {
 		c.BetInDemo(ctx)
@@ -94,13 +87,13 @@ func (c *controller) BetInReal(ctx *server.Context) {
 
 	// 金蛇中盤
 	if amount > 1 {
-		c.FreeModeInReal(ctx)
+		ctx.Set("condition", FreeModeInReal)
 		return
 	}
 
 	// 進入最後一個金蛇盤面
 	if amount == 1 {
-		c.FinalFreeModeInReal(ctx)
+		ctx.Set("condition", FinalFreeModeInReal)
 		return
 	}
 
@@ -109,12 +102,12 @@ func (c *controller) BetInReal(ctx *server.Context) {
 
 	// 進入金蛇模式
 	if spinMode == SpinModeFree {
-		c.StartFreeModeInReal(ctx)
+		ctx.Set("condition", StartFreeModeInReal)
 		return
 	}
 
 	// 執行真錢環境的普通模式流程
-	c.BaseModeInReal(ctx)
+	ctx.Set("condition", BaseModeInReal)
 }
 
 func (c *controller) BetInDemo(ctx *server.Context) {
@@ -130,13 +123,13 @@ func (c *controller) BetInDemo(ctx *server.Context) {
 
 	// 金蛇盤面進行中
 	if amount > 1 {
-		c.FreeModeInDemo(ctx)
+		ctx.Set("condition", FreeModeInDemo)
 		return
 	}
 
 	// 進入最後一個金蛇盤面
 	if amount == 1 {
-		c.FinalFreeModeInDemo(ctx)
+		ctx.Set("condition", FinalFreeModeInDemo)
 		return
 	}
 
@@ -145,10 +138,35 @@ func (c *controller) BetInDemo(ctx *server.Context) {
 
 	// 開始第一局金蛇模式
 	if spinMode == SpinModeFree {
-		c.StartFreeModeInDemo(ctx)
+		ctx.Set("condition", StartFreeModeInDemo)
 		return
 	}
 
 	// 一般模式
-	c.BaseModeInDemo(ctx)
+	ctx.Set("condition", BaseModeInDemo)
+}
+
+func (c *controller) Bet(ctx *server.Context) {
+	condition := ctx.MustGet("condition").(string)
+
+	switch condition {
+	case BaseModeInReal:
+		c.BaseModeInReal(ctx)
+	case StartFreeModeInReal:
+		c.StartFreeModeInReal(ctx)
+	case FreeModeInReal:
+		c.FreeModeInReal(ctx)
+	case FinalFreeModeInReal:
+		c.FinalFreeModeInReal(ctx)
+	case BaseModeInDemo:
+		c.BaseModeInDemo(ctx)
+	case StartFreeModeInDemo:
+		c.StartFreeModeInDemo(ctx)
+	case FreeModeInDemo:
+		c.FreeModeInDemo(ctx)
+	case FinalFreeModeInDemo:
+		c.FinalFreeModeInDemo(ctx)
+	default:
+		ctx.SendError(fmt.Errorf("unknown condition: %s", condition))
+	}
 }

@@ -25,6 +25,18 @@ const (
 )
 
 const (
+	BaseModeInReal      = "BaseModeInReal"
+	StartFreeModeInReal = "StartFreeModeInReal"
+	FreeModeInReal      = "FreeModeInReal"
+	FinalFreeModeInReal = "FinalFreeModeInReal"
+
+	BaseModeInDemo      = "BaseModeInDemo"
+	StartFreeModeInDemo = "StartFreeModeInDemo"
+	FreeModeInDemo      = "FreeModeInDemo"
+	FinalFreeModeInDemo = "FinalFreeModeInDemo"
+)
+
+const (
 	SYMBOL_0 int = 0 + iota // 百搭 0  ====》200
 	SYMBOL_1                // 元宝 1  ====》100
 	SYMBOL_2                // 福箱 2  ====》50

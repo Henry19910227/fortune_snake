@@ -18,6 +18,44 @@ func New(betRecordRepo betRecordRepo.Repository, snowFlakeRepo snowFlakeRepo.Rep
 }
 
 func (s *service) Create(session *playerModel.Session) (item *model.Table, err error) {
+	transactionId := s.snowFlakeRepo.GenerateID()
+	item = &model.Table{}
+	item.TransactionId = transactionId
+	item.TransactionSubId = transactionId
+	item, err = s.create(session, item)
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
+func (s *service) CreateByTransactionID(session *playerModel.Session, transactionID uint64) (item *model.Table, err error) {
+	item = &model.Table{}
+	item.TransactionId = transactionID
+	item.TransactionSubId = s.snowFlakeRepo.GenerateID()
+	item, err = s.create(session, item)
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
+func (s *service) Update(item *model.Table) (err error) {
+	item.UpdatedAt = time.Now().UnixMilli()
+	return s.betRecordRepo.Update(item)
+}
+
+func (s *service) UpdateToFailed(item *model.Table) (err error) {
+	item.Status = "failed"
+	return s.Update(item)
+}
+
+func (s *service) UpdateToFinished(item *model.Table) (err error) {
+	item.Status = "finished"
+	return s.Update(item)
+}
+
+func (s *service) create(session *playerModel.Session, item *model.Table) (table *model.Table, err error) {
 	TransactionId := s.snowFlakeRepo.GenerateID()
 	item = &model.Table{}
 	item.TransactionId = TransactionId
@@ -50,9 +88,4 @@ func (s *service) Create(session *playerModel.Session) (item *model.Table, err e
 		return nil, err
 	}
 	return item, nil
-}
-
-func (s *service) Update(item *model.Table) (err error) {
-	item.UpdatedAt = time.Now().UnixMilli()
-	return s.betRecordRepo.Update(item)
 }

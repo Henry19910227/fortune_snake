@@ -1,6 +1,9 @@
 package bet
 
-import lineModel "game_server_slots_fortune_snake/internal/model/entity/line"
+import (
+	"encoding/json"
+	lineModel "game_server_slots_fortune_snake/internal/model/entity/line"
+)
 
 type SpinResult struct {
 	Symbols [][]int
@@ -16,4 +19,9 @@ func (s *SpinResult) SetLines(items []*lineModel.Item) {
 		lines = append(lines, line)
 	}
 	s.Lines = lines
+}
+
+func (s *SpinResult) ToJson() []byte {
+	b, _ := json.Marshal(s)
+	return b
 }

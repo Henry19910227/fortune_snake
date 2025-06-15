@@ -91,7 +91,6 @@ func (r *repository) GetBet(ctx context.Context, playerID uint64) (bet int, err 
 	if err != nil {
 		return 0, err
 	}
-	// 將字串轉換為 int
 	bet, err = strconv.Atoi(val)
 	if err != nil {
 		return 0, err
@@ -108,7 +107,6 @@ func (r *repository) GetValue(ctx context.Context, playerID uint64) (value int, 
 	if err != nil {
 		return 0, err
 	}
-	// 將字串轉換為 int
 	value, err = strconv.Atoi(val)
 	if err != nil {
 		return 0, err

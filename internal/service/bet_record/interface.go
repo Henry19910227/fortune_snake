@@ -7,5 +7,8 @@ import (
 
 type Service interface {
 	Create(session *playerModel.Session) (item *model.Table, err error)
+	CreateByTransactionID(session *playerModel.Session, transactionID uint64) (item *model.Table, err error)
 	Update(item *model.Table) (err error)
+	UpdateToFailed(item *model.Table) (err error)
+	UpdateToFinished(item *model.Table) (err error)
 }
