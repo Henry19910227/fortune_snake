@@ -10,21 +10,15 @@ import (
 )
 
 type repository struct {
-	rdb      *redis.Client
-	gameMode string
+	rdb *redis.Client
 }
 
 func New(rdb *redis.Client) Repository {
-	return &repository{rdb: rdb, gameMode: constants.GameModeDemo}
+	return &repository{rdb: rdb}
 }
 
-func (r *repository) GameMode(gameMode string) Repository {
-	r.gameMode = gameMode
-	return r
-}
-
-func (r *repository) SaveItems(ctx context.Context, playerID uint64, items []string) error {
-	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, r.gameMode, playerID)
+func (r *repository) SaveItems(ctx context.Context, gameMode string, playerID uint64, items []string) error {
+	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, gameMode, playerID)
 	if len(items) == 0 {
 		return nil
 	}
@@ -39,8 +33,8 @@ func (r *repository) SaveItems(ctx context.Context, playerID uint64, items []str
 	return nil
 }
 
-func (r *repository) PopFirstItem(ctx context.Context, playerID uint64) (string, error) {
-	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, r.gameMode, playerID)
+func (r *repository) PopFirstItem(ctx context.Context, gameMode string, playerID uint64) (string, error) {
+	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, gameMode, playerID)
 	result, err := r.rdb.LPop(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -51,8 +45,8 @@ func (r *repository) PopFirstItem(ctx context.Context, playerID uint64) (string,
 	return result, nil
 }
 
-func (r *repository) Amount(ctx context.Context, playerID uint64) (int64, error) {
-	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, r.gameMode, playerID)
+func (r *repository) Amount(ctx context.Context, gameMode string, playerID uint64) (int64, error) {
+	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, gameMode, playerID)
 	length, err := r.rdb.LLen(ctx, key).Result()
 	if err != nil {
 		return 0, err

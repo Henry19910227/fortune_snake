@@ -154,7 +154,7 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	results := resultsList[0]
 
 	// 緩存剩餘金蛇盤面
-	if err := c.resultFreeService.SaveItems(grpcCtx, session.PlayerId, resultsList[1:]); err != nil {
+	if err := c.resultFreeService.SaveItems(grpcCtx, GameModeReal, session.PlayerId, resultsList[1:]); err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
@@ -243,7 +243,7 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	}
 
 	// 取出一筆金蛇盤面
-	results, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, session.PlayerId)
+	results, err := c.resultFreeService.PopFirstItem(grpcCtx, GameModeReal, session.PlayerId)
 	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
@@ -325,7 +325,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	}
 
 	// 取出最後一筆金蛇盤面
-	results, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, session.PlayerId)
+	results, err := c.resultFreeService.PopFirstItem(grpcCtx, GameModeReal, session.PlayerId)
 	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
