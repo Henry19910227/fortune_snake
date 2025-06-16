@@ -127,7 +127,7 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	}
 
 	// 儲存 father ID
-	if err = c.gameService.SaveFatherID(grpcCtx, session.PlayerId, record.TransactionId); err != nil {
+	if err = c.gameService.SaveFatherID(grpcCtx, GameModeReal, session.PlayerId, record.TransactionId); err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
@@ -213,7 +213,7 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 
 	// 載入續存的 bet 值
 	param := &betModel.Param{}
-	bet, err := c.gameService.GetBet(grpcCtx, session.PlayerId)
+	bet, err := c.gameService.GetBet(grpcCtx, GameModeReal, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -221,7 +221,7 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	param.Bet = bet
 
 	// 載入續存的 value 值
-	value, err := c.gameService.GetValue(grpcCtx, session.PlayerId)
+	value, err := c.gameService.GetValue(grpcCtx, GameModeReal, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -229,7 +229,7 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	param.Value = value
 
 	// 獲取 father id
-	fatherID, err := c.gameService.GetFatherID(grpcCtx, session.PlayerId)
+	fatherID, err := c.gameService.GetFatherID(grpcCtx, GameModeReal, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -293,7 +293,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 
 	// 獲取 father id
-	fatherID, err := c.gameService.GetFatherID(grpcCtx, session.PlayerId)
+	fatherID, err := c.gameService.GetFatherID(grpcCtx, GameModeReal, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -301,7 +301,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 
 	// 載入續存的 bet 值
 	param := &betModel.Param{}
-	bet, err := c.gameService.GetBet(grpcCtx, session.PlayerId)
+	bet, err := c.gameService.GetBet(grpcCtx, GameModeReal, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -309,7 +309,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	param.Bet = bet
 
 	// 載入續存的 value 值
-	value, err := c.gameService.GetValue(grpcCtx, session.PlayerId)
+	value, err := c.gameService.GetValue(grpcCtx, GameModeReal, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return

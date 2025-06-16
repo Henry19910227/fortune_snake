@@ -14,15 +14,15 @@ func (c *controller) SavePlayerGameInfo(ctx *server.Context, gameResult *betMode
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	// 續存 Game Result
-	if err = c.gameService.GameMode(session.Mode).SaveGameResult(grpcCtx, session.PlayerId, gameResult); err != nil {
+	if err = c.gameService.SaveGameResult(grpcCtx, session.Mode, session.PlayerId, gameResult); err != nil {
 		return err
 	}
 	// 續存 Bet
-	if err = c.gameService.GameMode(session.Mode).SaveBet(grpcCtx, session.PlayerId, param.Bet); err != nil {
+	if err = c.gameService.SaveBet(grpcCtx, session.Mode, session.PlayerId, param.Bet); err != nil {
 		return err
 	}
 	// 續存 Value
-	if err = c.gameService.GameMode(session.Mode).SaveValue(grpcCtx, session.PlayerId, param.Value); err != nil {
+	if err = c.gameService.SaveValue(grpcCtx, session.Mode, session.PlayerId, param.Value); err != nil {
 		return err
 	}
 	return nil

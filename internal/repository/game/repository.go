@@ -11,17 +11,11 @@ import (
 )
 
 type repository struct {
-	rdb      *redis.Client
-	gameMode string
+	rdb *redis.Client
 }
 
 func New(rdb *redis.Client) Repository {
-	return &repository{rdb: rdb, gameMode: GameModeDemo}
-}
-
-func (r *repository) Mode(gameMode string) Repository {
-	r.gameMode = gameMode
-	return r
+	return &repository{rdb: rdb}
 }
 
 func (r *repository) Info() (info *gameModel.Info, err error) {
@@ -34,8 +28,8 @@ func (r *repository) Info() (info *gameModel.Info, err error) {
 	return info, nil
 }
 
-func (r *repository) SaveGameResult(ctx context.Context, playerID uint64, data string) (err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+func (r *repository) SaveGameResult(ctx context.Context, gameMode string, playerID uint64, data string) (err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
 	pipe := r.rdb.TxPipeline()
 	pipe.HSet(ctx, key, "GameResults", data)
 	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
@@ -46,8 +40,8 @@ func (r *repository) SaveGameResult(ctx context.Context, playerID uint64, data s
 	return nil
 }
 
-func (r *repository) SaveBet(ctx context.Context, playerID uint64, bet int) (err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+func (r *repository) SaveBet(ctx context.Context, gameMode string, playerID uint64, bet int) (err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
 	pipe := r.rdb.TxPipeline()
 	pipe.HSet(ctx, key, "Bet", bet)
 	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
@@ -58,8 +52,8 @@ func (r *repository) SaveBet(ctx context.Context, playerID uint64, bet int) (err
 	return nil
 }
 
-func (r *repository) SaveValue(ctx context.Context, playerID uint64, value int) (err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+func (r *repository) SaveValue(ctx context.Context, gameMode string, playerID uint64, value int) (err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
 	pipe := r.rdb.TxPipeline()
 	pipe.HSet(ctx, key, "Value", value)
 	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
@@ -70,8 +64,8 @@ func (r *repository) SaveValue(ctx context.Context, playerID uint64, value int) 
 	return nil
 }
 
-func (r *repository) SaveFatherID(ctx context.Context, playerID uint64, fatherID uint64) (err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+func (r *repository) SaveFatherID(ctx context.Context, gameMode string, playerID uint64, fatherID uint64) (err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
 	pipe := r.rdb.TxPipeline()
 	pipe.HSet(ctx, key, "FatherID", fatherID)
 	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
@@ -82,8 +76,8 @@ func (r *repository) SaveFatherID(ctx context.Context, playerID uint64, fatherID
 	return nil
 }
 
-func (r *repository) GetGameResult(ctx context.Context, playerID uint64) (data string, err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+func (r *repository) GetGameResult(ctx context.Context, gameMode string, playerID uint64) (data string, err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
 	data, err = r.rdb.HGet(ctx, key, "GameResults").Result()
 	if errors.Is(err, redis.Nil) {
 		return "", nil
@@ -94,8 +88,8 @@ func (r *repository) GetGameResult(ctx context.Context, playerID uint64) (data s
 	return data, nil
 }
 
-func (r *repository) GetBet(ctx context.Context, playerID uint64) (bet int, err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+func (r *repository) GetBet(ctx context.Context, gameMode string, playerID uint64) (bet int, err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
 	val, err := r.rdb.HGet(ctx, key, "Bet").Result()
 	if errors.Is(err, redis.Nil) {
 		return 0, nil
@@ -110,8 +104,8 @@ func (r *repository) GetBet(ctx context.Context, playerID uint64) (bet int, err 
 	return bet, nil
 }
 
-func (r *repository) GetValue(ctx context.Context, playerID uint64) (value int, err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+func (r *repository) GetValue(ctx context.Context, gameMode string, playerID uint64) (value int, err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
 	val, err := r.rdb.HGet(ctx, key, "Value").Result()
 	if errors.Is(err, redis.Nil) {
 		return 0, nil
@@ -126,8 +120,8 @@ func (r *repository) GetValue(ctx context.Context, playerID uint64) (value int, 
 	return value, nil
 }
 
-func (r *repository) GetFatherID(ctx context.Context, playerID uint64) (fatherID uint64, err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, r.gameMode, playerID)
+func (r *repository) GetFatherID(ctx context.Context, gameMode string, playerID uint64) (fatherID uint64, err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
 	val, err := r.rdb.HGet(ctx, key, "FatherID").Result()
 	if errors.Is(err, redis.Nil) {
 		return 0, nil

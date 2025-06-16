@@ -98,7 +98,7 @@ func (c *controller) BetInReal(ctx *server.Context) {
 	}
 
 	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
-	spinMode := c.gameService.GameMode(GameModeReal).SpinMode()
+	spinMode := c.gameService.SpinMode()
 
 	// 進入金蛇模式
 	if spinMode == SpinModeFree {
@@ -134,7 +134,7 @@ func (c *controller) BetInDemo(ctx *server.Context) {
 	}
 
 	// 沒有尚未消費的盤面，則開新的一局，取得當前模式
-	spinMode := c.gameService.GameMode(GameModeDemo).SpinMode()
+	spinMode := c.gameService.SpinMode()
 
 	// 開始第一局金蛇模式
 	if spinMode == SpinModeFree {

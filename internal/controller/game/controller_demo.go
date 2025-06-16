@@ -50,23 +50,10 @@ func (c *controller) BaseModeInDemo(ctx *server.Context) {
 	// 將盤面數據轉換為 reels
 	reels := c.reelsFreeService.ToReels(results)
 
-	// 計算賠率
-	winRate, err := c.settleService.GetRate(param.Bet, param.Value, reels)
+	// 結算盤面
+	winRate, lines, totalScore, err := c.Settle(param, reels)
 	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 計算中獎線
-	lines, err := c.settleService.GetWinLines(param.Bet, param.Value, reels)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 計算總分
-	totalScore, err := c.settleService.GetTotalScore(param.Bet, param.Value, reels)
-	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -128,7 +115,7 @@ func (c *controller) StartFreeModeInDemo(ctx *server.Context) {
 	}
 
 	// 儲存 father ID
-	if err = c.gameService.SaveFatherID(grpcCtx, session.PlayerId, record.TransactionId); err != nil {
+	if err = c.gameService.SaveFatherID(grpcCtx, GameModeDemo, session.PlayerId, record.TransactionId); err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
@@ -213,7 +200,7 @@ func (c *controller) FreeModeInDemo(ctx *server.Context) {
 	}
 
 	// 獲取 father id
-	fatherID, err := c.gameService.GetFatherID(grpcCtx, session.PlayerId)
+	fatherID, err := c.gameService.GetFatherID(grpcCtx, GameModeDemo, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -276,7 +263,7 @@ func (c *controller) FinalFreeModeInDemo(ctx *server.Context) {
 	}
 
 	// 獲取 father id
-	fatherID, err := c.gameService.GetFatherID(grpcCtx, session.PlayerId)
+	fatherID, err := c.gameService.GetFatherID(grpcCtx, GameModeDemo, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
