@@ -316,11 +316,8 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	}
 	param.Value = value
 
-	// 計算總投注額
-	totalBet := param.Bet * param.Value * Multiplier
-
 	// 創建紀錄
-	record, err := c.betRecordService.CreateByTransactionID(session, param, int64(totalBet), fatherID)
+	record, err := c.betRecordService.CreateByTransactionID(session, param, 0, fatherID)
 	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)

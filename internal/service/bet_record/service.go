@@ -78,7 +78,6 @@ func (s *service) create(session *playerModel.Session, item *model.Table) (table
 	item.CurrencySymbol = session.CurrencySymbol
 	item.CurrencyExchange = session.CurrencyExchange
 	item.Balance = session.Balance
-	item.Bet = []byte("{}")
 	item.Result = []byte("{}")
 	item.Mode = session.Mode
 	item.Free = "no"
