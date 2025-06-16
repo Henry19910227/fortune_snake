@@ -3,17 +3,17 @@ package bet
 import lineModel "game_server_slots_fortune_snake/internal/model/entity/line"
 
 type Line struct {
-	HitIndex int    // 賠付線的位置
-	Cells    []Cell // 中獎符號位置
-	Pow      int    // 賠付值
-	Symbol   int    // 中獎符號
-	Score    int    // 中獎金額
+	HitIndex int    `json:"hit_index"` // 賠付線的位置
+	Cells    []Cell `json:"cells"`     // 中獎符號位置
+	Pow      int    `json:"pow"`       // 賠付值
+	Symbol   int    `json:"symbol"`    // 中獎符號
+	Score    int    `json:"score"`     // 中獎金額
 }
 
 type Cell struct {
-	Col    int
-	Row    int
-	Symbol int
+	Col    int `json:"col"`
+	Row    int `json:"row"`
+	Symbol int `json:"symbol"`
 }
 
 func NewLine(item *lineModel.Item) *Line {

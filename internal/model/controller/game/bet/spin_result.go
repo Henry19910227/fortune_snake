@@ -6,10 +6,10 @@ import (
 )
 
 type SpinResult struct {
-	Symbols [][]int
-	Lines   []*Line
-	Score   int // 總中獎金額
-	Times   int
+	Symbols [][]int `json:"symbols"`
+	Lines   []*Line `json:"lines"`
+	Score   int     `json:"score"` // 總中獎金額
+	Times   int     `json:"times"`
 }
 
 func (s *SpinResult) SetLines(items []*lineModel.Item) {

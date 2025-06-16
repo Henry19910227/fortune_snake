@@ -3,9 +3,9 @@ package bet
 import "encoding/json"
 
 type Param struct {
-	Bonus bool
-	Bet   int
-	Value int
+	Bonus bool `json:"bonus"`
+	Bet   int  `json:"bet"`
+	Value int  `json:"value"`
 }
 
 func (p *Param) ToJson() []byte {
