@@ -6,10 +6,9 @@ import (
 )
 
 func SetRoute(group *server.RouterGroup, factory controller.Factory) {
-	playerController := factory.PlayerController()
 	gameController := factory.GameController()
 	middController := factory.MiddleController()
 	group.EndPoint("enter_game", middController.Verify, gameController.EnterGame)
 	group.EndPoint("bet", middController.Verify, gameController.PreBet, gameController.Bet)
-	group.EndPoint("player", playerController.GetPlayerSession) // 測試
+	group.EndPoint("symbols", middController.Verify, gameController.Symbols)
 }

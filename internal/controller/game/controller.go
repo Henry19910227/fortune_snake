@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	. "game_server_slots_fortune_snake/constants"
+	gameSymbol "game_server_slots_fortune_snake/internal/model/controller/game/symbol"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	"game_server_slots_fortune_snake/internal/server"
 	betRecordService "game_server_slots_fortune_snake/internal/service/bet_record"
@@ -175,13 +176,18 @@ func (c *controller) Bet(ctx *server.Context) {
 }
 
 func (c *controller) Symbols(ctx *server.Context) {
-	//items := c.symbolService.GetSymbols()
-	//
-	//for _, item := range items {
-	//	symbol := &gameSymbol.Item{}
-	//	symbol.ID = item.ID
-	//	symbol.Name = item.Name
-	//	symbol.Pow = item.Pow
-	//}
-	//ctx.Send(CodeSuccess, "success", data)
+	items := c.symbolService.GetSymbols()
+	symbols := make([]*gameSymbol.Item, 0)
+	for _, item := range items {
+		symbol := &gameSymbol.Item{}
+		symbol.ID = item.ID
+		symbol.Name = item.Name
+		symbol.Pow = item.Pow
+		symbols = append(symbols, symbol)
+	}
+
+	data := gameSymbol.Response{}
+	data.Symbols = symbols
+
+	ctx.Send(CodeSuccess, "success", data)
 }
