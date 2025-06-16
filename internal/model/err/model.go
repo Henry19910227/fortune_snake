@@ -29,12 +29,13 @@ func (e *Error) Error() string {
 
 func Err(obj error) Error {
 	var e *Error
-	if ok := errors.As(obj, &e); !ok {
-		return Error{
-			Code:    constants.CodeInternalError,
-			Message: e.Error(),
-			Err:     obj,
-		}
+	if errors.As(obj, &e) && e != nil {
+		return *e
 	}
-	return *e
+	// 無法轉型為 *Error，使用 obj 的 error message
+	return Error{
+		Code:    constants.CodeInternalError,
+		Message: obj.Error(),
+		Err:     obj,
+	}
 }

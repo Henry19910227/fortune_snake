@@ -17,18 +17,15 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 		return
 	}
 
+	// 計算總投注額
+	totalBet := param.Bet * param.Value * Multiplier
+
 	// 創建紀錄
-	record, err := c.betRecordService.Create(session)
+	record, err := c.betRecordService.Create(session, param, int64(totalBet))
 	if err != nil {
 		ctx.SendError(err)
 		return
 	}
-
-	// 紀錄結算前餘額
-	record.Balance = session.Balance
-
-	// 計算總投注額
-	totalBet := param.Bet * param.Value * 10
 
 	// 用戶餘額減去總投注額
 	session.Balance -= int64(totalBet)
@@ -36,6 +33,7 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 	// 從權重表中獲取賠率
 	rate, err := c.weightService.RandomBaseWeightRate(float64(session.GameRtp))
 	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -43,6 +41,7 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 	// 從內存隨機取得盤面數據集
 	resultsList, err := c.resultLoader.Random(rate)
 	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -56,6 +55,7 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 	// 結算盤面
 	winRate, lines, totalScore, err := c.Settle(param, reels)
 	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -63,6 +63,7 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 	// 派彩更新餘額
 	session.Balance += int64(totalScore)
 	if err = c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -86,11 +87,13 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 
 	// 續存結果
 	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
 
 	// 更新投注紀錄
+	record.Bet = param.ToJson()
 	record.Result = spinResult.ToJson()
 	record.Amount = int64(totalBet)
 	record.AmountWin = int64(totalScore)
@@ -114,7 +117,21 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	}
 
 	// 計算總投注額
-	totalBet := param.Bet * param.Value * 10
+	totalBet := param.Bet * param.Value * Multiplier
+
+	// 創建紀錄
+	record, err := c.betRecordService.Create(session, param, int64(totalBet))
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 儲存 father ID
+	if err = c.gameService.SaveFatherID(grpcCtx, session.PlayerId, record.TransactionId); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
 
 	// 用戶餘額減去總投注額
 	session.Balance -= int64(totalBet)
@@ -122,12 +139,14 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	// 獲取賠率
 	rate, err := c.weightService.RandomFreeWeightRate(float64(session.GameRtp))
 	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
 	// 從內存隨機取得多筆金蛇盤面
 	resultsList, err := c.resultFreeLoader.Random(rate)
 	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -136,6 +155,7 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 
 	// 緩存剩餘金蛇盤面
 	if err := c.resultFreeService.SaveItems(grpcCtx, session.PlayerId, resultsList[1:]); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -145,6 +165,7 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 
 	// 更新餘額
 	if err := c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -169,6 +190,15 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 
 	// 續存結果
 	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
+	// 更新投注紀錄
+	record.Result = spinResult.ToJson()
+	record.Amount = int64(totalBet)
+	if err = c.betRecordService.UpdateToFinished(record); err != nil {
 		ctx.SendError(err)
 		return
 	}
@@ -181,21 +211,10 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
 
-	// 創建紀錄
-	record, err := c.betRecordService.Create(session)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-
-	// 紀錄結算前餘額
-	record.Balance = session.Balance
-
 	// 載入續存的 bet 值
 	param := &betModel.Param{}
 	bet, err := c.gameService.GetBet(grpcCtx, session.PlayerId)
 	if err != nil {
-		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -204,14 +223,24 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	// 載入續存的 value 值
 	value, err := c.gameService.GetValue(grpcCtx, session.PlayerId)
 	if err != nil {
-		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
 	param.Value = value
 
-	// 紀錄投注
-	record.Bet = param.ToJson()
+	// 獲取 father id
+	fatherID, err := c.gameService.GetFatherID(grpcCtx, session.PlayerId)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 創建紀錄
+	record, err := c.betRecordService.CreateByTransactionID(session, param, 0, fatherID)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
 
 	// 取出一筆金蛇盤面
 	results, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, session.PlayerId)
@@ -263,6 +292,13 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
 
+	// 獲取 father id
+	fatherID, err := c.gameService.GetFatherID(grpcCtx, session.PlayerId)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
 	// 載入續存的 bet 值
 	param := &betModel.Param{}
 	bet, err := c.gameService.GetBet(grpcCtx, session.PlayerId)
@@ -280,9 +316,21 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	}
 	param.Value = value
 
+	// 計算總投注額
+	totalBet := param.Bet * param.Value * Multiplier
+
+	// 創建紀錄
+	record, err := c.betRecordService.CreateByTransactionID(session, param, int64(totalBet), fatherID)
+	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
 	// 取出最後一筆金蛇盤面
 	results, err := c.resultFreeService.GameMode(GameModeReal).PopFirstItem(grpcCtx, session.PlayerId)
 	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -293,6 +341,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	// 結算盤面
 	winRate, lines, totalScore, err := c.Settle(param, reels)
 	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -300,6 +349,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	// 派彩更新餘額
 	session.Balance += int64(totalScore)
 	if err := c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -324,6 +374,15 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 
 	// 續存結果
 	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
+	// 更新投注紀錄
+	record.Result = spinResult.ToJson()
+	record.AmountWin = int64(totalScore)
+	if err = c.betRecordService.UpdateToFinished(record); err != nil {
 		ctx.SendError(err)
 		return
 	}

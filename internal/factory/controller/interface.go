@@ -1,6 +1,7 @@
 package controller
 
 import (
+	betRecordController "game_server_slots_fortune_snake/internal/controller/bet_record"
 	gameController "game_server_slots_fortune_snake/internal/controller/game"
 	loadController "game_server_slots_fortune_snake/internal/controller/load"
 	middleController "game_server_slots_fortune_snake/internal/controller/middleware"
@@ -9,6 +10,7 @@ import (
 
 type Factory interface {
 	GameController() gameController.Controller
+	BetRecordController() betRecordController.Controller
 	PlayerController() playerController.Controller
 	MiddleController() middleController.Controller
 	LoadController() loadController.Controller

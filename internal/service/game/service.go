@@ -59,6 +59,13 @@ func (s *service) SaveValue(ctx context.Context, playerID uint64, value int) (er
 	return nil
 }
 
+func (s *service) SaveFatherID(ctx context.Context, playerID uint64, fatherID uint64) (err error) {
+	if err = s.gameRepo.Mode(s.gameMode).SaveFatherID(ctx, playerID, fatherID); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *service) GetGameResult(ctx context.Context, playerID uint64) (item *betModel.GameResult, err error) {
 	data, err := s.gameRepo.Mode(s.gameMode).GetGameResult(ctx, playerID)
 	if err != nil {
@@ -84,6 +91,14 @@ func (s *service) GetBet(ctx context.Context, playerID uint64) (bet int, err err
 
 func (s *service) GetValue(ctx context.Context, playerID uint64) (value int, err error) {
 	data, err := s.gameRepo.Mode(s.gameMode).GetValue(ctx, playerID)
+	if err != nil {
+		return 0, err
+	}
+	return data, nil
+}
+
+func (s *service) GetFatherID(ctx context.Context, playerID uint64) (fatherID uint64, err error) {
+	data, err := s.gameRepo.Mode(s.gameMode).GetFatherID(ctx, playerID)
 	if err != nil {
 		return 0, err
 	}

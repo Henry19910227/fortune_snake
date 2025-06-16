@@ -34,6 +34,7 @@ func (c *Context) SendError(err error) {
 		Code:    e.Code,
 		Message: e.Message,
 	}
+	c.Set("resp", resp)
 	c.result, _ = json.Marshal(resp)
 }
 
@@ -44,6 +45,7 @@ func (c *Context) Send(code int32, msg string, data interface{}) {
 		Message: msg,
 		Data:    string(jsonData),
 	}
+	c.Set("resp", resp)
 	c.result, _ = json.Marshal(resp)
 }
 

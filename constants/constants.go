@@ -15,6 +15,10 @@ const (
 )
 
 const (
+	Multiplier = 10
+)
+
+const (
 	GameModeDemo = "demo"
 	GameModeReal = "real"
 )

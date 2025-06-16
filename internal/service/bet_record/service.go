@@ -1,6 +1,7 @@
 package bet_record
 
 import (
+	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 	model "game_server_slots_fortune_snake/internal/model/entity/bet_record"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	betRecordRepo "game_server_slots_fortune_snake/internal/repository/bet_record"
@@ -17,11 +18,14 @@ func New(betRecordRepo betRecordRepo.Repository, snowFlakeRepo snowFlakeRepo.Rep
 	return &service{betRecordRepo: betRecordRepo, snowFlakeRepo: snowFlakeRepo}
 }
 
-func (s *service) Create(session *playerModel.Session) (item *model.Table, err error) {
-	transactionId := s.snowFlakeRepo.GenerateID()
+func (s *service) Create(session *playerModel.Session, param *betModel.Param, totalBet int64) (item *model.Table, err error) {
 	item = &model.Table{}
-	item.TransactionId = transactionId
-	item.TransactionSubId = transactionId
+	item.ID = s.snowFlakeRepo.GenerateID()
+	item.TransactionId = s.snowFlakeRepo.GenerateID()
+	item.TransactionSubId = item.TransactionId
+	item.Balance = session.Balance
+	item.Bet = param.ToJson()
+	item.Amount = totalBet
 	item, err = s.create(session, item)
 	if err != nil {
 		return nil, err
@@ -29,10 +33,14 @@ func (s *service) Create(session *playerModel.Session) (item *model.Table, err e
 	return item, nil
 }
 
-func (s *service) CreateByTransactionID(session *playerModel.Session, transactionID uint64) (item *model.Table, err error) {
+func (s *service) CreateByTransactionID(session *playerModel.Session, param *betModel.Param, totalBet int64, transactionID uint64) (item *model.Table, err error) {
 	item = &model.Table{}
+	item.ID = s.snowFlakeRepo.GenerateID()
 	item.TransactionId = transactionID
 	item.TransactionSubId = s.snowFlakeRepo.GenerateID()
+	item.Balance = session.Balance
+	item.Bet = param.ToJson()
+	item.Amount = totalBet
 	item, err = s.create(session, item)
 	if err != nil {
 		return nil, err
@@ -46,20 +54,16 @@ func (s *service) Update(item *model.Table) (err error) {
 }
 
 func (s *service) UpdateToFailed(item *model.Table) (err error) {
-	item.Status = "failed"
+	item.Status = "error"
 	return s.Update(item)
 }
 
 func (s *service) UpdateToFinished(item *model.Table) (err error) {
-	item.Status = "finished"
+	item.Status = "finish"
 	return s.Update(item)
 }
 
 func (s *service) create(session *playerModel.Session, item *model.Table) (table *model.Table, err error) {
-	TransactionId := s.snowFlakeRepo.GenerateID()
-	item = &model.Table{}
-	item.TransactionId = TransactionId
-	item.TransactionSubId = TransactionId
 	item.RoundId = s.snowFlakeRepo.GenerateID()
 	item.PlayerId = session.PlayerId
 	item.PlayerUsername = session.PlayerUsername
@@ -74,6 +78,8 @@ func (s *service) create(session *playerModel.Session, item *model.Table) (table
 	item.CurrencySymbol = session.CurrencySymbol
 	item.CurrencyExchange = session.CurrencyExchange
 	item.Balance = session.Balance
+	item.Bet = []byte("{}")
+	item.Result = []byte("{}")
 	item.Mode = session.Mode
 	item.Free = "no"
 	item.Special = "no"
