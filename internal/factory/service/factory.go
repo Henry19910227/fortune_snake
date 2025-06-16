@@ -10,6 +10,7 @@ import (
 	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/service/result_loader"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
+	symbolService "game_server_slots_fortune_snake/internal/service/symbol"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 )
 
@@ -74,4 +75,9 @@ func (f *factory) BetRecordService() betRecordService.Service {
 	betRecordRepo := f.repoFactory.BetRecordRepository()
 	snowflakeRepo := f.repoFactory.SnowflakeRepository()
 	return betRecordService.New(betRecordRepo, snowflakeRepo)
+}
+
+func (f *factory) SymbolService() symbolService.Service {
+	symbolRepo := f.repoFactory.SymbolRepository()
+	return symbolService.New(symbolRepo)
 }

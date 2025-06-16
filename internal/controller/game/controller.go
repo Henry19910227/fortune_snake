@@ -13,6 +13,7 @@ import (
 	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/service/result_loader"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
+	symbolService "game_server_slots_fortune_snake/internal/service/symbol"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 )
 
@@ -27,6 +28,7 @@ type controller struct {
 	settleService     settleService.Service
 	playerService     playerService.Service
 	betRecordService  betRecordService.Service
+	symbolService     symbolService.Service
 }
 
 func New(gameService gameService.Service,
@@ -38,11 +40,12 @@ func New(gameService gameService.Service,
 	reelsFreeService reelsService.Service,
 	settleService settleService.Service,
 	playerService playerService.Service,
-	betRecordService betRecordService.Service) Controller {
+	betRecordService betRecordService.Service,
+	symbolService symbolService.Service) Controller {
 	return &controller{gameService: gameService,
 		weightService: weightService, resultFreeService: resultFreeService, resultLoader: resultLoader,
 		resultFreeLoader: resultFreeLoader, reelsService: reelsService, reelsFreeService: reelsFreeService,
-		settleService: settleService, playerService: playerService, betRecordService: betRecordService}
+		settleService: settleService, playerService: playerService, betRecordService: betRecordService, symbolService: symbolService}
 }
 
 func (c *controller) EnterGame(ctx *server.Context) {
@@ -169,4 +172,16 @@ func (c *controller) Bet(ctx *server.Context) {
 	default:
 		ctx.SendError(fmt.Errorf("unknown condition: %s", condition))
 	}
+}
+
+func (c *controller) Symbols(ctx *server.Context) {
+	//items := c.symbolService.GetSymbols()
+	//
+	//for _, item := range items {
+	//	symbol := &gameSymbol.Item{}
+	//	symbol.ID = item.ID
+	//	symbol.Name = item.Name
+	//	symbol.Pow = item.Pow
+	//}
+	//ctx.Send(CodeSuccess, "success", data)
 }

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"game_server_slots_fortune_snake/constants"
 	"github.com/redis/go-redis/v9"
-	"time"
 )
 
 type repository struct {
@@ -25,7 +24,7 @@ func (r *repository) SaveItems(ctx context.Context, gameMode string, playerID ui
 	pipe := r.rdb.TxPipeline()
 	pipe.Del(ctx, key)
 	pipe.RPush(ctx, key, items)
-	pipe.Expire(ctx, key, 20*24*time.Hour)
+	pipe.Expire(ctx, key, constants.CacheExpiredPlayerFreeResults)
 	_, err := pipe.Exec(ctx)
 	if err != nil {
 		return err

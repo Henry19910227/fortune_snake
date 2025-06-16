@@ -4,7 +4,7 @@ import (
 	"fmt"
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
 	reelService "game_server_slots_fortune_snake/internal/service/reels"
-	reelsFreeService "game_server_slots_fortune_snake/internal/service/reels_free"
+	reelsFreeService "game_server_slots_fortune_snake/internal/service/reels"
 	resultLoaderService "game_server_slots_fortune_snake/internal/service/result_loader"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
 )

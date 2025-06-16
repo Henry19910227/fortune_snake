@@ -8,6 +8,7 @@ import (
 	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/service/result_loader"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
+	symbolService "game_server_slots_fortune_snake/internal/service/symbol"
 	weightService "game_server_slots_fortune_snake/internal/service/weight"
 )
 
@@ -22,4 +23,5 @@ type Factory interface {
 	ReelsFreeService() reelsService.Service
 	SettleService() settleService.Service
 	BetRecordService() betRecordService.Service
+	SymbolService() symbolService.Service
 }

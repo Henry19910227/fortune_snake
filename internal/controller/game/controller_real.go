@@ -19,6 +19,9 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 
 	// 計算總投注額
 	totalBet := param.Bet * param.Value * Multiplier
+	if param.Bonus {
+		totalBet = int(float64(totalBet) * 1.5)
+	}
 
 	// 創建紀錄
 	record, err := c.betRecordService.Create(session, param, int64(totalBet))
@@ -118,6 +121,9 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 
 	// 計算總投注額
 	totalBet := param.Bet * param.Value * Multiplier
+	if param.Bonus {
+		totalBet = int(float64(totalBet) * 1.5)
+	}
 
 	// 創建紀錄
 	record, err := c.betRecordService.Create(session, param, int64(totalBet))

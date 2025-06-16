@@ -6,4 +6,5 @@ type Controller interface {
 	EnterGame(ctx *server.Context)
 	PreBet(ctx *server.Context)
 	Bet(ctx *server.Context)
+	Symbols(ctx *server.Context)
 }

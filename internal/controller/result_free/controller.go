@@ -3,7 +3,7 @@ package result_free
 import (
 	"fmt"
 	resultModel "game_server_slots_fortune_snake/internal/model/entity/result"
-	reelsService "game_server_slots_fortune_snake/internal/service/reels_free"
+	reelsService "game_server_slots_fortune_snake/internal/service/reels"
 	resultLoaderService "game_server_slots_fortune_snake/internal/service/result_loader"
 	settleService "game_server_slots_fortune_snake/internal/service/settle"
 )
