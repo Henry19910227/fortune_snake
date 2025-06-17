@@ -85,7 +85,7 @@ func (c *controller) BaseModeInDemo(ctx *server.Context) {
 	data.Balance = int(session.Balance)
 
 	// 更新投注紀錄
-	record.Result = spinResult.ToJson()
+	record.Result = gameResult.ToJson()
 	record.Amount = int64(totalBet)
 	record.AmountWin = int64(totalScore)
 	if err = c.betRecordService.UpdateToFinished(record); err != nil {
@@ -194,7 +194,7 @@ func (c *controller) StartFreeModeInDemo(ctx *server.Context) {
 	}
 
 	// 更新投注紀錄
-	record.Result = spinResult.ToJson()
+	record.Result = gameResult.ToJson()
 	if err = c.betRecordService.UpdateToFinished(record); err != nil {
 		ctx.SendError(err)
 		return
@@ -267,7 +267,7 @@ func (c *controller) FreeModeInDemo(ctx *server.Context) {
 	}
 
 	// 更新投注紀錄
-	record.Result = spinResult.ToJson()
+	record.Result = gameResult.ToJson()
 	if err = c.betRecordService.UpdateToFinished(record); err != nil {
 		ctx.SendError(err)
 		return
@@ -356,7 +356,7 @@ func (c *controller) FinalFreeModeInDemo(ctx *server.Context) {
 	}
 
 	// 更新投注紀錄
-	record.Result = spinResult.ToJson()
+	record.Result = gameResult.ToJson()
 	record.AmountWin = int64(totalScore)
 	if err = c.betRecordService.UpdateToFinished(record); err != nil {
 		ctx.SendError(err)

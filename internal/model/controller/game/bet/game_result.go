@@ -1,5 +1,7 @@
 package bet
 
+import "encoding/json"
+
 type GameResult struct {
 	SpinResult *SpinResult `json:"spin_result,omitempty"`
 	RandSymbol int         `json:"rand_symbol"` // 金蛇模式下的隨機符號
@@ -13,4 +15,9 @@ func NewGameResult(spinMode int) *GameResult {
 	gameResult := &GameResult{}
 	gameResult.SpinMode = spinMode
 	return gameResult
+}
+
+func (r *GameResult) ToJson() []byte {
+	b, _ := json.Marshal(r)
+	return b
 }
