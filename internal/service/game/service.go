@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
+	saveRepoParam "game_server_slots_fortune_snake/internal/model/repository/game/save"
+	saveSvcParam "game_server_slots_fortune_snake/internal/model/service/game/save"
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
+	"game_server_slots_fortune_snake/util"
 	"math/rand"
 )
 
@@ -22,6 +25,24 @@ func (s *service) SpinMode() int {
 		return 1
 	}
 	return 0
+}
+
+func (s *service) Save(param saveSvcParam.Param) (err error) {
+	p := saveRepoParam.Param{}
+	p.Ctx = param.Ctx
+	p.GameMode = param.GameMode
+	p.PlayerID = param.PlayerID
+	p.Bet = param.Bet
+	p.Value = param.Value
+	p.Bonus = param.Bonus
+	if param.GameResult != nil {
+		data, err := json.Marshal(param.GameResult)
+		if err != nil {
+			return err
+		}
+		p.GameResult = util.PointerString(string(data))
+	}
+	return s.gameRepo.Save(p)
 }
 
 func (s *service) SaveGameResult(ctx context.Context, gameMode string, playerID uint64, item *betModel.GameResult) (err error) {
@@ -47,6 +68,13 @@ func (s *service) SaveBet(ctx context.Context, gameMode string, playerID uint64,
 
 func (s *service) SaveValue(ctx context.Context, gameMode string, playerID uint64, value int) (err error) {
 	if err = s.gameRepo.SaveValue(ctx, gameMode, playerID, value); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) SaveBonus(ctx context.Context, gameMode string, playerID uint64, bonus bool) (err error) {
+	if err = s.gameRepo.SaveBonus(ctx, gameMode, playerID, bonus); err != nil {
 		return err
 	}
 	return nil

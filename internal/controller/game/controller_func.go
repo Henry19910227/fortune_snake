@@ -6,25 +6,31 @@ import (
 	"game_server_slots_fortune_snake/internal/model/entity/line"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	"game_server_slots_fortune_snake/internal/model/entity/symbol"
+	"game_server_slots_fortune_snake/internal/model/service/game/save"
 	"game_server_slots_fortune_snake/internal/server"
+	"game_server_slots_fortune_snake/util"
 )
 
 // SavePlayerGameInfo 續存玩家遊戲投注參數與遊戲結果
 func (c *controller) SavePlayerGameInfo(ctx *server.Context, gameResult *betModel.GameResult, param *betModel.Param) (err error) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
-	// 續存 Game Result
-	if err = c.gameService.SaveGameResult(grpcCtx, session.Mode, session.PlayerId, gameResult); err != nil {
-		return err
-	}
-	// 續存 Bet
-	if err = c.gameService.SaveBet(grpcCtx, session.Mode, session.PlayerId, param.Bet); err != nil {
-		return err
-	}
-	// 續存 Value
-	if err = c.gameService.SaveValue(grpcCtx, session.Mode, session.PlayerId, param.Value); err != nil {
-		return err
-	}
+
+	err = c.gameService.Save(save.Param{
+		Ctx:        grpcCtx,
+		GameMode:   session.Mode,
+		PlayerID:   session.PlayerId,
+		GameResult: gameResult,
+		Bet:        util.PointerInt(param.Bet),
+		Value:      util.PointerInt(param.Value),
+		Bonus:      util.PointerBool(param.Bonus),
+	})
+	return err
+}
+
+func (c *controller) RestoreParam(ctx *server.Context, param *betModel.Param) (err error) {
+	//session := ctx.MustGet("session").(*playerModel.Session)
+	//grpcCtx := ctx.MustGet("ctx").(context.Context)
 	return nil
 }
 

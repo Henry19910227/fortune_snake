@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"game_server_slots_fortune_snake/constants"
+	. "game_server_slots_fortune_snake/constants"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -17,14 +17,14 @@ func New(rdb *redis.Client) Repository {
 }
 
 func (r *repository) SaveItems(ctx context.Context, gameMode string, playerID uint64, items []string) error {
-	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, gameMode, playerID)
+	key := fmt.Sprintf(CacheNamePlayerFreeResults, playerID, GameCode, gameMode)
 	if len(items) == 0 {
 		return nil
 	}
 	pipe := r.rdb.TxPipeline()
 	pipe.Del(ctx, key)
 	pipe.RPush(ctx, key, items)
-	pipe.Expire(ctx, key, constants.CacheExpiredPlayerFreeResults)
+	pipe.Expire(ctx, key, CacheExpiredPlayerFreeResults)
 	_, err := pipe.Exec(ctx)
 	if err != nil {
 		return err
@@ -33,7 +33,7 @@ func (r *repository) SaveItems(ctx context.Context, gameMode string, playerID ui
 }
 
 func (r *repository) PopFirstItem(ctx context.Context, gameMode string, playerID uint64) (string, error) {
-	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, gameMode, playerID)
+	key := fmt.Sprintf(CacheNamePlayerFreeResults, playerID, GameCode, gameMode)
 	result, err := r.rdb.LPop(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -45,7 +45,7 @@ func (r *repository) PopFirstItem(ctx context.Context, gameMode string, playerID
 }
 
 func (r *repository) Amount(ctx context.Context, gameMode string, playerID uint64) (int64, error) {
-	key := fmt.Sprintf(constants.CacheNamePlayerFreeResults, gameMode, playerID)
+	key := fmt.Sprintf(CacheNamePlayerFreeResults, playerID, GameCode, gameMode)
 	length, err := r.rdb.LLen(ctx, key).Result()
 	if err != nil {
 		return 0, err

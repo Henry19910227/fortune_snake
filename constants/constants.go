@@ -15,6 +15,7 @@ const (
 )
 
 const (
+	GameCode   = "FortuneSnake"
 	Multiplier = 10
 )
 
@@ -58,11 +59,11 @@ const CacheNamePlayerSession = "Player:Session:%d"
 // CacheNameChannelSettlement 游戏结算的发布订阅
 const CacheNameChannelSettlement = "Channel_Settlement_Game_%d"
 
-// CacheNamePlayerFreeResults 該用戶剩餘免費盤面 Player:FreeResults:GameMode:PlayerID
-const CacheNamePlayerFreeResults = "Player:FreeResults:%v:%v"
+// CacheNamePlayerFreeResults 該用戶剩餘免費盤面 Player:{PlayerID}:{GameCode}:{GameMode}:FreeResults
+const CacheNamePlayerFreeResults = "Player:%v:%v:%v:FreeResults"
 
-// CacheNamePlayerGameInfo 該用戶續存數據 Player:GameInfo:GameMode:PlayerID
-const CacheNamePlayerGameInfo = "Player:GameInfo:%v:%v"
+// CacheNamePlayerGameInfo 該用戶續存數據 Player:{PlayerID}:{GameCode}:{GameMode}:GameInfo
+const CacheNamePlayerGameInfo = "Player:%v:%v:%v:GameInfo"
 
 // CacheExpiredPlayerFreeResults 剩餘免費盤面過期時間
 const CacheExpiredPlayerFreeResults = 20 * 24 * time.Hour

@@ -181,6 +181,13 @@ func (c *controller) StartFreeModeInDemo(ctx *server.Context) {
 	data.GameResult = gameResult
 	data.Balance = int(session.Balance)
 
+	// 續存結果
+	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
 	// 更新投注紀錄
 	record.Result = spinResult.ToJson()
 	record.Amount = int64(totalBet)
@@ -244,6 +251,13 @@ func (c *controller) FreeModeInDemo(ctx *server.Context) {
 	data := betModel.NewResponse(GameModeDemo)
 	data.GameResult = gameResult
 	data.Balance = int(session.Balance)
+
+	// 續存結果
+	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
 
 	// 更新投注紀錄
 	record.Result = spinResult.ToJson()
@@ -323,6 +337,13 @@ func (c *controller) FinalFreeModeInDemo(ctx *server.Context) {
 	data := betModel.NewResponse(GameModeDemo)
 	data.GameResult = gameResult
 	data.Balance = int(session.Balance)
+
+	// 續存結果
+	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
 
 	// 更新投注紀錄
 	record.Result = spinResult.ToJson()

@@ -3,11 +3,15 @@ package game
 import (
 	"context"
 	gameModel "game_server_slots_fortune_snake/internal/model/entity/game"
+	model "game_server_slots_fortune_snake/internal/model/repository/game/get_param"
+	"game_server_slots_fortune_snake/internal/model/repository/game/save"
 )
 
 type Repository interface {
 	// Info 獲取遊戲配置數據
 	Info() (info *gameModel.Info, err error)
+
+	Save(param save.Param) (err error)
 
 	SaveGameResult(ctx context.Context, gameMode string, playerID uint64, data string) (err error)
 
@@ -15,7 +19,11 @@ type Repository interface {
 
 	SaveValue(ctx context.Context, gameMode string, playerID uint64, value int) (err error)
 
+	SaveBonus(ctx context.Context, gameMode string, playerID uint64, bonus bool) (err error)
+
 	SaveFatherID(ctx context.Context, gameMode string, playerID uint64, fatherID uint64) (err error)
+
+	GetParam(ctx context.Context, gameMode string, playerID uint64) (output *model.Output, err error)
 
 	GetGameResult(ctx context.Context, gameMode string, playerID uint64) (data string, err error)
 

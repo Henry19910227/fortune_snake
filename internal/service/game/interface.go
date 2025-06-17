@@ -3,16 +3,21 @@ package game
 import (
 	"context"
 	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
+	"game_server_slots_fortune_snake/internal/model/service/game/save"
 )
 
 type Service interface {
 	SpinMode() int
+
+	Save(param save.Param) (err error)
 
 	SaveGameResult(ctx context.Context, gameMode string, playerID uint64, item *betModel.GameResult) (err error)
 
 	SaveBet(ctx context.Context, gameMode string, playerID uint64, bet int) (err error)
 
 	SaveValue(ctx context.Context, gameMode string, playerID uint64, value int) (err error)
+
+	SaveBonus(ctx context.Context, gameMode string, playerID uint64, bonus bool) (err error)
 
 	SaveFatherID(ctx context.Context, gameMode string, playerID uint64, fatherID uint64) (err error)
 

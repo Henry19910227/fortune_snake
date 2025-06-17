@@ -6,6 +6,8 @@ import (
 	"fmt"
 	. "game_server_slots_fortune_snake/constants"
 	gameModel "game_server_slots_fortune_snake/internal/model/entity/game"
+	model "game_server_slots_fortune_snake/internal/model/repository/game/get_param"
+	"game_server_slots_fortune_snake/internal/model/repository/game/save"
 	"github.com/redis/go-redis/v9"
 	"strconv"
 )
@@ -28,8 +30,33 @@ func (r *repository) Info() (info *gameModel.Info, err error) {
 	return info, nil
 }
 
+func (r *repository) Save(param save.Param) (err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, param.PlayerID, GameCode, param.GameMode)
+	pipe := r.rdb.TxPipeline()
+
+	fields := make(map[string]interface{})
+	if param.GameResult != nil {
+		fields["GameResult"] = *param.GameResult
+	}
+	if param.Bet != nil {
+		fields["Bet"] = *param.Bet
+	}
+	if param.Value != nil {
+		fields["Value"] = *param.Value
+	}
+	if param.Bonus != nil {
+		fields["Bonus"] = *param.Bonus
+	}
+	if len(fields) > 0 {
+		pipe.HSet(param.Ctx, key, fields)
+	}
+	pipe.Expire(param.Ctx, key, CacheExpiredPlayerGameInfo)
+	_, err = pipe.Exec(param.Ctx)
+	return err
+}
+
 func (r *repository) SaveGameResult(ctx context.Context, gameMode string, playerID uint64, data string) (err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
 	pipe := r.rdb.TxPipeline()
 	pipe.HSet(ctx, key, "GameResults", data)
 	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
@@ -41,7 +68,7 @@ func (r *repository) SaveGameResult(ctx context.Context, gameMode string, player
 }
 
 func (r *repository) SaveBet(ctx context.Context, gameMode string, playerID uint64, bet int) (err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
 	pipe := r.rdb.TxPipeline()
 	pipe.HSet(ctx, key, "Bet", bet)
 	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
@@ -53,7 +80,7 @@ func (r *repository) SaveBet(ctx context.Context, gameMode string, playerID uint
 }
 
 func (r *repository) SaveValue(ctx context.Context, gameMode string, playerID uint64, value int) (err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
 	pipe := r.rdb.TxPipeline()
 	pipe.HSet(ctx, key, "Value", value)
 	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
@@ -64,8 +91,20 @@ func (r *repository) SaveValue(ctx context.Context, gameMode string, playerID ui
 	return nil
 }
 
+func (r *repository) SaveBonus(ctx context.Context, gameMode string, playerID uint64, bonus bool) (err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
+	pipe := r.rdb.TxPipeline()
+	pipe.HSet(ctx, key, "Bonus", bonus)
+	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *repository) SaveFatherID(ctx context.Context, gameMode string, playerID uint64, fatherID uint64) (err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
 	pipe := r.rdb.TxPipeline()
 	pipe.HSet(ctx, key, "FatherID", fatherID)
 	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
@@ -76,8 +115,47 @@ func (r *repository) SaveFatherID(ctx context.Context, gameMode string, playerID
 	return nil
 }
 
+func (r *repository) GetParam(ctx context.Context, gameMode string, playerID uint64) (output *model.Output, err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
+	fields := []string{"Bet", "Value", "Bonus"}
+	data, err := r.rdb.HMGet(ctx, key, fields...).Result()
+	if errors.Is(err, redis.Nil) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	output = &model.Output{}
+	// Bet
+	if data[0] != nil {
+		if betStr, ok := data[0].(string); ok {
+			if bet, err := strconv.Atoi(betStr); err == nil {
+				output.Bet = bet
+			}
+		}
+
+	}
+
+	// Value
+	if data[1] != nil {
+		if valueStr, ok := data[1].(string); ok {
+			if value, err := strconv.Atoi(valueStr); err == nil {
+				output.Value = value
+			}
+		}
+	}
+
+	// Bonus
+	if data[2] != nil {
+		if bonusStr, ok := data[2].(string); ok {
+			output.Bonus = bonusStr == "1"
+		}
+	}
+	return output, nil
+}
+
 func (r *repository) GetGameResult(ctx context.Context, gameMode string, playerID uint64) (data string, err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
 	data, err = r.rdb.HGet(ctx, key, "GameResults").Result()
 	if errors.Is(err, redis.Nil) {
 		return "", nil
@@ -89,7 +167,7 @@ func (r *repository) GetGameResult(ctx context.Context, gameMode string, playerI
 }
 
 func (r *repository) GetBet(ctx context.Context, gameMode string, playerID uint64) (bet int, err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
 	val, err := r.rdb.HGet(ctx, key, "Bet").Result()
 	if errors.Is(err, redis.Nil) {
 		return 0, nil
@@ -105,7 +183,7 @@ func (r *repository) GetBet(ctx context.Context, gameMode string, playerID uint6
 }
 
 func (r *repository) GetValue(ctx context.Context, gameMode string, playerID uint64) (value int, err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
 	val, err := r.rdb.HGet(ctx, key, "Value").Result()
 	if errors.Is(err, redis.Nil) {
 		return 0, nil
@@ -121,7 +199,7 @@ func (r *repository) GetValue(ctx context.Context, gameMode string, playerID uin
 }
 
 func (r *repository) GetFatherID(ctx context.Context, gameMode string, playerID uint64) (fatherID uint64, err error) {
-	key := fmt.Sprintf(CacheNamePlayerGameInfo, gameMode, playerID)
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
 	val, err := r.rdb.HGet(ctx, key, "FatherID").Result()
 	if errors.Is(err, redis.Nil) {
 		return 0, nil
