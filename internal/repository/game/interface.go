@@ -3,7 +3,6 @@ package game
 import (
 	"context"
 	gameModel "game_server_slots_fortune_snake/internal/model/entity/game"
-	model "game_server_slots_fortune_snake/internal/model/repository/game/get_param"
 	"game_server_slots_fortune_snake/internal/model/repository/game/save"
 )
 
@@ -23,7 +22,7 @@ type Repository interface {
 
 	SaveFatherID(ctx context.Context, gameMode string, playerID uint64, fatherID uint64) (err error)
 
-	GetParam(ctx context.Context, gameMode string, playerID uint64) (output *model.Output, err error)
+	GetParam(ctx context.Context, gameMode string, playerID uint64) (results []interface{}, err error)
 
 	GetGameResult(ctx context.Context, gameMode string, playerID uint64) (data string, err error)
 

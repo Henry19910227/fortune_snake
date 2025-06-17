@@ -28,9 +28,17 @@ func (c *controller) SavePlayerGameInfo(ctx *server.Context, gameResult *betMode
 	return err
 }
 
+// RestoreParam 恢復續存參數
 func (c *controller) RestoreParam(ctx *server.Context, param *betModel.Param) (err error) {
-	//session := ctx.MustGet("session").(*playerModel.Session)
-	//grpcCtx := ctx.MustGet("ctx").(context.Context)
+	session := ctx.MustGet("session").(*playerModel.Session)
+	grpcCtx := ctx.MustGet("ctx").(context.Context)
+	output, err := c.gameService.GetParam(grpcCtx, session.Mode, session.PlayerId)
+	if err != nil {
+		return err
+	}
+	param.Bet = output.Bet
+	param.Value = output.Value
+	param.Bonus = output.Bonus
 	return nil
 }
 

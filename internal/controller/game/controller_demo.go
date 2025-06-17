@@ -12,6 +12,8 @@ func (c *controller) BaseModeInDemo(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	param := &betModel.Param{}
+
+	// 獲取投注參數
 	if err := ctx.Bind(param); err != nil {
 		ctx.SendError(err)
 		return
@@ -91,6 +93,7 @@ func (c *controller) BaseModeInDemo(ctx *server.Context) {
 		return
 	}
 
+	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }
 
@@ -99,6 +102,8 @@ func (c *controller) StartFreeModeInDemo(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	param := &betModel.Param{}
+
+	// 獲取投注參數
 	if err := ctx.Bind(param); err != nil {
 		ctx.SendError(err)
 		return
@@ -190,12 +195,12 @@ func (c *controller) StartFreeModeInDemo(ctx *server.Context) {
 
 	// 更新投注紀錄
 	record.Result = spinResult.ToJson()
-	record.Amount = int64(totalBet)
 	if err = c.betRecordService.UpdateToFinished(record); err != nil {
 		ctx.SendError(err)
 		return
 	}
 
+	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }
 
@@ -204,7 +209,9 @@ func (c *controller) FreeModeInDemo(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	param := &betModel.Param{}
-	if err := ctx.Bind(param); err != nil {
+
+	// 恢復續存投注參數
+	if err := c.RestoreParam(ctx, param); err != nil {
 		ctx.SendError(err)
 		return
 	}
@@ -266,6 +273,7 @@ func (c *controller) FreeModeInDemo(ctx *server.Context) {
 		return
 	}
 
+	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }
 
@@ -274,7 +282,9 @@ func (c *controller) FinalFreeModeInDemo(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
 	param := &betModel.Param{}
-	if err := ctx.Bind(param); err != nil {
+
+	// 恢復續存投注參數
+	if err := c.RestoreParam(ctx, param); err != nil {
 		ctx.SendError(err)
 		return
 	}
@@ -353,5 +363,6 @@ func (c *controller) FinalFreeModeInDemo(ctx *server.Context) {
 		return
 	}
 
+	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }

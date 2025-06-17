@@ -6,7 +6,6 @@ import (
 	"fmt"
 	. "game_server_slots_fortune_snake/constants"
 	gameModel "game_server_slots_fortune_snake/internal/model/entity/game"
-	model "game_server_slots_fortune_snake/internal/model/repository/game/get_param"
 	"game_server_slots_fortune_snake/internal/model/repository/game/save"
 	"github.com/redis/go-redis/v9"
 	"strconv"
@@ -115,7 +114,7 @@ func (r *repository) SaveFatherID(ctx context.Context, gameMode string, playerID
 	return nil
 }
 
-func (r *repository) GetParam(ctx context.Context, gameMode string, playerID uint64) (output *model.Output, err error) {
+func (r *repository) GetParam(ctx context.Context, gameMode string, playerID uint64) (results []interface{}, err error) {
 	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
 	fields := []string{"Bet", "Value", "Bonus"}
 	data, err := r.rdb.HMGet(ctx, key, fields...).Result()
@@ -125,33 +124,7 @@ func (r *repository) GetParam(ctx context.Context, gameMode string, playerID uin
 	if err != nil {
 		return nil, err
 	}
-	output = &model.Output{}
-	// Bet
-	if data[0] != nil {
-		if betStr, ok := data[0].(string); ok {
-			if bet, err := strconv.Atoi(betStr); err == nil {
-				output.Bet = bet
-			}
-		}
-
-	}
-
-	// Value
-	if data[1] != nil {
-		if valueStr, ok := data[1].(string); ok {
-			if value, err := strconv.Atoi(valueStr); err == nil {
-				output.Value = value
-			}
-		}
-	}
-
-	// Bonus
-	if data[2] != nil {
-		if bonusStr, ok := data[2].(string); ok {
-			output.Bonus = bonusStr == "1"
-		}
-	}
-	return output, nil
+	return data, nil
 }
 
 func (r *repository) GetGameResult(ctx context.Context, gameMode string, playerID uint64) (data string, err error) {

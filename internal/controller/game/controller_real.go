@@ -12,6 +12,8 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	param := &betModel.Param{}
+
+	// 獲取投注參數
 	if err := ctx.Bind(param); err != nil {
 		ctx.SendError(err)
 		return
@@ -96,7 +98,6 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 	}
 
 	// 更新投注紀錄
-	record.Bet = param.ToJson()
 	record.Result = spinResult.ToJson()
 	record.Amount = int64(totalBet)
 	record.AmountWin = int64(totalScore)
@@ -114,6 +115,8 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	param := &betModel.Param{}
+
+	// 獲取投注參數
 	if err := ctx.Bind(param); err != nil {
 		ctx.SendError(err)
 		return
@@ -203,7 +206,6 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 
 	// 更新投注紀錄
 	record.Result = spinResult.ToJson()
-	record.Amount = int64(totalBet)
 	if err = c.betRecordService.UpdateToFinished(record); err != nil {
 		ctx.SendError(err)
 		return
@@ -216,23 +218,13 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 func (c *controller) FreeModeInReal(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
-
-	// 載入續存的 bet 值
 	param := &betModel.Param{}
-	bet, err := c.gameService.GetBet(grpcCtx, GameModeReal, session.PlayerId)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-	param.Bet = bet
 
-	// 載入續存的 value 值
-	value, err := c.gameService.GetValue(grpcCtx, GameModeReal, session.PlayerId)
-	if err != nil {
+	// 恢復續存投注參數
+	if err := c.RestoreParam(ctx, param); err != nil {
 		ctx.SendError(err)
 		return
 	}
-	param.Value = value
 
 	// 獲取 father id
 	fatherID, err := c.gameService.GetFatherID(grpcCtx, GameModeReal, session.PlayerId)
@@ -290,6 +282,7 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 		return
 	}
 
+	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }
 
@@ -297,6 +290,13 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
+	param := &betModel.Param{}
+
+	// 恢復續存投注參數
+	if err := c.RestoreParam(ctx, param); err != nil {
+		ctx.SendError(err)
+		return
+	}
 
 	// 獲取 father id
 	fatherID, err := c.gameService.GetFatherID(grpcCtx, GameModeReal, session.PlayerId)
@@ -304,23 +304,6 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 		ctx.SendError(err)
 		return
 	}
-
-	// 載入續存的 bet 值
-	param := &betModel.Param{}
-	bet, err := c.gameService.GetBet(grpcCtx, GameModeReal, session.PlayerId)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-	param.Bet = bet
-
-	// 載入續存的 value 值
-	value, err := c.gameService.GetValue(grpcCtx, GameModeReal, session.PlayerId)
-	if err != nil {
-		ctx.SendError(err)
-		return
-	}
-	param.Value = value
 
 	// 創建紀錄
 	record, err := c.betRecordService.CreateByTransactionID(session, param, 0, fatherID)

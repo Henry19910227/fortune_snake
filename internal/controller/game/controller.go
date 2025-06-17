@@ -118,8 +118,8 @@ func (c *controller) BetInDemo(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 
-	// 檢查redis是否有免費盤面List尚未消費(real)，如有則代表當前當前有未完成的金蛇模式
-	amount, err := c.resultFreeService.Amount(grpcCtx, GameModeReal, session.PlayerId)
+	// 檢查剩餘免費盤面數量
+	amount, err := c.resultFreeService.Amount(grpcCtx, GameModeDemo, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
