@@ -6,6 +6,7 @@ import (
 	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
 	"game_server_slots_fortune_snake/internal/server"
+	"game_server_slots_fortune_snake/util"
 )
 
 // StartFreeModeInDemo 開始金蛇盤面流程
@@ -87,7 +88,7 @@ func (c *controller) StartFreeModeInDemo(ctx *server.Context) {
 	spinResult.Times = 0
 
 	gameResult := betModel.NewGameResult(SpinModeFree)
-	gameResult.RandSymbol = c.reelsFreeService.GetMainSymbol(reels).ID
+	gameResult.RandSymbol = util.PointerInt(c.reelsFreeService.GetMainSymbol(reels).ID)
 	gameResult.SpinResult = spinResult
 	gameResult.WinRate = 0
 	gameResult.TotalScore = 0
@@ -168,7 +169,7 @@ func (c *controller) FreeModeInDemo(ctx *server.Context) {
 	spinResult.Times = 0
 
 	gameResult := betModel.NewGameResult(SpinModeFree)
-	gameResult.RandSymbol = c.reelsFreeService.GetMainSymbol(reels).ID
+	gameResult.RandSymbol = util.PointerInt(c.reelsFreeService.GetMainSymbol(reels).ID)
 	gameResult.SpinResult = spinResult
 	gameResult.WinRate = 0
 	gameResult.TotalScore = 0
@@ -265,7 +266,7 @@ func (c *controller) FinalFreeModeInDemo(ctx *server.Context) {
 	spinResult.Times = c.settleService.GetTimes(reels)
 
 	gameResult := betModel.NewGameResult(SpinModeFree)
-	gameResult.RandSymbol = c.reelsFreeService.GetMainSymbol(reels).ID
+	gameResult.RandSymbol = util.PointerInt(c.reelsFreeService.GetMainSymbol(reels).ID)
 	gameResult.SpinResult = spinResult
 	gameResult.WinRate = int(winRate)
 	gameResult.TotalScore = totalScore
