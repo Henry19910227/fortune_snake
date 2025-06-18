@@ -17,7 +17,7 @@ func NewGameResult(spinMode int) *GameResult {
 	return gameResult
 }
 
-func (r *GameResult) ToJson() []byte {
+func (r *GameResult) Encode() []byte {
 	b, _ := json.Marshal(r)
 	return b
 }

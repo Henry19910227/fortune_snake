@@ -9,6 +9,7 @@ import (
 	"game_server_slots_fortune_snake/internal/server"
 	betRecordService "game_server_slots_fortune_snake/internal/service/bet_record"
 	gameService "game_server_slots_fortune_snake/internal/service/game"
+	gameResultService "game_server_slots_fortune_snake/internal/service/game_result"
 	playerService "game_server_slots_fortune_snake/internal/service/player"
 	reelsService "game_server_slots_fortune_snake/internal/service/reels"
 	resultFreeService "game_server_slots_fortune_snake/internal/service/result_free"
@@ -19,7 +20,7 @@ import (
 )
 
 type controller struct {
-	gameService       gameService.Service // 真實模式 service
+	gameService       gameService.Service
 	weightService     weightService.Service
 	resultFreeService resultFreeService.Service
 	resultLoader      resultLoader.Service
@@ -29,6 +30,7 @@ type controller struct {
 	settleService     settleService.Service
 	playerService     playerService.Service
 	betRecordService  betRecordService.Service
+	gameResultService gameResultService.Service
 	symbolService     symbolService.Service
 }
 
@@ -42,11 +44,21 @@ func New(gameService gameService.Service,
 	settleService settleService.Service,
 	playerService playerService.Service,
 	betRecordService betRecordService.Service,
+	gameResultService gameResultService.Service,
 	symbolService symbolService.Service) Controller {
-	return &controller{gameService: gameService,
-		weightService: weightService, resultFreeService: resultFreeService, resultLoader: resultLoader,
-		resultFreeLoader: resultFreeLoader, reelsService: reelsService, reelsFreeService: reelsFreeService,
-		settleService: settleService, playerService: playerService, betRecordService: betRecordService, symbolService: symbolService}
+	return &controller{
+		gameService:       gameService,
+		weightService:     weightService,
+		resultFreeService: resultFreeService,
+		resultLoader:      resultLoader,
+		resultFreeLoader:  resultFreeLoader,
+		reelsService:      reelsService,
+		reelsFreeService:  reelsFreeService,
+		settleService:     settleService,
+		playerService:     playerService,
+		betRecordService:  betRecordService,
+		gameResultService: gameResultService,
+		symbolService:     symbolService}
 }
 
 func (c *controller) PreBet(ctx *server.Context) {

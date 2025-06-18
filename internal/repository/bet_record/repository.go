@@ -14,7 +14,7 @@ func New(db *gorm.DB) Repository {
 }
 
 func (r *repository) Create(table *model.Table) (id uint64, err error) {
-	err = r.db.Model(&model.Table{}).Create(&table).Error
+	err = r.db.Model(&model.Table{}).Create(table).Error
 	if err != nil {
 		return 0, err
 	}
