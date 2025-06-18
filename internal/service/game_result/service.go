@@ -22,6 +22,7 @@ func (s *service) Create(session *playerModel.Session, result *betModel.GameResu
 	item := &model.Table{}
 	item.ID = s.snowFlakeRepo.GenerateID()
 	item.RoundId = s.snowFlakeRepo.GenerateID()
+	item.GameId = session.GameId
 	item.GameCode = session.GameCode
 	item.RTP = session.GameRtp
 	item.Result = result.Encode()

@@ -102,6 +102,14 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 		return
 	}
 
+	// 更新遊戲結果
+	_, err = c.gameResultService.Create(session, gameResult)
+	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
 	// 更新投注紀錄
 	record.Result = gameResult.Encode()
 	if err = c.betRecordService.UpdateToFinished(record); err != nil {
@@ -169,6 +177,14 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 
 	// 續存結果
 	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		ctx.SendError(err)
+		return
+	}
+
+	// 更新遊戲結果
+	_, err = c.gameResultService.Create(session, gameResult)
+	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
 	}
@@ -258,6 +274,14 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 
 	// 續存結果
 	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
+	// 更新遊戲結果
+	_, err = c.gameResultService.Create(session, gameResult)
+	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return

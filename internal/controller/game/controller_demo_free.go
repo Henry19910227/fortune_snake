@@ -111,6 +111,14 @@ func (c *controller) StartFreeModeInDemo(ctx *server.Context) {
 		return
 	}
 
+	// 更新遊戲結果
+	_, err = c.gameResultService.Create(session, gameResult)
+	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
 	// 返回結果
 	ctx.Send(CodeSuccess, "success", data)
 }
@@ -172,6 +180,14 @@ func (c *controller) FreeModeInDemo(ctx *server.Context) {
 
 	// 續存結果
 	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
+	// 更新遊戲結果
+	_, err = c.gameResultService.Create(session, gameResult)
+	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
@@ -261,6 +277,14 @@ func (c *controller) FinalFreeModeInDemo(ctx *server.Context) {
 
 	// 續存結果
 	if err = c.SavePlayerGameInfo(ctx, gameResult, param); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
+	// 更新遊戲結果
+	_, err = c.gameResultService.Create(session, gameResult)
+	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
