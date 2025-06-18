@@ -7,7 +7,7 @@ import (
 
 type Service interface {
 	// GetRate 獲取賠率
-	GetRate(bet int, value int, reels [][]*symbol.Item) (rate float64, err error)
+	GetRate(bet int, value int, multiplier int, reels [][]*symbol.Item) (rate float64, err error)
 	// GetTotalScore 獲取總分
 	GetTotalScore(bet int, value int, reels [][]*symbol.Item) (score int, err error)
 	// GetTimes 獲取倍數

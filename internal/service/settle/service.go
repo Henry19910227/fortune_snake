@@ -17,12 +17,12 @@ func New(settleRepo settleRepo.Repository) Service {
 	return &service{settleRepo: settleRepo}
 }
 
-func (s *service) GetRate(bet int, value int, reels [][]*symbol.Item) (rate float64, err error) {
+func (s *service) GetRate(bet int, value int, multiplier int, reels [][]*symbol.Item) (rate float64, err error) {
 	totalScore, err := s.GetTotalScore(bet, value, reels)
 	if err != nil {
 		return 0, err
 	}
-	realBet := bet * value * 10
+	realBet := bet * value * multiplier
 	rate = float64(totalScore) / float64(realBet)
 	return rate, nil
 }

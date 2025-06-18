@@ -11,7 +11,7 @@ import (
 func (c *controller) BaseModeInDemo(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
-	param := &betModel.Param{}
+	param := betModel.NewParam()
 
 	// 獲取投注參數
 	if err := ctx.Bind(param); err != nil {
@@ -20,7 +20,7 @@ func (c *controller) BaseModeInDemo(ctx *server.Context) {
 	}
 
 	// 計算總投注額
-	totalBet := param.Bet * param.Value * Multiplier
+	totalBet := param.Bet * param.Value * param.Multiplier
 
 	// 創建紀錄
 	record, err := c.betRecordService.Create(session, param, int64(totalBet))
@@ -101,7 +101,7 @@ func (c *controller) BaseModeInDemo(ctx *server.Context) {
 func (c *controller) StartFreeModeInDemo(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
-	param := &betModel.Param{}
+	param := betModel.NewParam()
 
 	// 獲取投注參數
 	if err := ctx.Bind(param); err != nil {
@@ -110,7 +110,7 @@ func (c *controller) StartFreeModeInDemo(ctx *server.Context) {
 	}
 
 	// 計算總投注額
-	totalBet := param.Bet * param.Value * Multiplier
+	totalBet := param.Bet * param.Value * param.Multiplier
 	if param.Bonus {
 		totalBet = int(float64(totalBet) * 1.5)
 	}
@@ -208,7 +208,7 @@ func (c *controller) StartFreeModeInDemo(ctx *server.Context) {
 func (c *controller) FreeModeInDemo(ctx *server.Context) {
 	session := ctx.MustGet("session").(*playerModel.Session)
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
-	param := &betModel.Param{}
+	param := betModel.NewParam()
 
 	// 恢復續存投注參數
 	if err := c.RestoreParam(ctx, param); err != nil {
@@ -281,7 +281,7 @@ func (c *controller) FreeModeInDemo(ctx *server.Context) {
 func (c *controller) FinalFreeModeInDemo(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 	session := ctx.MustGet("session").(*playerModel.Session)
-	param := &betModel.Param{}
+	param := betModel.NewParam()
 
 	// 恢復續存投注參數
 	if err := c.RestoreParam(ctx, param); err != nil {

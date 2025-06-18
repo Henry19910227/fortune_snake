@@ -49,24 +49,6 @@ func New(gameService gameService.Service,
 		settleService: settleService, playerService: playerService, betRecordService: betRecordService, symbolService: symbolService}
 }
 
-func (c *controller) EnterGame(ctx *server.Context) {
-	//// 取得中間層處理好的數據
-	//session := ctx.MustGet("session").(*playerModel.Session)
-	//// 以 mode 獲取對應的 game service
-	//service := c.getGameService(session.Mode)
-	//// 執行 Enter Game 業務邏輯
-	//input := &enter_game.Input{}
-	//input.Ctx = ctx
-	//input.Session = session
-	//data, err := service.EnterGame(input)
-	//if err != nil {
-	//	ctx.SendError(err)
-	//	return
-	//}
-	//// 返回結果
-	//ctx.Send(CodeSuccess, "success", data)
-}
-
 func (c *controller) PreBet(ctx *server.Context) {
 	// 取得 session 數據
 	session := ctx.MustGet("session").(*playerModel.Session)

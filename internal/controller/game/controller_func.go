@@ -45,7 +45,7 @@ func (c *controller) RestoreParam(ctx *server.Context, param *betModel.Param) (e
 // Settle 結算盤面
 func (c *controller) Settle(param *betModel.Param, reels [][]*symbol.Item) (winRate float64, lines []*line.Item, totalScore int, err error) {
 	// 計算賠率
-	winRate, err = c.settleService.GetRate(param.Bet, param.Value, reels)
+	winRate, err = c.settleService.GetRate(param.Bet, param.Value, param.Multiplier, reels)
 	if err != nil {
 		return 0, []*line.Item{}, 0, err
 	}
