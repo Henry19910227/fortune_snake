@@ -5,6 +5,7 @@ import (
 	. "game_server_slots_fortune_snake/constants"
 	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
+	"game_server_slots_fortune_snake/internal/model/service/result_free/save_items"
 	"game_server_slots_fortune_snake/internal/server"
 	"game_server_slots_fortune_snake/util"
 )
@@ -58,11 +59,21 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 		ctx.SendError(err)
 		return
 	}
-	// 取出第一個金蛇盤面
-	results := resultsList[0]
 
 	// 緩存剩餘金蛇盤面
-	if err := c.resultFreeService.SaveItems(grpcCtx, GameModeReal, session.PlayerId, resultsList[1:]); err != nil {
+	input := save_items.Param{}
+	input.Ctx = grpcCtx
+	input.Session = session
+	input.Items = resultsList
+	if err := c.resultFreeRealService.SaveItems(input); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
+	// 取出一筆金蛇盤面
+	results, err := c.resultFreeRealService.PopFirstItem(grpcCtx, session.PlayerId)
+	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
@@ -148,7 +159,7 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	}
 
 	// 取出一筆金蛇盤面
-	results, err := c.resultFreeService.PopFirstItem(grpcCtx, GameModeReal, session.PlayerId)
+	results, err := c.resultFreeRealService.PopFirstItem(grpcCtx, session.PlayerId)
 	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
@@ -229,7 +240,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	}
 
 	// 取出最後一筆金蛇盤面
-	results, err := c.resultFreeService.PopFirstItem(grpcCtx, GameModeReal, session.PlayerId)
+	results, err := c.resultFreeRealService.PopFirstItem(grpcCtx, session.PlayerId)
 	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)

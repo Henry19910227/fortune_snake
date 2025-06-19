@@ -20,23 +20,25 @@ import (
 )
 
 type controller struct {
-	gameService       gameService.Service
-	weightService     weightService.Service
-	resultFreeService resultFreeService.Service
-	resultLoader      resultLoader.Service
-	resultFreeLoader  resultLoader.Service
-	reelsService      reelsService.Service
-	reelsFreeService  reelsService.Service
-	settleService     settleService.Service
-	playerService     playerService.Service
-	betRecordService  betRecordService.Service
-	gameResultService gameResultService.Service
-	symbolService     symbolService.Service
+	gameService           gameService.Service
+	weightService         weightService.Service
+	resultFreeRealService resultFreeService.Service
+	resultFreeDemoService resultFreeService.Service
+	resultLoader          resultLoader.Service
+	resultFreeLoader      resultLoader.Service
+	reelsService          reelsService.Service
+	reelsFreeService      reelsService.Service
+	settleService         settleService.Service
+	playerService         playerService.Service
+	betRecordService      betRecordService.Service
+	gameResultService     gameResultService.Service
+	symbolService         symbolService.Service
 }
 
 func New(gameService gameService.Service,
 	weightService weightService.Service,
-	resultFreeService resultFreeService.Service,
+	resultFreeRealService resultFreeService.Service,
+	resultFreeDemoService resultFreeService.Service,
 	resultLoader resultLoader.Service,
 	resultFreeLoader resultLoader.Service,
 	reelsService reelsService.Service,
@@ -47,18 +49,19 @@ func New(gameService gameService.Service,
 	gameResultService gameResultService.Service,
 	symbolService symbolService.Service) Controller {
 	return &controller{
-		gameService:       gameService,
-		weightService:     weightService,
-		resultFreeService: resultFreeService,
-		resultLoader:      resultLoader,
-		resultFreeLoader:  resultFreeLoader,
-		reelsService:      reelsService,
-		reelsFreeService:  reelsFreeService,
-		settleService:     settleService,
-		playerService:     playerService,
-		betRecordService:  betRecordService,
-		gameResultService: gameResultService,
-		symbolService:     symbolService}
+		gameService:           gameService,
+		weightService:         weightService,
+		resultFreeRealService: resultFreeRealService,
+		resultFreeDemoService: resultFreeDemoService,
+		resultLoader:          resultLoader,
+		resultFreeLoader:      resultFreeLoader,
+		reelsService:          reelsService,
+		reelsFreeService:      reelsFreeService,
+		settleService:         settleService,
+		playerService:         playerService,
+		betRecordService:      betRecordService,
+		gameResultService:     gameResultService,
+		symbolService:         symbolService}
 }
 
 func (c *controller) PreBet(ctx *server.Context) {
@@ -77,7 +80,7 @@ func (c *controller) BetInReal(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 
 	// 檢查剩餘免費盤面數量
-	amount, err := c.resultFreeService.Amount(grpcCtx, GameModeReal, session.PlayerId)
+	amount, err := c.resultFreeRealService.Amount(grpcCtx, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -113,7 +116,7 @@ func (c *controller) BetInDemo(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 
 	// 檢查剩餘免費盤面數量
-	amount, err := c.resultFreeService.Amount(grpcCtx, GameModeDemo, session.PlayerId)
+	amount, err := c.resultFreeRealService.Amount(grpcCtx, session.PlayerId)
 	if err != nil {
 		ctx.SendError(err)
 		return

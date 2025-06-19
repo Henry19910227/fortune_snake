@@ -27,7 +27,7 @@ func (c *controller) Generate() {
 		reelsList := c.reelsSvc.Generate([]int{3, 4, 3})
 		reels := reelsList[0]
 		// 獲取賠率
-		rate, _ := c.settleSvc.GetRate(1, 1000, reels)
+		rate, _ := c.settleSvc.GetRate(1, 1000, 10, reels)
 		// 將盤面物件轉換為Json
 		JsonString, _ := c.settleSvc.ToJson(reels)
 		// 準備盤面結果 model

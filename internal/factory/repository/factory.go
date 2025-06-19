@@ -9,6 +9,7 @@ import (
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	gameResultRepo "game_server_slots_fortune_snake/internal/repository/game_result"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
+	freeOrder "game_server_slots_fortune_snake/internal/repository/player_free_order"
 	session "game_server_slots_fortune_snake/internal/repository/player_session"
 	resultFreeRepo "game_server_slots_fortune_snake/internal/repository/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/repository/result_loader"
@@ -96,4 +97,8 @@ func (f *factory) BetRecordRepository() betRecordRepo.Repository {
 
 func (f *factory) GameResultRepository() gameResultRepo.Repository {
 	return gameResultRepo.New(f.db)
+}
+
+func (f *factory) FreeOrderRepository() freeOrder.Repository {
+	return freeOrder.New(f.db)
 }

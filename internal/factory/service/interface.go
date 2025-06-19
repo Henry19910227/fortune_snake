@@ -17,7 +17,8 @@ type Factory interface {
 	GameService() gameService.Service
 	PlayerService() playerService.Service
 	WeightService() weightService.Service
-	ResultFreeService() resultFreeService.Service
+	ResultFreeRealService() resultFreeService.Service
+	ResultFreeDemoService() resultFreeService.Service
 	ResultLoader() resultLoader.Service
 	ResultFreeLoader() resultLoader.Service
 	ReelsService() reelsService.Service

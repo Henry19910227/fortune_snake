@@ -6,6 +6,7 @@ import (
 	gameRepo "game_server_slots_fortune_snake/internal/repository/game"
 	gameResultRepo "game_server_slots_fortune_snake/internal/repository/game_result"
 	playerRepo "game_server_slots_fortune_snake/internal/repository/player"
+	freeOrder "game_server_slots_fortune_snake/internal/repository/player_free_order"
 	session "game_server_slots_fortune_snake/internal/repository/player_session"
 	resultFreeRepo "game_server_slots_fortune_snake/internal/repository/result_free"
 	resultLoader "game_server_slots_fortune_snake/internal/repository/result_loader"
@@ -30,4 +31,5 @@ type Factory interface {
 	SnowflakeRepository() snowFlakeRepository.Repository
 	BetRecordRepository() betRecordRepository.Repository
 	GameResultRepository() gameResultRepo.Repository
+	FreeOrderRepository() freeOrder.Repository
 }

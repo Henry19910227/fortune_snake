@@ -40,9 +40,16 @@ func (f *factory) WeightService() weightService.Service {
 	return weightService.New(weightRepo)
 }
 
-func (f *factory) ResultFreeService() resultFreeService.Service {
+func (f *factory) ResultFreeRealService() resultFreeService.Service {
 	resultFreeRepo := f.repoFactory.ResultFreeRepository()
-	return resultFreeService.New(resultFreeRepo)
+	freeOrderRepo := f.repoFactory.FreeOrderRepository()
+	snowflakeRepo := f.repoFactory.SnowflakeRepository()
+	return resultFreeService.NewSvcInReal(resultFreeRepo, freeOrderRepo, snowflakeRepo)
+}
+
+func (f *factory) ResultFreeDemoService() resultFreeService.Service {
+	resultFreeRepo := f.repoFactory.ResultFreeRepository()
+	return resultFreeService.NewSvcInDemo(resultFreeRepo)
 }
 
 func (f *factory) ResultLoader() resultLoader.Service {

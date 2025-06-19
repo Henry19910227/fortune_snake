@@ -24,7 +24,7 @@ func (c *controller) Generate() {
 		// 生成一個免費模式盤面
 		reelsList := c.reelsSvc.Generate([]int{3, 4, 3})
 		// 獲取最後一個盤面的賠率
-		rate, _ := c.settleSvc.GetRate(1, 1000, reelsList[len(reelsList)-1])
+		rate, _ := c.settleSvc.GetRate(1, 1000, 10, reelsList[len(reelsList)-1])
 		// 將最後一個盤面轉換為Json
 		reelsString, _ := c.settleSvc.ToJson(reelsList[len(reelsList)-1])
 		// 將所有盤面轉換為Json
