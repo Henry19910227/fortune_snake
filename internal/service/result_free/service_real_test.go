@@ -47,7 +47,7 @@ func TestService_SaveItems(t *testing.T) {
 	repo := resultFreeRepo.New(redisDB.RDB())
 	freeOrderRepo := freeOrder.New(mysqlDB.DB())
 	snowRepo, _ := snow_flake.New(1)
-	svc := New(repo, freeOrderRepo, snowRepo)
+	svc := NewSvcInReal(repo, freeOrderRepo, snowRepo)
 
 	param := save_items.Param{}
 	param.Ctx = context.Background()
@@ -84,7 +84,7 @@ func TestService_PopFirstItem(t *testing.T) {
 	freeOrderRepo := freeOrder.New(mysqlDB.DB())
 	snowRepo, _ := snow_flake.New(1)
 
-	svc := New(repo, freeOrderRepo, snowRepo)
+	svc := NewSvcInReal(repo, freeOrderRepo, snowRepo)
 
 	result, err := svc.PopFirstItem(context.Background(), 123)
 	if err != nil {

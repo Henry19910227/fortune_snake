@@ -64,6 +64,8 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	input := save_items.Param{}
 	input.Ctx = grpcCtx
 	input.Session = session
+	input.TransactionID = record.TransactionId
+	input.RoundID = record.RoundId
 	input.Items = resultsList
 	if err := c.resultFreeRealService.SaveItems(input); err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
@@ -72,7 +74,7 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	}
 
 	// 取出一筆金蛇盤面
-	results, err := c.resultFreeRealService.PopFirstItem(grpcCtx, session.PlayerId)
+	results, err := c.resultFreeRealService.PopFirstItem(grpcCtx, session)
 	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
@@ -159,7 +161,7 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 	}
 
 	// 取出一筆金蛇盤面
-	results, err := c.resultFreeRealService.PopFirstItem(grpcCtx, session.PlayerId)
+	results, err := c.resultFreeRealService.PopFirstItem(grpcCtx, session)
 	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
@@ -240,7 +242,7 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	}
 
 	// 取出最後一筆金蛇盤面
-	results, err := c.resultFreeRealService.PopFirstItem(grpcCtx, session.PlayerId)
+	results, err := c.resultFreeRealService.PopFirstItem(grpcCtx, session)
 	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	. "game_server_slots_fortune_snake/constants"
+	"game_server_slots_fortune_snake/internal/model/entity/player"
 	freeOrderModel "game_server_slots_fortune_snake/internal/model/entity/player_free_order"
 	"game_server_slots_fortune_snake/internal/model/service/result_free/save_items"
 	freeOrder "game_server_slots_fortune_snake/internal/repository/player_free_order"
@@ -39,7 +40,6 @@ func (s *serviceReal) SaveItems(param save_items.Param) error {
 
 	// 入庫
 	table := freeOrderModel.New(param.Session)
-	table.ID = s.snowFlakeRepo.GenerateID()
 	table.TransactionId = param.TransactionID
 	table.RoundId = param.RoundID
 	table.GameFreeItems = int8(len(param.Items))
@@ -52,6 +52,11 @@ func (s *serviceReal) SaveItems(param save_items.Param) error {
 	table.Sync = "no"
 	table.CreatedAt = time.Now().UnixMilli()
 	table.UpdatedAt = time.Now().UnixMilli()
+
+	_, err = s.freeOrderRepo.Create(table)
+	if err != nil {
+		return err
+	}
 
 	// 轉碼
 	list := make([]string, 0)
@@ -71,18 +76,79 @@ func (s *serviceReal) SaveItems(param save_items.Param) error {
 	return nil
 }
 
-func (s *serviceReal) PopFirstItem(ctx context.Context, playerID uint64) ([][]int, error) {
-	resultStr, err := s.resultFreeRepo.PopFirstItem(ctx, GameModeReal, playerID)
+func (s *serviceReal) PopFirstItem(ctx context.Context, session *player.Session) ([][]int, error) {
+	// 取出一筆盤面
+	resultStr, err := s.resultFreeRepo.PopFirstItem(ctx, GameModeReal, session.PlayerId)
 	if err != nil {
 		return nil, err
 	}
-	result := make([][]int, 0)
-	if err = json.Unmarshal([]byte(resultStr), &result); err != nil {
+	results := make([][]int, 0)
+	if err = json.Unmarshal([]byte(resultStr), &results); err != nil {
 		return nil, err
 	}
-	return result, nil
+
+	// 獲取剩餘盤面
+	amount, err := s.resultFreeRepo.Amount(ctx, GameModeReal, session.PlayerId)
+	if err != nil {
+		return nil, err
+	}
+
+	// 查詢免費遊戲紀錄
+	item, err := s.freeOrderRepo.Find(session)
+	if err != nil {
+		return nil, err
+	}
+
+	// 修改已使用免費次數
+	item.GameFreeUsedItems = item.GameFreeItems - int8(amount)
+
+	// 更新免費遊戲紀錄
+	if err = s.freeOrderRepo.Update(item); err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
-func (s *serviceReal) Amount(ctx context.Context, playerID uint64) (int64, error) {
-	return s.resultFreeRepo.Amount(ctx, GameModeReal, playerID)
+func (s *serviceReal) Amount(ctx context.Context, session *player.Session) (int64, error) {
+	// 查看緩存是否有免費盤面
+	amount, err := s.resultFreeRepo.Amount(ctx, GameModeReal, session.PlayerId)
+	if err != nil {
+		return 0, err
+	}
+	if amount > 0 {
+		return amount, nil
+	}
+
+	// 找不到免費盤面則查看數據庫是否有盤面
+	item, err := s.freeOrderRepo.Find(session)
+	if err != nil {
+		return 0, err
+	}
+
+	// 計算剩餘免費次數
+	if item.GameFreeItems-item.GameFreeUsedItems <= 0 {
+		return 0, nil
+	}
+
+	// 將字串轉為array
+	var results [][][]int
+	if err = json.Unmarshal(item.FreeGameJson, &results); err != nil {
+		return 0, err
+	}
+	list := make([]string, 0)
+	for _, result := range results {
+		b, err := json.Marshal(result)
+		if err != nil {
+			continue
+		}
+		list = append(list, string(b))
+	}
+
+	// 存入緩存List
+	if err = s.resultFreeRepo.SaveItems(ctx, GameModeReal, session.PlayerId, list[item.GameFreeUsedItems:]); err != nil {
+		return 0, err
+	}
+
+	return int64(len(results)), nil
 }

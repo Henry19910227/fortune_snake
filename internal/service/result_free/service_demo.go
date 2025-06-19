@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	. "game_server_slots_fortune_snake/constants"
+	"game_server_slots_fortune_snake/internal/model/entity/player"
 	"game_server_slots_fortune_snake/internal/model/service/result_free/save_items"
 	resultFreeRepo "game_server_slots_fortune_snake/internal/repository/result_free"
 )
@@ -33,8 +34,8 @@ func (s serviceDemo) SaveItems(param save_items.Param) error {
 	return s.resultFreeRepo.SaveItems(param.Ctx, GameModeDemo, param.Session.PlayerId, list)
 }
 
-func (s serviceDemo) PopFirstItem(ctx context.Context, playerID uint64) ([][]int, error) {
-	resultStr, err := s.resultFreeRepo.PopFirstItem(ctx, GameModeDemo, playerID)
+func (s serviceDemo) PopFirstItem(ctx context.Context, session *player.Session) ([][]int, error) {
+	resultStr, err := s.resultFreeRepo.PopFirstItem(ctx, GameModeDemo, session.PlayerId)
 	if err != nil {
 		return nil, err
 	}
@@ -45,6 +46,6 @@ func (s serviceDemo) PopFirstItem(ctx context.Context, playerID uint64) ([][]int
 	return result, nil
 }
 
-func (s serviceDemo) Amount(ctx context.Context, playerID uint64) (int64, error) {
-	return s.resultFreeRepo.Amount(ctx, GameModeDemo, playerID)
+func (s serviceDemo) Amount(ctx context.Context, session *player.Session) (int64, error) {
+	return s.resultFreeRepo.Amount(ctx, GameModeDemo, session.PlayerId)
 }

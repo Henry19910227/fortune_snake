@@ -80,7 +80,7 @@ func (c *controller) BetInReal(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 
 	// 檢查剩餘免費盤面數量
-	amount, err := c.resultFreeRealService.Amount(grpcCtx, session.PlayerId)
+	amount, err := c.resultFreeRealService.Amount(grpcCtx, session)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -116,7 +116,7 @@ func (c *controller) BetInDemo(ctx *server.Context) {
 	grpcCtx := ctx.MustGet("ctx").(context.Context)
 
 	// 檢查剩餘免費盤面數量
-	amount, err := c.resultFreeRealService.Amount(grpcCtx, session.PlayerId)
+	amount, err := c.resultFreeRealService.Amount(grpcCtx, session)
 	if err != nil {
 		ctx.SendError(err)
 		return
