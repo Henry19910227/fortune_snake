@@ -60,13 +60,6 @@ func (c *controller) BaseModeInDemo(ctx *server.Context) {
 		return
 	}
 
-	// 派彩更新餘額
-	session.Balance += int64(totalScore)
-	if err := c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
-		ctx.SendError(err)
-		return
-	}
-
 	// 生成響應數據
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = totalScore
@@ -88,6 +81,13 @@ func (c *controller) BaseModeInDemo(ctx *server.Context) {
 	_, err = c.gameResultService.Create(session, gameResult)
 	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
+	// 派彩更新餘額
+	session.Balance += int64(totalScore)
+	if err := c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
 		ctx.SendError(err)
 		return
 	}

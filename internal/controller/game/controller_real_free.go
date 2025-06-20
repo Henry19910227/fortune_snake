@@ -84,13 +84,6 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	// 將盤面數據轉換為 reels
 	reels := c.reelsFreeService.ToReels(results)
 
-	// 更新餘額
-	if err := c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
-		_ = c.betRecordService.UpdateToFailed(record)
-		ctx.SendError(err)
-		return
-	}
-
 	// 生成響應數據
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = 0
@@ -119,6 +112,13 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 	// 更新遊戲結果
 	_, err = c.gameResultService.Create(session, gameResult)
 	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
+	// 更新餘額
+	if err = c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
@@ -260,14 +260,6 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 		return
 	}
 
-	// 派彩更新餘額
-	session.Balance += int64(totalScore)
-	if err := c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
-		_ = c.betRecordService.UpdateToFailed(record)
-		ctx.SendError(err)
-		return
-	}
-
 	// 生成響應數據
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = totalScore
@@ -296,6 +288,14 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 	// 更新遊戲結果
 	_, err = c.gameResultService.Create(session, gameResult)
 	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
+	// 派彩更新餘額
+	session.Balance += int64(totalScore)
+	if err := c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return

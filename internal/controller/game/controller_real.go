@@ -65,14 +65,6 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 		return
 	}
 
-	// 派彩更新餘額
-	session.Balance += int64(totalScore)
-	if err = c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
-		_ = c.betRecordService.UpdateToFailed(record)
-		ctx.SendError(err)
-		return
-	}
-
 	// 生成響應數據
 	spinResult := &betModel.SpinResult{}
 	spinResult.Score = totalScore
@@ -100,6 +92,14 @@ func (c *controller) BaseModeInReal(ctx *server.Context) {
 	// 更新遊戲結果
 	_, err = c.gameResultService.Create(session, gameResult)
 	if err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
+	// 派彩更新餘額
+	session.Balance += int64(totalScore)
+	if err = c.playerService.UpdateBalance(grpcCtx, session.PlayerId, session.Balance); err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
