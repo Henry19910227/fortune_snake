@@ -4,6 +4,7 @@ import (
 	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 	model "game_server_slots_fortune_snake/internal/model/entity/bet_record"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
+	"game_server_slots_fortune_snake/internal/model/service/bet_record/create_by_tx"
 	betRecordRepo "game_server_slots_fortune_snake/internal/repository/bet_record"
 	snowFlakeRepo "game_server_slots_fortune_snake/internal/repository/snow_flake"
 	"time"
@@ -23,6 +24,7 @@ func (s *service) Create(session *playerModel.Session, param *betModel.Param, to
 	item.ID = s.snowFlakeRepo.GenerateID()
 	item.TransactionId = s.snowFlakeRepo.GenerateID()
 	item.TransactionSubId = item.TransactionId
+	item.RoundId = s.snowFlakeRepo.GenerateID()
 	item.Balance = session.Balance
 	item.Bet = param.ToJson()
 	item.Amount = totalBet
@@ -33,15 +35,19 @@ func (s *service) Create(session *playerModel.Session, param *betModel.Param, to
 	return item, nil
 }
 
-func (s *service) CreateByTransactionID(session *playerModel.Session, param *betModel.Param, totalBet int64, transactionID uint64) (item *model.Table, err error) {
+func (s *service) CreateByTransactionID(input *create_by_tx.Input) (item *model.Table, err error) {
+	if input == nil {
+		return &model.Table{}, nil
+	}
 	item = &model.Table{}
 	item.ID = s.snowFlakeRepo.GenerateID()
-	item.TransactionId = transactionID
+	item.TransactionId = input.TransactionID
 	item.TransactionSubId = s.snowFlakeRepo.GenerateID()
-	item.Balance = session.Balance
-	item.Bet = param.ToJson()
-	item.Amount = totalBet
-	item, err = s.create(session, item)
+	item.RoundId = input.RoundID
+	item.Balance = input.Session.Balance
+	item.Bet = input.Param.ToJson()
+	item.Amount = input.TotalBet
+	item, err = s.create(input.Session, item)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +70,6 @@ func (s *service) UpdateToFinished(item *model.Table) (err error) {
 }
 
 func (s *service) create(session *playerModel.Session, item *model.Table) (table *model.Table, err error) {
-	item.RoundId = s.snowFlakeRepo.GenerateID()
 	item.PlayerId = session.PlayerId
 	item.PlayerUsername = session.PlayerUsername
 	item.MerchantId = session.MerchantId

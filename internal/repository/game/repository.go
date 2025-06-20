@@ -114,6 +114,18 @@ func (r *repository) SaveFatherID(ctx context.Context, gameMode string, playerID
 	return nil
 }
 
+func (r *repository) SaveRoundID(ctx context.Context, gameMode string, playerID uint64, roundID uint64) (err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
+	pipe := r.rdb.TxPipeline()
+	pipe.HSet(ctx, key, "RoundID", roundID)
+	pipe.Expire(ctx, key, CacheExpiredPlayerGameInfo)
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *repository) GetParam(ctx context.Context, gameMode string, playerID uint64) (results []interface{}, err error) {
 	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
 	fields := []string{"Bet", "Value", "Bonus"}
@@ -174,6 +186,22 @@ func (r *repository) GetValue(ctx context.Context, gameMode string, playerID uin
 func (r *repository) GetFatherID(ctx context.Context, gameMode string, playerID uint64) (fatherID uint64, err error) {
 	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
 	val, err := r.rdb.HGet(ctx, key, "FatherID").Result()
+	if errors.Is(err, redis.Nil) {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	value, err := strconv.ParseUint(val, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return value, nil
+}
+
+func (r *repository) GetRoundID(ctx context.Context, gameMode string, playerID uint64) (roundID uint64, err error) {
+	key := fmt.Sprintf(CacheNamePlayerGameInfo, playerID, GameCode, gameMode)
+	val, err := r.rdb.HGet(ctx, key, "RoundID").Result()
 	if errors.Is(err, redis.Nil) {
 		return 0, nil
 	}

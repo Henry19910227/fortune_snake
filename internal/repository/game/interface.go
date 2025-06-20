@@ -22,6 +22,8 @@ type Repository interface {
 
 	SaveFatherID(ctx context.Context, gameMode string, playerID uint64, fatherID uint64) (err error)
 
+	SaveRoundID(ctx context.Context, gameMode string, playerID uint64, roundID uint64) (err error)
+
 	GetParam(ctx context.Context, gameMode string, playerID uint64) (results []interface{}, err error)
 
 	GetGameResult(ctx context.Context, gameMode string, playerID uint64) (data string, err error)
@@ -31,4 +33,6 @@ type Repository interface {
 	GetValue(ctx context.Context, gameMode string, playerID uint64) (value int, err error)
 
 	GetFatherID(ctx context.Context, gameMode string, playerID uint64) (fatherID uint64, err error)
+
+	GetRoundID(ctx context.Context, gameMode string, playerID uint64) (roundID uint64, err error)
 }

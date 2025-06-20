@@ -89,6 +89,13 @@ func (s *service) SaveFatherID(ctx context.Context, gameMode string, playerID ui
 	return nil
 }
 
+func (s *service) SaveRoundID(ctx context.Context, gameMode string, playerID uint64, roundID uint64) (err error) {
+	if err = s.gameRepo.SaveRoundID(ctx, gameMode, playerID, roundID); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *service) GetParam(ctx context.Context, gameMode string, playerID uint64) (output *model.Output, err error) {
 	result, err := s.gameRepo.GetParam(ctx, gameMode, playerID)
 	if err != nil {
@@ -154,6 +161,14 @@ func (s *service) GetValue(ctx context.Context, gameMode string, playerID uint64
 
 func (s *service) GetFatherID(ctx context.Context, gameMode string, playerID uint64) (fatherID uint64, err error) {
 	data, err := s.gameRepo.GetFatherID(ctx, gameMode, playerID)
+	if err != nil {
+		return 0, err
+	}
+	return data, nil
+}
+
+func (s *service) GetRoundID(ctx context.Context, gameMode string, playerID uint64) (roundID uint64, err error) {
+	data, err := s.gameRepo.GetRoundID(ctx, gameMode, playerID)
 	if err != nil {
 		return 0, err
 	}

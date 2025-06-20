@@ -5,6 +5,7 @@ import (
 	. "game_server_slots_fortune_snake/constants"
 	betModel "game_server_slots_fortune_snake/internal/model/controller/game/bet"
 	playerModel "game_server_slots_fortune_snake/internal/model/entity/player"
+	"game_server_slots_fortune_snake/internal/model/service/bet_record/create_by_tx"
 	"game_server_slots_fortune_snake/internal/model/service/result_free/save_items"
 	"game_server_slots_fortune_snake/internal/server"
 	"game_server_slots_fortune_snake/util"
@@ -37,6 +38,13 @@ func (c *controller) StartFreeModeInReal(ctx *server.Context) {
 
 	// 儲存 father ID
 	if err = c.gameService.SaveFatherID(grpcCtx, GameModeReal, session.PlayerId, record.TransactionId); err != nil {
+		_ = c.betRecordService.UpdateToFailed(record)
+		ctx.SendError(err)
+		return
+	}
+
+	// 儲存 round ID
+	if err = c.gameService.SaveRoundID(grpcCtx, GameModeReal, session.PlayerId, record.RoundId); err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)
 		return
@@ -153,8 +161,21 @@ func (c *controller) FreeModeInReal(ctx *server.Context) {
 		return
 	}
 
+	// 獲取 round id
+	roundID, err := c.gameService.GetRoundID(grpcCtx, GameModeReal, session.PlayerId)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
 	// 創建紀錄
-	record, err := c.betRecordService.CreateByTransactionID(session, param, 0, fatherID)
+	input := &create_by_tx.Input{}
+	input.Session = session
+	input.Param = param
+	input.TotalBet = 0
+	input.TransactionID = fatherID
+	input.RoundID = roundID
+	record, err := c.betRecordService.CreateByTransactionID(input)
 	if err != nil {
 		ctx.SendError(err)
 		return
@@ -233,8 +254,21 @@ func (c *controller) FinalFreeModeInReal(ctx *server.Context) {
 		return
 	}
 
+	// 獲取 round id
+	roundID, err := c.gameService.GetRoundID(grpcCtx, GameModeReal, session.PlayerId)
+	if err != nil {
+		ctx.SendError(err)
+		return
+	}
+
 	// 創建紀錄
-	record, err := c.betRecordService.CreateByTransactionID(session, param, 0, fatherID)
+	input := &create_by_tx.Input{}
+	input.Session = session
+	input.Param = param
+	input.TotalBet = 0
+	input.TransactionID = fatherID
+	input.RoundID = roundID
+	record, err := c.betRecordService.CreateByTransactionID(input)
 	if err != nil {
 		_ = c.betRecordService.UpdateToFailed(record)
 		ctx.SendError(err)

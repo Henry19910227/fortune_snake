@@ -22,6 +22,8 @@ type Service interface {
 
 	SaveFatherID(ctx context.Context, gameMode string, playerID uint64, fatherID uint64) (err error)
 
+	SaveRoundID(ctx context.Context, gameMode string, playerID uint64, roundID uint64) (err error)
+
 	GetParam(ctx context.Context, gameMode string, playerID uint64) (output *model.Output, err error)
 
 	GetGameResult(ctx context.Context, gameMode string, playerID uint64) (item *betModel.GameResult, err error)
@@ -31,4 +33,6 @@ type Service interface {
 	GetValue(ctx context.Context, gameMode string, playerID uint64) (value int, err error)
 
 	GetFatherID(ctx context.Context, gameMode string, playerID uint64) (fatherID uint64, err error)
+
+	GetRoundID(ctx context.Context, gameMode string, playerID uint64) (roundID uint64, err error)
 }
