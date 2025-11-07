@@ -16,7 +16,10 @@ type repositoryFree struct {
 }
 
 func (r *repositoryFree) CreateItems(items []*model.Item) (err error) {
-	err = r.db.Table("fortune_snake_results_free").Create(items).Error
+	if len(items) == 0 {
+		return nil
+	}
+	err = r.db.Table("fortune_snake_results_free").CreateInBatches(items, 1000).Error
 	if err != nil {
 		return errMsg.New(constants.CodeInternalError, err.Error(), err)
 	}

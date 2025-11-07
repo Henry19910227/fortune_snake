@@ -16,7 +16,10 @@ type repository struct {
 }
 
 func (r *repository) CreateItems(items []*model.Item) (err error) {
-	err = r.db.Table("fortune_snake_results").Create(items).Error
+	if len(items) == 0 {
+		return nil
+	}
+	err = r.db.Table("fortune_snake_results").CreateInBatches(items, 1000).Error
 	if err != nil {
 		return errMsg.New(constants.CodeInternalError, err.Error(), err)
 	}
