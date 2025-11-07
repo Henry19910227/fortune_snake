@@ -1,92 +1,562 @@
-# game_server_slots_gold_snake
+# Fortune Snake 遊戲服務器架構文檔
 
+## 專案概述
 
+這是一個基於 Go 語言開發的老虎機遊戲服務器，採用 gRPC 協議提供服務。專案名稱為 "Fortune Snake"（金蛇福運），是一個多層架構的微服務系統。
 
-## Getting started
+## 技術棧
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+- **語言**: Go
+- **通信協議**: gRPC
+- **數據庫**: MySQL, Redis, MongoDB
+- **日誌系統**: ELK Stack (Elasticsearch, Logstash, Kibana)
+- **服務發現**: etcd
+- **配置管理**: YAML
+- **國際化**: 多語言支持 (zh-CN, en-US)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## 架構模式
 
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+採用 **Clean Architecture** 和 **Factory Pattern** 設計模式：
 
 ```
-cd existing_repo
-git remote add origin http://d4e36d7f03d8b593cb51b02e6b915b51.com/goplaygames/game_server_slots_gold_snake.git
-git branch -M main
-git push -uf origin main
+┌─────────────────────────────────────────────────────────────┐
+│                    Presentation Layer                       │
+│  (gRPC Server, Controllers, Middleware)                     │
+├─────────────────────────────────────────────────────────────┤
+│                     Business Layer                          │
+│  (Services, Business Logic)                                 │
+├─────────────────────────────────────────────────────────────┤
+│                    Data Access Layer                        │
+│  (Repositories, Database Operations)                        │
+├─────────────────────────────────────────────────────────────┤
+│                    Infrastructure Layer                     │
+│  (Database, Cache, External Services)                       │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Integrate with your tools
+## 模塊詳細說明
 
-- [ ] [Set up project integrations](http://d4e36d7f03d8b593cb51b02e6b915b51.com/goplaygames/game_server_slots_gold_snake/-/settings/integrations)
+### 1. 根目錄文件
 
-## Collaborate with your team
+#### `main.go`
+- **用途**: 應用程序入口點
+- **功能**:
+    - 配置加載和初始化
+    - 數據庫連接初始化 (MySQL, Redis, MongoDB, ELK)
+    - etcd 服務註冊
+    - gRPC 服務器啟動
+    - 優雅關閉處理
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+#### `go.mod` / `go.sum`
+- **用途**: Go 模塊依賴管理
 
-## Test and Deploy
+#### `config.yaml.example`
+- **用途**: 配置文件模板
+- **包含**: 數據庫配置、Redis 配置、ELK 配置、etcd 配置等
 
-Use the built-in continuous integration in GitLab.
+### 2. 配置模塊 (`config/`)
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+#### `config/game/`
+- **config.go**: 遊戲相關配置結構定義
+- **interface.go**: 遊戲配置接口定義
 
-***
+#### `config/system/`
+- **config.go**: 系統配置結構定義
+- **interface.go**: 系統配置接口定義
 
-# Editing this README
+### 3. 常量定義 (`constants/`)
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+#### `constants.go`
+- **用途**: 定義系統常量
+- **包含**:
+    - HTTP 狀態碼
+    - 遊戲代碼和模式
+    - 符號定義
+    - 緩存鍵名
+    - 過期時間設置
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+### 4. 數據庫模塊 (`db/`)
 
-## Name
-Choose a self-explaining name for your project.
+#### `mysql.go`
+- **用途**: MySQL 數據庫連接和操作
+- **功能**: 持久化數據存儲
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+#### `redis.go`
+- **用途**: Redis 緩存連接和操作
+- **功能**: 會話管理、遊戲狀態緩存
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+#### `mongodb.go`
+- **用途**: MongoDB 連接和操作
+- **功能**: 日誌和統計數據存儲
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+#### `elk.go`
+- **用途**: Elasticsearch 連接和操作
+- **功能**: 日誌收集和分析
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+#### `interface.go`
+- **用途**: 數據庫接口定義
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### 5. 服務發現 (`etcd/`)
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+#### `etcd.go`
+- **用途**: etcd 客戶端操作
+- **功能**: 服務註冊和發現
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### 6. 協議定義 (`proto/`)
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+#### `message.proto`
+- **用途**: gRPC 協議定義
+- **包含**: 消息結構和服務接口
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+#### `message.pb.go` / `message_grpc.pb.go`
+- **用途**: 自動生成的 gRPC 代碼
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+### 7. 內部模塊 (`internal/`)
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+#### 7.1 控制器層 (`internal/controller/`)
 
-## License
-For open source projects, say how it is licensed.
+##### `game/`
+- **controller.go**: 主要遊戲邏輯控制器
+- **核心功能**:
+    - **遊戲流程控制**: 管理整個遊戲的執行流程，包括投注、遊戲邏輯處理、結果返回
+    - **模式判斷**: 根據玩家狀態判斷進入試玩模式或真錢模式
+    - **狀態路由**: 根據遊戲狀態（基礎模式、免費遊戲模式）路由到對應的處理邏輯
+    - **參數驗證**: 驗證投注參數的有效性和完整性
+    - **錯誤處理**: 統一處理遊戲過程中的各種錯誤情況
+    - **響應生成**: 生成標準化的遊戲響應數據
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- **controller_demo.go**: 試玩模式控制器
+- **核心功能**:
+    - **試玩投注處理**: 處理試玩模式的投注邏輯，不涉及真實金錢
+    - **虛擬餘額管理**: 管理試玩模式的虛擬餘額增減
+    - **試玩結果計算**: 計算試玩模式的遊戲結果和獎金
+    - **試玩記錄創建**: 創建試玩模式的投注記錄
+    - **試玩狀態保存**: 將試玩模式的遊戲狀態保存到緩存
+    - **試玩響應返回**: 返回試玩模式的標準化響應
+
+- **controller_real.go**: 真錢模式控制器
+- **核心功能**:
+    - **真錢投注處理**: 處理真錢模式的投注邏輯，涉及真實金錢交易
+    - **Bonus 投注計算**: 處理 Bonus 投注的額外 1.5 倍投注額計算
+    - **真錢餘額管理**: 管理真錢模式的實際餘額增減
+    - **真錢結果計算**: 計算真錢模式的遊戲結果和獎金
+    - **真錢記錄創建**: 創建真錢模式的投注記錄
+    - **真錢狀態保存**: 將真錢模式的遊戲狀態保存到緩存和數據庫
+
+- **controller_real_free.go**: 真錢免費遊戲模式控制器
+- **核心功能**:
+    - **免費遊戲開始**: 處理免費遊戲的觸發和開始邏輯
+    - **免費遊戲結果生成**: 生成多筆免費遊戲結果並緩存
+    - **免費遊戲進行**: 處理免費遊戲進行中的邏輯
+    - **免費遊戲結束**: 處理免費遊戲的最後一局邏輯
+    - **交易 ID 管理**: 管理免費遊戲的父交易 ID 和回合 ID
+    - **免費遊戲狀態同步**: 在緩存和數據庫之間同步免費遊戲狀態
+
+- **controller_demo_free.go**: 試玩免費遊戲模式控制器
+- **核心功能**:
+    - **試玩免費遊戲開始**: 處理試玩模式免費遊戲的觸發邏輯
+    - **試玩免費遊戲進行**: 處理試玩模式免費遊戲進行中的邏輯
+    - **試玩免費遊戲結束**: 處理試玩模式免費遊戲的最後一局
+    - **試玩虛擬餘額管理**: 管理試玩模式免費遊戲的虛擬餘額
+    - **試玩免費遊戲記錄**: 創建試玩模式免費遊戲的記錄
+    - **試玩免費遊戲響應**: 返回試玩模式免費遊戲的響應數據
+
+- **interface.go**: 控制器接口定義
+
+##### `player/`
+- **controller.go**: 玩家相關操作控制器
+- **核心功能**:
+    - **玩家會話查詢**: 根據玩家 ID 查詢玩家的會話信息
+    - **會話驗證**: 驗證玩家會話的有效性和完整性
+    - **會話響應**: 返回標準化的玩家會話響應
+    - **錯誤處理**: 處理玩家會話查詢過程中的錯誤
+    - **參數解析**: 解析請求中的玩家 ID 參數
+    - **響應格式化**: 格式化玩家相關的響應數據
+
+- **interface.go**: 玩家控制器接口
+
+##### `middleware/`
+- **controller.go**: 中間件控制器
+- **核心功能**:
+    - **身份驗證**: 驗證請求中的 PlayerID 並獲取玩家會話信息
+    - **會話管理**: 將驗證後的會話信息存儲到請求上下文中
+    - **錯誤攔截**: 攔截驗證過程中的錯誤並返回適當的錯誤響應
+    - **請求中斷**: 在驗證失敗時中斷請求處理流程
+    - **Panic 恢復**: 捕獲和處理請求處理過程中的 panic
+    - **錯誤格式化**: 將各種類型的錯誤格式化為標準錯誤響應
+
+- **interface.go**: 中間件接口
+
+##### `bet_record/`
+- **controller.go**: 投注記錄控制器
+- **核心功能**:
+    - **投注記錄更新**: 更新投注記錄的狀態為完成狀態
+    - **記錄驗證**: 驗證投注記錄的有效性和完整性
+    - **更新錯誤處理**: 處理投注記錄更新過程中的錯誤
+    - **記錄狀態管理**: 管理投注記錄的生命週期狀態
+    - **事務支持**: 支持投注記錄更新的事務處理
+    - **響應返回**: 返回投注記錄操作的結果
+
+- **interface.go**: 投注記錄接口
+
+##### `load/`
+- **controller.go**: 資源加載控制器
+- **核心功能**:
+    - **權重加載**: 加載遊戲權重配置到內存中
+    - **盤面結果加載**: 從數據庫加載預生成的盤面結果數據
+    - **免費遊戲結果加載**: 加載免費遊戲的預生成結果數據
+    - **加載錯誤處理**: 處理資源加載過程中的錯誤
+    - **加載日誌記錄**: 記錄資源加載的過程和結果
+    - **加載狀態管理**: 管理資源加載的狀態和進度
+
+- **interface.go**: 加載接口
+
+##### `result/` / `result_free/`
+- **controller.go**: 遊戲結果處理控制器
+- **核心功能**:
+    - **盤面數據生成**: 生成遊戲盤面數據並存入暫存區
+    - **暫存區管理**: 管理盤面結果的暫存區容量和配額
+    - **數據遷移**: 將暫存區的數據批量遷移到數據庫
+    - **賠率計算**: 計算生成盤面的賠率
+    - **JSON 序列化**: 將盤面數據轉換為 JSON 格式
+    - **生成流程控制**: 控制盤面數據生成的整個流程
+
+- **interface.go**: 結果處理接口
+
+#### 7.2 服務層 (`internal/service/`)
+
+##### `game/`
+- **service.go**: 遊戲核心業務邏輯
+- **核心功能**:
+    - **遊戲狀態管理**: 管理玩家的遊戲狀態（投注、獎金、遊戲結果等）
+    - **投注處理**: 處理玩家的投注請求，包括投注金額驗證和記錄
+    - **結果計算**: 計算遊戲結果和獎金分配
+    - **模式切換**: 管理基礎模式和免費遊戲模式的切換邏輯
+    - **數據持久化**: 將遊戲狀態保存到 Redis 緩存中
+    - **JSON 序列化**: 將遊戲結果轉換為 JSON 格式存儲
+
+##### `player/`
+- **service.go**: 玩家服務
+- **核心功能**:
+    - **會話管理**: 從 Redis 中獲取和驗證玩家會話信息
+    - **餘額更新**: 更新玩家餘額，支持轉帳模式和無縫模式
+    - **身份驗證**: 驗證玩家身份和權限
+    - **錯誤處理**: 處理會話過期、Redis 錯誤等異常情況
+    - **事務支持**: 提供數據庫事務支持，確保數據一致性
+
+##### `reels/`
+- **service.go**: 轉輪服務（基礎模式）
+- **核心功能**:
+    - **轉輪生成**: 根據佈局生成隨機轉輪結果
+    - **符號分配**: 根據權重隨機分配符號到轉輪位置
+    - **Wild 符號處理**: 第二軸有 50% 機率全部設為 Wild 符號
+    - **結果轉換**: 將符號對象轉換為數字 ID 數組
+    - **主符號識別**: 識別轉輪中的主要符號（Wild 符號）
+
+- **service_free.go**: 免費遊戲轉輪服務
+- **核心功能**:
+    - **免費遊戲轉輪生成**: 生成專門的免費遊戲轉輪
+    - **隨機符號選擇**: 選擇一個隨機符號作為主要符號
+    - **空格符號處理**: 使用空格符號（ID: 99）作為佔位符
+    - **遞歸覆蓋**: 遞歸生成多個轉輪結果，直到沒有變化
+    - **深度複製**: 實現轉輪對象的深度複製，避免引用問題
+    - **覆蓋邏輯**: 將新生成的符號覆蓋到空格位置
+
+##### `settle/`
+- **service.go**: 結算服務
+- **核心功能**:
+    - **中獎線計算**: 根據中獎線配置計算獲勝線路
+    - **獎金計算**: 計算總獎金和賠率
+    - **倍數計算**: 根據第二軸 Wild 符號數量計算倍數（4個以上 Wild 符號 = 10倍）
+    - **符號驗證**: 驗證中獎線上的符號是否符合獲勝條件
+    - **JSON 序列化**: 將轉輪結果轉換為 JSON 格式
+    - **多轉輪處理**: 處理多個轉輪結果的序列化
+
+##### `weight/`
+- **service.go**: 權重服務
+- **核心功能**:
+    - **權重加載**: 加載基礎模式和免費遊戲模式的權重配置
+    - **RTP 控制**: 根據目標 RTP（返獎率）隨機選擇權重
+    - **權重分類**: 區分基礎權重、高權重、免費權重等不同類型
+    - **概率計算**: 根據權重計算符號出現概率
+    - **動態調整**: 支持根據遊戲需求動態調整權重
+
+##### `symbol/`
+- **service.go**: 符號服務
+- **核心功能**:
+    - **符號獲取**: 獲取所有可用的遊戲符號
+    - **符號過濾**: 過濾掉空格符號（ID: 99），只返回有效符號
+    - **符號配置**: 管理符號的 ID、名稱、權重等配置
+    - **符號驗證**: 驗證符號的有效性和完整性
+
+##### `result_free/`
+- **service.go**: 免費遊戲結果服務（基礎接口）
+- **service_real.go**: 真錢免費遊戲服務
+- **核心功能**:
+    - **免費遊戲結果保存**: 將免費遊戲結果保存到數據庫和緩存
+    - **結果檢索**: 從緩存中取出免費遊戲結果
+    - **剩餘次數管理**: 管理玩家剩餘的免費遊戲次數
+    - **訂單記錄**: 創建和更新免費遊戲訂單記錄
+    - **緩存同步**: 在緩存和數據庫之間同步免費遊戲數據
+    - **事務處理**: 確保免費遊戲數據的一致性
+
+- **service_demo.go**: 試玩免費遊戲服務
+- **核心功能**:
+    - **試玩模式處理**: 處理試玩模式的免費遊戲邏輯
+    - **虛擬餘額**: 管理試玩模式的虛擬餘額
+    - **結果模擬**: 模擬真實的免費遊戲結果
+
+##### `result_loader/`
+- **service.go**: 結果加載服務（基礎模式）
+- **核心功能**:
+    - **結果暫存**: 將生成的遊戲結果暫存到緩存桶中
+    - **結果遷移**: 將暫存的結果批量遷移到數據庫
+    - **隨機選擇**: 根據 RTP 隨機選擇預生成的結果
+    - **數據加載**: 從數據庫加載預生成的結果數據
+    - **配額管理**: 管理緩存桶的容量和配額
+
+- **service_free.go**: 免費遊戲結果加載服務
+- **核心功能**:
+    - **免費遊戲結果加載**: 專門處理免費遊戲結果的加載
+    - **免費遊戲隨機選擇**: 根據 RTP 隨機選擇免費遊戲結果
+    - **免費遊戲數據管理**: 管理免費遊戲的預生成數據
+
+##### `bet_record/`
+- **service.go**: 投注記錄服務
+- **核心功能**:
+    - **投注記錄創建**: 創建新的投注記錄，包含交易 ID、回合 ID 等
+    - **記錄更新**: 更新投注記錄的狀態（進行中、完成、失敗）
+    - **事務支持**: 支持數據庫事務的投注記錄創建
+    - **雪花算法 ID**: 使用雪花算法生成唯一的記錄 ID
+    - **記錄查詢**: 查詢和檢索投注記錄
+    - **狀態管理**: 管理投注記錄的生命週期狀態
+
+##### `game_result/`
+- **service.go**: 遊戲結果服務
+- **核心功能**:
+    - **結果記錄創建**: 創建遊戲結果記錄
+    - **結果編碼**: 將遊戲結果編碼為存儲格式
+    - **回合管理**: 管理遊戲回合的唯一標識
+    - **結果存儲**: 將遊戲結果持久化到數據庫
+    - **結果查詢**: 查詢和檢索歷史遊戲結果
+
+#### 7.3 數據訪問層 (`internal/repository/`)
+
+##### `game/`
+- **repository.go**: 遊戲數據訪問
+- **功能**: 遊戲狀態的 Redis 操作
+
+##### `player/`
+- **repository.go**: 玩家數據訪問
+- **功能**: 玩家信息的數據庫操作
+
+##### `bucket/` / `bucket_free/`
+- **repository.go**: 獎金池數據訪問
+- **功能**: 獎金池管理和分配
+
+##### `symbol/`
+- **repository.go**: 符號數據訪問
+- **功能**: 符號配置管理
+
+##### `weight/`
+- **repository.go**: 權重數據訪問
+- **功能**: 概率權重配置
+
+##### `result_free/`
+- **repository.go**: 免費遊戲結果數據訪問
+
+##### `result_loader/`
+- **repository.go**: 結果加載數據訪問
+- **repository_free.go**: 免費遊戲結果加載
+
+##### `settle/`
+- **repository.go**: 結算數據訪問
+
+##### `bet_record/`
+- **repository.go**: 投注記錄數據訪問
+
+##### `player_session/`
+- **repository.go**: 玩家會話數據訪問
+
+##### `player_free_order/`
+- **repository.go**: 玩家免費遊戲訂單數據訪問
+
+##### `game_result/`
+- **repository.go**: 遊戲結果數據訪問
+
+##### `snow_flake/`
+- **repository.go**: 雪花算法 ID 生成
+
+#### 7.4 工廠模式 (`internal/factory/`)
+
+##### `controller/factory.go`
+- **用途**: 控制器工廠
+- **功能**: 創建和管理各種控制器實例
+
+##### `service/factory.go`
+- **用途**: 服務工廠
+- **功能**: 創建和管理各種服務實例
+
+##### `repository/factory.go`
+- **用途**: 數據訪問工廠
+- **功能**: 創建和管理各種數據訪問實例
+
+#### 7.5 模型層 (`internal/model/`)
+
+##### `entity/`
+- **用途**: 實體模型定義
+- **包含**: 玩家、遊戲、結果、符號等實體
+
+##### `controller/`
+- **用途**: 控制器相關模型
+- **包含**: 請求/響應模型、遊戲邏輯模型
+
+##### `service/`
+- **用途**: 服務層模型
+- **包含**: 業務邏輯參數和結果
+
+##### `repository/`
+- **用途**: 數據訪問層模型
+- **包含**: 數據庫操作參數
+
+##### `config/`
+- **用途**: 配置模型
+- **包含**: 系統配置、遊戲配置等
+
+##### `err/`
+- **用途**: 錯誤模型定義
+
+##### `message.go`
+- **用途**: 消息模型定義
+
+#### 7.6 路由層 (`internal/router/`)
+
+##### `game/router.go`
+- **用途**: 遊戲路由配置
+- **功能**: 定義 API 端點和處理器映射
+
+#### 7.7 服務器層 (`internal/server/`)
+
+##### `server.go`
+- **用途**: gRPC 服務器實現
+- **功能**: 消息處理、路由分發
+
+##### `engine.go`
+- **用途**: 服務引擎
+- **功能**: 中間件鏈、路由管理
+
+##### `context.go`
+- **用途**: 請求上下文
+- **功能**: 請求狀態管理
+
+##### `router.go`
+- **用途**: 路由管理
+- **功能**: 路由註冊和匹配
+
+##### `router_group.go`
+- **用途**: 路由組管理
+- **功能**: 分組路由和中間件
+
+### 8. 工具模塊 (`tool/`)
+
+#### `logger.go`
+- **用途**: 日誌工具
+- **功能**: 統一日誌記錄、ELK 集成
+
+#### `interface.go`
+- **用途**: 工具接口定義
+
+### 9. 工具函數 (`util/`)
+
+#### `util.go`
+- **用途**: 通用工具函數
+- **功能**: 輔助函數、工具方法
+
+### 10. 包模塊 (`pkg/`)
+
+#### `Localize.go`
+- **用途**: 國際化支持
+- **功能**: 多語言消息本地化
+
+#### `interface.go`
+- **用途**: 包接口定義
+
+### 11. 存儲模塊 (`storage/`)
+
+#### `localize/`
+- **en-US.json**: 英文語言包
+- **zh-CN.json**: 中文語言包
+
+### 12. gRPC 客戶端 (`grpc_client/`)
+
+#### `main.go`
+- **用途**: gRPC 客戶端示例
+- **功能**: 測試和調試用客戶端
+
+#### `model.go`
+- **用途**: 客戶端模型定義
+
+## 遊戲邏輯架構
+
+### 遊戲模式
+1. **試玩模式 (Demo)**: 免費試玩，不涉及真實金錢
+2. **真錢模式 (Real)**: 真實投注和獎金
+
+### 遊戲狀態
+1. **基礎模式 (Base Mode)**: 普通轉輪遊戲
+2. **免費遊戲模式 (Free Mode)**: 觸發免費遊戲後的狀態
+
+### 核心流程
+1. **投注驗證** → **遊戲邏輯處理** → **結果計算** → **獎金結算** → **記錄保存**
+
+## 數據流
+
+```
+Client Request → gRPC Server → Middleware → Controller → Service → Repository → Database
+                ↓
+            Response ← JSON Serialization ← Business Logic ← Data Processing
+```
+
+## 部署架構
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Load Balancer │    │   Game Server   │    │   Database      │
+│                 │    │   (Multiple)    │    │   Cluster       │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         └───────────────────────┼───────────────────────┘
+                                 │
+                    ┌─────────────────┐
+                    │   Cache Layer   │
+                    │   (Redis)       │
+                    └─────────────────┘
+```
+
+## 性能優化
+
+1. **緩存策略**: Redis 用於會話和遊戲狀態緩存
+2. **連接池**: 數據庫連接池管理
+3. **批量操作**: 批量日誌寫入到 ELK
+4. **異步處理**: 非阻塞的 gRPC 處理
+
+## 監控和日誌
+
+1. **結構化日誌**: JSON 格式日誌輸出
+2. **ELK 集成**: 日誌收集和分析
+3. **etcd 服務發現**: 服務健康檢查和註冊
+4. **錯誤追蹤**: 詳細的錯誤碼和消息
+
+## 安全考慮
+
+1. **身份驗證**: 玩家會話驗證
+2. **參數驗證**: 輸入參數嚴格驗證
+3. **SQL 注入防護**: 參數化查詢
+4. **XSS 防護**: 輸出轉義
+
+## 擴展性
+
+1. **模塊化設計**: 清晰的層次結構
+2. **工廠模式**: 易於擴展新的控制器和服務
+3. **配置驅動**: 通過配置文件調整行為
+4. **多語言支持**: 國際化架構
